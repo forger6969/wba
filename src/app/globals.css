@@ -1,26 +1,100 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ============================================================
+   World Bridge Academy — dizayn tizimi
+   Palitra logotipdan: qizil #FF0000, ko'prik motivi
+   ============================================================ */
+
+@theme {
+  /* Yuzalar */
+  --color-bg: #0d0a09;
+  --color-surface: #171110;
+  --color-surface-2: #1f1614;
+  --color-line: #2c211e;
+  --color-line-soft: #1a1312;
+
+  /* Matn */
+  --color-ink: #f8f4f2;
+  --color-ink-2: #b9aca7;
+  --color-ink-3: #7d716d;
+  --color-ink-4: #6e625e;
+
+  /* Brend */
+  --color-brand: #ff0000;
+  --color-brand-soft: #33100d;
+  --color-brand-line: #4a2a2a;
+  --color-accent: #f2b33d;
+  --color-accent-soft: #33280f;
+  --color-accent-line: #5a4a22;
+
+  /* Holat */
+  --color-ok: #5fbf8b;
+  --color-ok-soft: #14301f;
+  --color-warn: #f2b33d;
+  --color-crit: #ff4d3d;
+
+  /* Shriftlar */
+  --font-display: var(--font-archivo), Arial, sans-serif;
+  --font-sans: var(--font-manrope), Calibri, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), "Courier New", monospace;
+
+  /* Radius */
+  --radius-card: 12px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: var(--color-brand);
+    color: var(--color-ink);
+  }
+
+  /* Fokus — klaviatura bilan yuradiganlar uchun ko'rinib tursin */
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+    border-radius: 4px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .lbl {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--color-ink-3);
+  }
+
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+  }
+
+  .h-display {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+  }
+}
+
+/* Raqamlar ustma-ust turishi uchun */
+.tnum {
+  font-variant-numeric: tabular-nums;
 }

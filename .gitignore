@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# WBA
+.env.local
+.env*.local
+.secrets/
+supabase/_test_*.sql.out
+
+!.env.example
