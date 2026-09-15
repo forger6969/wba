@@ -1,0 +1,356 @@
+/**
+ * Baza tiplari.
+ *
+ * Supabase ulangandan keyin buni avtomatik generatsiya qilish mumkin:
+ *   npx supabase gen types typescript --project-id <id> > src/lib/types.ts
+ * Hozircha 0001–0004 migratsiyalariga qo'lda mos yozilgan.
+ */
+
+export type UserRole = 'admin' | 'qabulxona' | 'ustoz' | 'oquvchi'
+export type AccountStatus = 'faol' | 'bloklangan'
+export type StudentStatus = 'faol' | 'tanaffus' | 'ketgan'
+export type GroupStatus = 'faol' | 'yopilgan'
+export type DayType = 'toq' | 'juft' | 'har_kuni'
+export type EnrollmentStatus = 'faol' | 'tanaffus' | 'tugagan'
+export type AttendanceStatus = 'keldi' | 'kechikdi' | 'sababli' | 'kelmadi'
+export type PaymentMethod = 'naqd' | 'karta' | 'click' | 'payme'
+export type InvoiceStatus = 'ochiq' | 'yopilgan' | 'bekor'
+export type LeadStatus = 'yangi' | 'qongiroq' | 'keldi' | 'yozildi' | 'rad'
+export type LeadSource = 'sayt' | 'telegram' | 'instagram' | 'tavsiya' | 'boshqa'
+export type WoblrReason = 'faollik' | 'uy_vazifasi' | 'yordam' | 'qoida' | 'boshqa'
+export type SalaryType = 'foiz' | 'oquvchi_soni' | 'fiks'
+
+export type Profile = {
+  id: string
+  rol: UserRole
+  ism: string
+  telefon: string | null
+  holat: AccountStatus
+  created_at: string
+  updated_at: string
+}
+
+export type Subject = {
+  id: string
+  nom: string
+  qisqa_tavsif: string | null
+  yosh_chegarasi: string | null
+  tartib: number
+  saytda: boolean
+  holat: GroupStatus
+}
+
+export type Level = {
+  id: number
+  subject_id: string
+  nom: string
+  tartib: number
+}
+
+export type Teacher = {
+  id: string
+  profile_id: string | null
+  ism: string
+  telefon: string | null
+  telegram_id: number | null
+  maosh_turi: SalaryType | null
+  maosh_qiymati: number | null
+  holat: AccountStatus
+  created_at: string
+  updated_at: string
+}
+
+export type Student = {
+  id: string
+  profile_id: string | null
+  fish: string
+  tugilgan_sana: string | null
+  ota_tel: string | null
+  ona_tel: string | null
+  shaxsiy_tel: string | null
+  qoshilgan_sana: string
+  holat: StudentStatus
+  izoh: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type Group = {
+  id: string
+  nom: string
+  subject_id: string | null
+  level_id: number | null
+  teacher_id: string | null
+  boshlanish: string
+  tugash: string
+  kun_turi: DayType
+  oylik_narx: number
+  sigim: number
+  holat: GroupStatus
+  created_at: string
+  updated_at: string
+}
+
+export type Enrollment = {
+  id: string
+  student_id: string
+  group_id: string
+  boshlandi: string
+  tugadi: string | null
+  chegirma_summa: number
+  chegirma_oy: number
+  chegirma_sabab: string | null
+  holat: EnrollmentStatus
+  created_at: string
+  updated_at: string
+}
+
+export type Lesson = {
+  id: string
+  group_id: string
+  sana: string
+  mavzu: string | null
+  otkazildi: boolean
+  created_at: string
+}
+
+export type Attendance = {
+  id: string
+  lesson_id: string
+  student_id: string
+  holat: AttendanceStatus
+  belgiladi: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type Woblr = {
+  id: number
+  student_id: string
+  lesson_id: string | null
+  teacher_id: string | null
+  bergan_profile: string | null
+  ball: number
+  sabab: WoblrReason
+  izoh: string | null
+  created_at: string
+}
+
+export type WoblrReward = {
+  id: string
+  nom: string
+  tavsif: string | null
+  narx_ball: number
+  qolgan_soni: number
+  holat: GroupStatus
+  created_at: string
+}
+
+export type Invoice = {
+  id: string
+  enrollment_id: string
+  davr: string
+  summa: number
+  chegirma: number
+  holat: InvoiceStatus
+  created_at: string
+  updated_at: string
+}
+
+export type Payment = {
+  id: number
+  student_id: string
+  enrollment_id: string | null
+  sana: string
+  davr: string
+  summa: number
+  usul: PaymentMethod
+  tasdiqlangan: boolean
+  tasdiqladi: string | null
+  tasdiqlangan_vaqt: string | null
+  qabul_qildi: string | null
+  bekor: boolean
+  bekor_sabab: string | null
+  izoh: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type Lead = {
+  id: string
+  ism: string
+  telefon: string
+  subject_id: string | null
+  manba: LeadSource
+  holat: LeadStatus
+  izoh: string | null
+  student_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type Setting = {
+  kalit: string
+  qiymat: unknown
+  tavsif: string | null
+  ozgartirdi: string | null
+  updated_at: string
+}
+
+/* ---------- View'lar ---------- */
+
+export type StudentBalance = {
+  student_id: string
+  fish: string
+  holat: StudentStatus
+  hisoblangan: number
+  chegirma: number
+  tolangan: number
+  tasdiqlangan: number
+  qarz: number
+}
+
+export type Qarzdor = {
+  student_id: string
+  fish: string
+  qarz: number
+  ota_tel: string | null
+  ona_tel: string | null
+  shaxsiy_tel: string | null
+  guruhlar: string | null
+}
+
+export type DashboardStats = {
+  oquvchilar: number
+  guruhlar: number
+  ustozlar: number
+  qarzdorlar: number
+  jami_qarz: number
+  joriy_oy_tushumi: number
+  joriy_oy_tolovlari: number
+  chegirma: number
+  tasdiqlanmagan_soni: number
+  tasdiqlanmagan_summa: number
+}
+
+export type TeacherStats = {
+  teacher_id: string
+  ism: string
+  holat: AccountStatus
+  guruhlar: number
+  oquvchilar: number
+  tushum: number
+  qarz: number
+}
+
+export type GroupStats = {
+  group_id: string
+  nom: string
+  teacher_id: string | null
+  oylik_narx: number
+  oquvchilar: number
+  tushum: number
+  qarz: number
+}
+
+export type AttendanceMonthly = {
+  student_id: string
+  davr: string
+  group_id: string
+  darslar: number
+  kelgan: number
+  foiz: number
+}
+
+export type WoblrBalance = {
+  student_id: string
+  fish: string
+  jami_ball: number
+  sarflangan: number
+  balans: number
+  oxirgi: string | null
+}
+
+export type MonthlyIncome = {
+  davr: string
+  tushum: number
+  tolovlar: number
+  tasdiqlangan: number | null
+}
+
+export type LeaderboardRow = {
+  orin: number
+  student_id: string
+  fish: string
+  ball: number
+}
+
+/* ---------- Supabase klient uchun sxema ---------- */
+
+type Table<Row, Insert = Partial<Row>, Update = Partial<Row>> = {
+  Row: Row
+  Insert: Insert
+  Update: Update
+  Relationships: []
+}
+
+type View<Row> = { Row: Row; Relationships: [] }
+
+export type Database = {
+  public: {
+    Tables: {
+      profiles: Table<Profile>
+      subjects: Table<Subject>
+      levels: Table<Level>
+      teachers: Table<Teacher>
+      students: Table<Student>
+      groups: Table<Group>
+      enrollments: Table<Enrollment>
+      lessons: Table<Lesson>
+      attendance: Table<Attendance>
+      woblr: Table<Woblr>
+      woblr_rewards: Table<WoblrReward>
+      invoices: Table<Invoice>
+      payments: Table<Payment>
+      leads: Table<Lead>
+      settings: Table<Setting>
+    }
+    Views: {
+      v_student_balance: View<StudentBalance>
+      v_qarzdorlar: View<Qarzdor>
+      v_dashboard: View<DashboardStats>
+      v_teacher_stats: View<TeacherStats>
+      v_group_stats: View<GroupStats>
+      v_attendance_monthly: View<AttendanceMonthly>
+      v_woblr_balance: View<WoblrBalance>
+      v_monthly_income: View<MonthlyIncome>
+    }
+    Functions: {
+      woblr_leaderboard: {
+        Args: { p_group?: string | null; p_davr?: string | null }
+        Returns: LeaderboardRow[]
+      }
+      create_monthly_invoices: { Args: { p_davr?: string }; Returns: number }
+      generate_lessons: {
+        Args: { p_group: string; p_from: string; p_to: string }
+        Returns: number
+      }
+    }
+    Enums: {
+      user_role: UserRole
+      account_status: AccountStatus
+      student_status: StudentStatus
+      group_status: GroupStatus
+      day_type: DayType
+      enrollment_status: EnrollmentStatus
+      attendance_status: AttendanceStatus
+      payment_method: PaymentMethod
+      invoice_status: InvoiceStatus
+      lead_status: LeadStatus
+      lead_source: LeadSource
+      woblr_reason: WoblrReason
+      salary_type: SalaryType
+    }
+    CompositeTypes: Record<string, never>
+  }
+}

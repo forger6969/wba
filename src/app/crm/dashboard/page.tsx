@@ -1,0 +1,160 @@
+import Link from 'next/link'
+import { talabProfil, staffmi } from '@/lib/auth'
+import { createClient } from '@/lib/supabase/server'
+import { Card, CardHeader, Stat, BarRow, Empty } from '@/components/ui'
+import { IconAlert, IconSearch } from '@/components/icons'
+import { pul, davrNomi, joriyDavr, sana } from '@/lib/format'
+import type { DashboardStats, Qarzdor, TeacherStats } from '@/lib/types'
+
+export const metadata = { title: 'Boshqaruv paneli' }
+export const dynamic = 'force-dynamic'
+
+export default async function Dashboard() {
+  const profil = await talabProfil()
+  const supabase = await createClient()
+  const davr = joriyDavr()
+
+  const [{ data: stats }, { data: qarzdorlar }, { data: ustozlar }] = await Promise.all([
+    supabase.from('v_dashboard').select('*').single(),
+    supabase.from('v_qarzdorlar').select('*').limit(6),
+    supabase.from('v_teacher_stats').select('*').order('tushum', { ascending: false }),
+  ])
+
+  const s = (stats ?? null) as DashboardStats | null
+  const qList = (qarzdorlar ?? []) as Qarzdor[]
+  const uList = (ustozlar ?? []) as TeacherStats[]
+  const maxTushum = Math.max(1, ...uList.map((u) => Number(u.tushum)))
+  const jamiTushum = uList.reduce((a, u) => a + Number(u.tushum), 0)
+
+  return (
+    <div className="flex flex-col gap-4 px-6 py-5 lg:px-7">
+      <header className="flex flex-wrap items-center justify-between gap-5">
+        <div className="flex flex-col gap-1">
+          <h1 className="h-display text-[25px]">Boshqaruv paneli</h1>
+          <p className="lbl">
+            {sana(new Date())} · {davrNomi(davr)}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-10 w-64 items-center gap-2.5 rounded-[9px] border border-line bg-surface px-3 text-ink-4">
+            <IconSearch size={15} />
+            <span className="text-[13px]">Ism, ID yoki telefon…</span>
+          </div>
+          <span className="flex h-10 items-center rounded-[9px] border border-line bg-surface px-3 font-[family-name:var(--font-mono)] text-[12.5px]">
+            {davr}
+          </span>
+        </div>
+      </header>
+
+      {staffmi(profil.rol) && s && s.tasdiqlanmagan_soni > 0 && (
+        <Link
+          href="/crm/tolovlar?filtr=tasdiqlanmagan"
+          className="flex items-center gap-3.5 rounded-[11px] border border-brand bg-brand-soft px-4 py-3 transition hover:brightness-125"
+        >
+          <span className="shrink-0 text-brand">
+            <IconAlert size={19} />
+          </span>
+          <span className="flex-1 text-[13.5px]">
+            <b>{s.tasdiqlanmagan_soni} ta to‘lov tasdiqlanmagan</b>
+            <span className="text-ink-2">
+              {' '}
+              — {pul(s.tasdiqlanmagan_summa)} so‘m. Tasdiqlanmaguncha hisobotga kirmaydi.
+            </span>
+          </span>
+          <span className="shrink-0 rounded-lg bg-brand px-4 py-2 text-[13px] font-semibold">
+            Ko‘rib chiqish
+          </span>
+        </Link>
+      )}
+
+      <div className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
+        <Stat
+          label={`${davrNomi(davr)} tushumi`}
+          value={s?.joriy_oy_tushumi ?? 0}
+          sub={`${s?.joriy_oy_tolovlari ?? 0} ta to‘lov · so‘m`}
+        />
+        <Stat
+          label="Jami qarz"
+          value={s?.jami_qarz ?? 0}
+          sub={`${s?.qarzdorlar ?? 0} qarzdor · so‘m`}
+          ton="brand"
+          border="brand"
+        />
+        <Stat
+          label="Faol o‘quvchilar"
+          value={s?.oquvchilar ?? 0}
+          sub={`${s?.guruhlar ?? 0} guruh · ${s?.ustozlar ?? 0} ustoz`}
+        />
+        <Stat
+          label="Berilgan chegirma"
+          value={s?.chegirma ?? 0}
+          sub="shu oy · so‘m"
+          ton="accent"
+        />
+      </div>
+
+      <div className="grid gap-3.5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+        <Card className="flex flex-col">
+          <CardHeader title="O‘qituvchi bo‘yicha tushum" meta={`${davrNomi(davr)} · so‘m`} />
+          <div className="flex flex-col px-5 pb-4">
+            {uList.length === 0 ? (
+              <Empty>Hali to‘lov yozilmagan.</Empty>
+            ) : (
+              uList.map((u) => (
+                <BarRow
+                  key={u.teacher_id}
+                  label={u.ism}
+                  value={Number(u.tushum)}
+                  max={maxTushum}
+                />
+              ))
+            )}
+            {uList.length > 0 && (
+              <div className="mt-2.5 flex items-center justify-between border-t border-line pt-2.5">
+                <span className="text-xs text-ink-3">Jami</span>
+                <span className="tnum font-[family-name:var(--font-mono)] text-[12.5px]">
+                  {pul(jamiTushum)} so‘m
+                </span>
+              </div>
+            )}
+          </div>
+        </Card>
+
+        <Card className="flex flex-col">
+          <CardHeader
+            title="Qarzdorlar — eng kattadan"
+            action={
+              <Link href="/crm/qarzdorlar" className="text-xs text-accent hover:text-brand">
+                hammasi →
+              </Link>
+            }
+          />
+          <div className="flex flex-col px-5 pb-4">
+            {qList.length === 0 ? (
+              <Empty>Qarzdor yo‘q. Bu — yaxshi xabar.</Empty>
+            ) : (
+              qList.map((q) => (
+                <Link
+                  key={q.student_id}
+                  href={`/crm/oquvchilar/${q.student_id}`}
+                  className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-line-soft py-2.5 last:border-0 hover:bg-surface-2"
+                >
+                  <span className="flex min-w-0 flex-col gap-0.5">
+                    <span className="truncate text-[13px] font-semibold">{q.fish}</span>
+                    <span className="truncate font-[family-name:var(--font-mono)] text-[10.5px] text-ink-3">
+                      {q.guruhlar ?? '—'}
+                    </span>
+                  </span>
+                  <span className="tnum font-[family-name:var(--font-mono)] text-[12.5px] text-brand">
+                    {pul(q.qarz)}
+                  </span>
+                </Link>
+              ))
+            )}
+          </div>
+        </Card>
+      </div>
+    </div>
+  )
+}
