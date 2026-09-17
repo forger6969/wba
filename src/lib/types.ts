@@ -205,6 +205,18 @@ export type Setting = {
 
 /* ---------- View'lar ---------- */
 
+/** Yozilish kesimida: 0002_functions.sql dagi v_enrollment_balance */
+export type EnrollmentBalance = {
+  enrollment_id: string
+  student_id: string
+  group_id: string
+  hisoblangan: number
+  chegirma: number
+  tolangan: number
+  tasdiqlangan: number
+  qarz: number
+}
+
 export type StudentBalance = {
   student_id: string
   fish: string
@@ -291,6 +303,27 @@ export type LeaderboardRow = {
   ball: number
 }
 
+/** 0007_davomat.sql · bugun darsi bor guruhlar */
+export type BugungiDars = {
+  group_id: string
+  nom: string
+  teacher_id: string | null
+  boshlanish: string
+  tugash: string
+  kun_turi: DayType
+  sana: string
+  lesson_id: string | null
+  belgilangan: boolean
+  oquvchilar: number
+}
+
+/** davomat_saqla() qaytaradigan natija */
+export type DavomatNatija = {
+  dars_id: string
+  davomat: number
+  ball: number
+}
+
 /* ---------- Supabase klient uchun sxema ---------- */
 
 type Table<Row, Insert = Partial<Row>, Update = Partial<Row>> = {
@@ -322,6 +355,7 @@ export type Database = {
       settings: Table<Setting>
     }
     Views: {
+      v_enrollment_balance: View<EnrollmentBalance>
       v_student_balance: View<StudentBalance>
       v_qarzdorlar: View<Qarzdor>
       v_dashboard: View<DashboardStats>
@@ -330,6 +364,7 @@ export type Database = {
       v_attendance_monthly: View<AttendanceMonthly>
       v_woblr_balance: View<WoblrBalance>
       v_monthly_income: View<MonthlyIncome>
+      v_bugungi_darslar: View<BugungiDars>
     }
     Functions: {
       woblr_leaderboard: {
@@ -341,6 +376,17 @@ export type Database = {
         Args: { p_group: string; p_from: string; p_to: string }
         Returns: number
       }
+      davomat_saqla: {
+        Args: {
+          p_group: string
+          p_sana: string
+          p_belgilar: Record<string, AttendanceStatus>
+          p_ballar?: Record<string, number>
+          p_mavzu?: string | null
+        }
+        Returns: DavomatNatija
+      }
+      dars_kunimi: { Args: { p_kun: DayType; p_sana: string }; Returns: boolean }
     }
     Enums: {
       user_role: UserRole

@@ -104,6 +104,15 @@ export function jadval(
   return `${vaqt(boshlanish)}–${vaqt(tugash)}, ${kun}`
 }
 
+/**
+ * Bugun — Toshkent vaqti bilan, "YYYY-MM-DD".
+ * Server qayerda turishidan qat'i nazar, markazning kuni hisoblanadi:
+ * UTC bilan yurilsa kechqurungi dars "ertangi" bo'lib qolardi.
+ */
+export function bugunToshkent(d: Date = new Date()): string {
+  return d.toLocaleDateString('en-CA', { timeZone: 'Asia/Tashkent' })
+}
+
 /** Shanba ikkala turga kiradi: juft guruh ham, dam olish guruhi ham o'qiydi. */
 export const KUN_NOMI: Record<DayType, string> = {
   toq: 'toq kun',

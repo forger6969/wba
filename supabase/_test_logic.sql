@@ -284,6 +284,67 @@ begin
   end;
 end $$;
 
+-- ============================================================
+--  8. DAVOMAT EKRANI — bitta amalda saqlash
+-- ============================================================
+
+set request.jwt.claim.sub = '66666666-6666-6666-6666-666666666666';
+
+\echo '--- davomat_saqla: dars ochiladi, belgi va ball birga yoziladi ---'
+select davomat_saqla(
+  'N03', current_date,
+  jsonb_build_object('S004', 'keldi'),
+  jsonb_build_object('S004', 2)
+) as natija;
+
+\echo '--- qayta saqlash: belgi yangilanadi, BALL IKKILANMAYDI ---'
+select davomat_saqla(
+  'N03', current_date,
+  jsonb_build_object('S004', 'kechikdi'),
+  jsonb_build_object('S004', 3)
+) as natija;
+
+select a.holat as davomat, (select sum(ball) from woblr w where w.lesson_id = a.lesson_id) as ball
+from attendance a
+join lessons l on l.id = a.lesson_id
+where l.group_id = 'N03' and l.sana = current_date and a.student_id = 'S004';
+
+\echo '--- ball 0 qilinsa yozuv o''chadi ---'
+select davomat_saqla('N03', current_date, jsonb_build_object('S004', 'keldi'), jsonb_build_object('S004', 0));
+select count(*) as ball_yozuvlari from woblr w
+join lessons l on l.id = w.lesson_id
+where l.group_id = 'N03' and l.sana = current_date;
+
+\echo '--- begona guruhga saqlashga urinish XATO berishi kerak ---'
+set request.jwt.claim.sub = '33333333-3333-3333-3333-333333333333';
+do $$
+begin
+  perform davomat_saqla('N03', current_date, jsonb_build_object('S004', 'keldi'));
+  raise exception 'XATO: begona guruhga davomat saqlandi!';
+exception
+  when others then
+    if sqlerrm like '%huquqingiz yo%' then
+      raise notice 'OK: begona guruhga saqlashga ruxsat berilmadi';
+    else
+      raise;
+    end if;
+end $$;
+
+\echo '--- kelasi kunga davomat qo''yib bo''lmasligi kerak ---'
+set request.jwt.claim.sub = '66666666-6666-6666-6666-666666666666';
+do $$
+begin
+  perform davomat_saqla('N03', current_date + 1, jsonb_build_object('S004', 'keldi'));
+  raise exception 'XATO: kelasi kunga davomat yozildi!';
+exception
+  when others then
+    if sqlerrm like '%Kelasi kunga%' then
+      raise notice 'OK: kelasi kun to''sildi';
+    else
+      raise;
+    end if;
+end $$;
+
 reset role;
 \echo ''
 \echo '=== TEST TUGADI ==='
