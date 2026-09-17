@@ -374,5 +374,92 @@ begin
   raise notice 'OK: rolni faqat server bera oladi';
 end $$;
 
+-- ============================================================
+--  10. BOSHQARUV AMALLARI (0010)
+-- ============================================================
+
+set role authenticated;
+set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';   -- admin
+
+\echo '--- keyingi_id: S004 dan keyin S005 bo''lishi kerak ---'
+select keyingi_id('students', 'S') as keyingi;
+
+\echo '--- oquvchi_qosh: 1-avgustdan, 50 000 DOIMIY chegirma bilan ---'
+select oquvchi_qosh(jsonb_build_object(
+  'fish', 'Yangi O''quvchi', 'shaxsiy_tel', '+998901234567',
+  'group_id', 'N01', 'boshlandi', '2026-08-01',
+  'chegirma_summa', 50000, 'chegirma_oy', ''
+)) as yangi_id;
+
+\echo '--- o''tgan oylar ham hisoblangan bo''lishi kerak (avgust + sentabr, har biri 600 000) ---'
+select i.davr, i.summa, i.chegirma
+from invoices i join enrollments e on e.id = i.enrollment_id
+where e.student_id = 'S005' order by i.davr;
+
+\echo '--- ikkinchi marta shu guruhga biriktirish XATO berishi kerak ---'
+do $$
+begin
+  perform guruhga_biriktir('S005', 'N01', '2026-09-01');
+  raise exception 'XATO: o''quvchi bir guruhga ikki marta biriktirildi!';
+exception when others then
+  if sqlerrm like '%allaqachon o''qiyapti%' then
+    raise notice 'OK: takroriy biriktirish to''sildi';
+  else raise; end if;
+end $$;
+
+\echo '--- guruhdan chiqarish: holat tugagan, keyingi oylar hisobdan olinadi ---'
+select guruhdan_chiqar(
+  (select id from enrollments where student_id = 'S005' and group_id = 'N01'),
+  '2026-08-20'
+);
+select e.holat, e.tugadi, (select count(*) from invoices i where i.enrollment_id = e.id) as hisoblar
+from enrollments e where e.student_id = 'S005';
+
+\echo '--- probniy: guruhsiz "doimiy" qilib bo''lmaydi ---'
+insert into leads (id, ism, telefon, holat) values
+  ('aaaaaaaa-0000-0000-0000-000000000001', 'Guruhsiz Bola', '+998900000001', 'yangi'),
+  ('aaaaaaaa-0000-0000-0000-000000000002', 'Probniy Bola',  '+998900000002', 'yangi');
+update leads set group_id = 'N02', sinov_sana = '2026-09-15'
+ where id = 'aaaaaaaa-0000-0000-0000-000000000002';
+
+do $$
+begin
+  perform probniy_doimiy('aaaaaaaa-0000-0000-0000-000000000001');
+  raise exception 'XATO: guruhsiz probniy o''quvchi qilindi!';
+exception when others then
+  if sqlerrm like '%Guruh tanlanmagan%' then
+    raise notice 'OK: guruhsiz probniy o''tkazilmadi';
+  else raise; end if;
+end $$;
+
+\echo '--- probniy -> doimiy: o''quvchi + qatnashuv + holat yozildi ---'
+select probniy_doimiy('aaaaaaaa-0000-0000-0000-000000000002') as oquvchi_id;
+select l.holat, l.student_id, s.fish, s.shaxsiy_tel, e.group_id
+from leads l
+join students s on s.id = l.student_id
+join enrollments e on e.student_id = s.id
+where l.id = 'aaaaaaaa-0000-0000-0000-000000000002';
+
+\echo '--- tushum_hisobot: sentabr ---'
+select r ->> 'tushum' as tushum, r ->> 'soni' as tolovlar,
+       r -> 'davomat' as davomat, r -> 'darslar' as darslar, r -> 'probniy' as probniy
+from (select tushum_hisobot('2026-09-01', '2026-09-30') as r) x;
+
+\echo '--- ustoz o''quvchi qo''sha olmasligi kerak ---'
+set request.jwt.claim.sub = '33333333-3333-3333-3333-333333333333';
+do $$
+begin
+  perform oquvchi_qosh(jsonb_build_object('fish', 'Begona'));
+  raise exception 'XATO: ustoz o''quvchi qo''shdi!';
+exception when others then
+  if sqlerrm like '%huquqingiz yo%' then
+    raise notice 'OK: ustozga o''quvchi qo''shish yopiq';
+  else raise; end if;
+end $$;
+
+\echo '--- ustoz hisobotda pulni ko''rmasligi kerak (tushum 0) ---'
+select tushum_hisobot('2026-09-01', '2026-09-30') ->> 'tushum' as ustoz_korgan_tushum;
+
+reset role;
 \echo ''
 \echo '=== TEST TUGADI ==='
