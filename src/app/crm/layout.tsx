@@ -18,17 +18,17 @@ type NavItem = {
 }
 
 const NAV: NavItem[] = [
-  { href: '/crm/dashboard',   nom: 'Dashboard',   Icon: IconDashboard,  rollar: ['admin', 'qabulxona', 'ustoz', 'oquvchi'] },
-  { href: '/crm/oquvchilar',  nom: 'O‘quvchilar', Icon: IconStudents,   rollar: ['admin', 'qabulxona', 'ustoz'] },
-  { href: '/crm/guruhlar',    nom: 'Guruhlar',    Icon: IconGroups,     rollar: ['admin', 'qabulxona', 'ustoz'] },
-  { href: '/crm/ustozlar',    nom: 'Ustozlar',    Icon: IconTeacher,    rollar: ['admin'] },
-  { href: '/crm/davomat',     nom: 'Davomat',     Icon: IconAttendance, rollar: ['admin', 'ustoz'] },
-  { href: '/crm/woblr',       nom: 'WOBLR',       Icon: IconWoblr,      rollar: ['admin', 'qabulxona', 'ustoz', 'oquvchi'] },
-  { href: '/crm/tolovlar',    nom: 'To‘lovlar',   Icon: IconPayments,   rollar: ['admin', 'qabulxona'] },
-  { href: '/crm/qarzdorlar',  nom: 'Qarzdorlar',  Icon: IconDebt,       rollar: ['admin', 'qabulxona'] },
-  { href: '/crm/lidlar',      nom: 'Lidlar',      Icon: IconLeads,      rollar: ['admin', 'qabulxona'] },
-  { href: '/crm/hisobotlar',  nom: 'Hisobotlar',  Icon: IconReports,    rollar: ['admin', 'qabulxona'] },
-  { href: '/crm/sozlamalar',  nom: 'Sozlamalar',  Icon: IconSettings,   rollar: ['admin'] },
+  { href: '/crm/dashboard',   nom: 'Dashboard',   Icon: IconDashboard,  rollar: ['admin', 'direktor', 'qabulxona', 'ustoz', 'oquvchi'] },
+  { href: '/crm/oquvchilar',  nom: 'O‘quvchilar', Icon: IconStudents,   rollar: ['admin', 'direktor', 'qabulxona', 'ustoz'] },
+  { href: '/crm/guruhlar',    nom: 'Guruhlar',    Icon: IconGroups,     rollar: ['admin', 'direktor', 'qabulxona', 'ustoz'] },
+  { href: '/crm/ustozlar',    nom: 'Ustozlar',    Icon: IconTeacher,    rollar: ['admin', 'direktor'] },
+  { href: '/crm/davomat',     nom: 'Davomat',     Icon: IconAttendance, rollar: ['admin', 'direktor', 'ustoz'] },
+  { href: '/crm/woblr',       nom: 'WOBLR',       Icon: IconWoblr,      rollar: ['admin', 'direktor', 'qabulxona', 'ustoz', 'oquvchi'] },
+  { href: '/crm/tolovlar',    nom: 'To‘lovlar',   Icon: IconPayments,   rollar: ['admin', 'direktor', 'qabulxona'] },
+  { href: '/crm/qarzdorlar',  nom: 'Qarzdorlar',  Icon: IconDebt,       rollar: ['admin', 'direktor', 'qabulxona'] },
+  { href: '/crm/lidlar',      nom: 'Lidlar',      Icon: IconLeads,      rollar: ['admin', 'direktor', 'qabulxona'] },
+  { href: '/crm/hisobotlar',  nom: 'Hisobotlar',  Icon: IconReports,    rollar: ['admin', 'direktor', 'qabulxona'] },
+  { href: '/crm/sozlamalar',  nom: 'Sozlamalar',  Icon: IconSettings,   rollar: ['admin', 'direktor'] },
 ]
 
 async function chiqish() {

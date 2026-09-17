@@ -182,5 +182,108 @@ with u as (update students set fish = 'BUZILDI' where id = 'S002' returning 1)
 select count(*) as ozgargan from u;
 
 reset role;
+
+-- ============================================================
+--  7. DIREKTOR · ikki bosqichli chegirma · dam olish guruhi
+-- ============================================================
+
+insert into auth.users (id, email) values
+  ('66666666-6666-6666-6666-666666666666', 'farrux@wba.uz');
+update profiles set rol = 'direktor', ism = 'Farrux'
+  where id = '66666666-6666-6666-6666-666666666666';
+
+-- Farrux direktor ham, ustoz ham — bitta odam, ikki rol
+insert into teachers (id, profile_id, ism) values
+  ('U03', '66666666-6666-6666-6666-666666666666', 'Farrux');
+
+insert into groups (id, nom, subject_id, teacher_id, boshlanish, tugash, kun_turi, oylik_narx) values
+  ('N03', 'Matematika', 'matematika', 'U03', '10:00', '11:30', 'dam_olish', 650000);
+
+insert into students (id, fish, qoshilgan_sana) values
+  ('S004', 'Boymuradov Abubakir', '2026-09-01');
+
+-- Direktor qoidasi: 400 000 to'lagan -> 1 oy 250 000 chegirma,
+-- keyin 50 000 DOIMIY (necha oy ko'rsatilmagan)
+insert into enrollments
+  (student_id, group_id, boshlandi, chegirma_summa, chegirma_oy,
+   chegirma2_summa, chegirma2_oy, chegirma_sabab)
+values
+  ('S004', 'N03', '2026-09-01', 250000, 1, 50000, null, '400 000 to''lagan');
+
+select create_monthly_invoices('2026-09');
+select create_monthly_invoices('2026-10');
+select create_monthly_invoices('2026-11');
+
+\echo '--- S004: sentabr 400 000, keyingi oylar 600 000 (2-bosqich doimiy) ---'
+select i.davr, i.summa, i.chegirma
+from invoices i join enrollments e on e.id = i.enrollment_id
+where e.student_id = 'S004' order by i.davr;
+
+\echo '--- dam olish guruhi: faqat shanba va yakshanba (4 ta dars) ---'
+select generate_lessons('N03', '2026-09-01', '2026-09-14') as darslar;
+select to_char(sana, 'Dy DD.MM') as kun from lessons where group_id = 'N03' order by sana;
+
+-- ── Tasdiq: imzo faqat direktorda ──
+set role authenticated;
+
+set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
+\echo '--- ADMIN tasdiqlay olmasligi KERAK ---'
+do $$
+begin
+  update payments set tasdiqlangan = true where student_id = 'S001';
+  raise exception 'XATO: admin tasdiqladi — trigger ishlamadi!';
+exception
+  when others then
+    if sqlerrm like '%faqat direktor%' then
+      raise notice 'OK: admin tasdiqlay olmadi';
+    else
+      raise;
+    end if;
+end $$;
+
+set request.jwt.claim.sub = '66666666-6666-6666-6666-666666666666';
+\echo '--- DIREKTOR tasdiqlaydi (1 qator) ---'
+with u as (update payments set tasdiqlangan = true where student_id = 'S001' returning 1)
+select count(*) as tasdiqlandi from u;
+
+\echo '--- imzo va vaqt o''z-o''zidan yozilgan bo''lishi kerak ---'
+select tasdiqlangan,
+       tasdiqladi is not null        as imzo_bor,
+       tasdiqlangan_vaqt is not null as vaqt_bor
+from payments where student_id = 'S001';
+
+\echo '--- direktor ustoz sifatida o''z darsiga davomat qo''ya oladi ---'
+with d as (
+  insert into attendance (lesson_id, student_id, holat, belgiladi)
+  select l.id, 'S004', 'keldi', '66666666-6666-6666-6666-666666666666'
+  from lessons l where l.group_id = 'N03' order by l.sana limit 1
+  returning 1
+)
+select count(*) as belgilandi from d;
+
+\echo '--- ustoz Diana boshqa guruhning darsiga TEGA OLMASLIGI kerak ---'
+-- Ikki qatlam himoya: darsni ham ko'rmaydi (SELECT hech narsa qaytarmaydi),
+-- ko'rgan taqdirda ham INSERT siyosati o'tkazmaydi.
+set request.jwt.claim.sub = '33333333-3333-3333-3333-333333333333';
+do $$
+declare v_soni int;
+begin
+  begin
+    insert into attendance (lesson_id, student_id, holat, belgiladi)
+    select l.id, 'S004', 'keldi', '33333333-3333-3333-3333-333333333333'
+    from lessons l where l.group_id = 'N03' order by l.sana limit 1;
+    get diagnostics v_soni = row_count;
+    if v_soni = 0 then
+      raise notice 'OK: begona guruhning darsi ko''rinmadi, hech narsa yozilmadi';
+    else
+      raise exception 'XATO: begona guruhga % qator davomat yozildi!', v_soni;
+    end if;
+  exception
+    when insufficient_privilege or check_violation then
+      raise notice 'OK: RLS begona guruhga yozishga ruxsat bermadi';
+  end;
+end $$;
+
+reset role;
 \echo ''
 \echo '=== TEST TUGADI ==='

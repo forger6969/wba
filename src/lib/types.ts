@@ -6,11 +6,11 @@
  * Hozircha 0001–0004 migratsiyalariga qo'lda mos yozilgan.
  */
 
-export type UserRole = 'admin' | 'qabulxona' | 'ustoz' | 'oquvchi'
+export type UserRole = 'admin' | 'direktor' | 'qabulxona' | 'ustoz' | 'oquvchi'
 export type AccountStatus = 'faol' | 'bloklangan'
 export type StudentStatus = 'faol' | 'tanaffus' | 'ketgan'
 export type GroupStatus = 'faol' | 'yopilgan'
-export type DayType = 'toq' | 'juft' | 'har_kuni'
+export type DayType = 'toq' | 'juft' | 'dam_olish' | 'har_kuni'
 export type EnrollmentStatus = 'faol' | 'tanaffus' | 'tugagan'
 export type AttendanceStatus = 'keldi' | 'kechikdi' | 'sababli' | 'kelmadi'
 export type PaymentMethod = 'naqd' | 'karta' | 'click' | 'payme'
@@ -19,6 +19,7 @@ export type LeadStatus = 'yangi' | 'qongiroq' | 'keldi' | 'yozildi' | 'rad'
 export type LeadSource = 'sayt' | 'telegram' | 'instagram' | 'tavsiya' | 'boshqa'
 export type WoblrReason = 'faollik' | 'uy_vazifasi' | 'yordam' | 'qoida' | 'boshqa'
 export type SalaryType = 'foiz' | 'oquvchi_soni' | 'fiks'
+export type PaymentSource = 'crm' | 'sheets' | 'telegram'
 
 export type Profile = {
   id: string
@@ -98,7 +99,10 @@ export type Enrollment = {
   boshlandi: string
   tugadi: string | null
   chegirma_summa: number
-  chegirma_oy: number
+  /** 0 — chegirma yo'q, N — N oy, null — muddatsiz */
+  chegirma_oy: number | null
+  chegirma2_summa: number
+  chegirma2_oy: number | null
   chegirma_sabab: string | null
   holat: EnrollmentStatus
   created_at: string
@@ -164,7 +168,9 @@ export type Payment = {
   sana: string
   davr: string
   summa: number
-  usul: PaymentMethod
+  /** Ko'chirilgan to'lovda usul bo'lmasligi mumkin — manbada yozilmagan */
+  usul: PaymentMethod | null
+  manba: PaymentSource
   tasdiqlangan: boolean
   tasdiqladi: string | null
   tasdiqlangan_vaqt: string | null

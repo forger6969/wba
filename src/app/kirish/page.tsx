@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { supabaseSozlanganmi, SUPABASE_YOQ } from '@/lib/supabase/env'
 import { Logo } from '@/components/ui'
 
 export const metadata = { title: 'Tizimga kirish' }
@@ -10,6 +11,7 @@ const XATOLAR: Record<string, string> = {
   bosh: 'Email va parolni kiriting.',
   bloklangan: 'Hisobingiz vaqtincha to‘xtatilgan. Admin bilan bog‘laning.',
   huquq: 'Bu bo‘limga kirish huquqingiz yo‘q.',
+  ulanmagan: SUPABASE_YOQ,
 }
 
 async function kirish(formData: FormData) {
@@ -20,6 +22,7 @@ async function kirish(formData: FormData) {
   const keyin = String(formData.get('keyin') ?? '') || '/crm/dashboard'
 
   if (!email || !parol) redirect('/kirish?xato=bosh')
+  if (!supabaseSozlanganmi()) redirect('/kirish?xato=ulanmagan')
 
   const supabase = await createClient()
   const { error } = await supabase.auth.signInWithPassword({ email, password: parol })
@@ -34,6 +37,7 @@ export default async function Kirish({
   searchParams: Promise<{ xato?: string; keyin?: string }>
 }) {
   const { xato, keyin } = await searchParams
+  const ulangan = supabaseSozlanganmi()
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center px-5 py-10">
@@ -57,7 +61,13 @@ export default async function Kirish({
           </p>
         )}
 
-        <form action={kirish} className="flex flex-col gap-3.5">
+        {!ulangan && (
+          <p className="rounded-[10px] border border-dashed border-line px-4 py-3.5 text-[12.5px] leading-relaxed text-ink-2">
+            {SUPABASE_YOQ} Kalitlar qo‘yilmaguncha tizimga kirib bo‘lmaydi.
+          </p>
+        )}
+
+        <form action={kirish} className="flex flex-col gap-3.5" aria-disabled={!ulangan}>
           <input type="hidden" name="keyin" value={keyin ?? ''} />
 
           <label className="flex flex-col gap-1.5">
@@ -85,7 +95,8 @@ export default async function Kirish({
 
           <button
             type="submit"
-            className="mt-1 min-h-12 rounded-[9px] bg-brand text-[14.5px] font-bold transition hover:brightness-110"
+            disabled={!ulangan}
+            className="mt-1 min-h-12 rounded-[9px] bg-brand text-[14.5px] font-bold transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Kirish
           </button>

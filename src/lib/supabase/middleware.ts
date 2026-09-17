@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { supabaseSozlanganmi } from './env'
 
 /**
  * CRM butunlay /crm ostida turadi.
@@ -10,6 +11,11 @@ const CRM_PREFIX = '/crm'
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request })
+
+  /* Kalitlar hali qo'yilmagan — sessiyaga tegmaymiz. Aks holda
+     bu yerdagi xato butun saytni yiqitadi. Sahifalarning o'zi
+     "Supabase ulanmagan" holatini ko'rsatadi. */
+  if (!supabaseSozlanganmi()) return response
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
