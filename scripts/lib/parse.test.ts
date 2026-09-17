@@ -2,7 +2,8 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   pulga, telefonga, sanaga, davrga, usulga, bosqichNormal,
-  yonalishAniqla, guruhParse, guruhlarniAjrat, ismVaId, axlatmi,
+  yonalishAniqla, ismVaId, axlatmi, kunTuriga, vaqtAjrat, kalitAjrat,
+  oyRaqami, davrdan, oylarSoni, chegirmaOyda, narxTarixi, narxOyda, CHEKSIZ,
 } from './parse'
 
 test('pulga — Sheets formatlari', () => {
@@ -61,38 +62,83 @@ test('yonalishAniqla', () => {
   assert.equal(yonalishAniqla('Nomalum fan'), null)
 })
 
-test('guruhParse — haqiqiy qatorlar', () => {
-  const g = guruhParse('Beginner · Diana · 08:30-10:00, Toq kun')
-  assert.equal(g?.nom, 'Beginner')
-  assert.equal(g?.ustoz, 'Diana')
-  assert.equal(g?.boshlanish, '08:30')
-  assert.equal(g?.tugash, '10:00')
-  assert.equal(g?.kunTuri, 'toq')
-  assert.equal(g?.yonalish, 'ingliz-tili')
-
-  const j = guruhParse('IELTS · Komila Bozorova · 16:30-18:00, Juft kun')
-  assert.equal(j?.kunTuri, 'juft')
-  assert.equal(j?.ustoz, 'Komila Bozorova')
-
-  const q = guruhParse('Matematika · Jamshid Abdialimov · 18:30-20:00, Juft kun')
-  assert.equal(q?.yonalish, 'matematika')
-
-  // Vaqti yo'q
-  const v = guruhParse('Arab tili · Abu Tolib aka')
-  assert.equal(v?.boshlanish, null)
-  assert.equal(v?.nom, 'Arab tili')
+test('kunTuriga — shanba ikki turga kiradi, shuning uchun uchta tur bor', () => {
+  assert.equal(kunTuriga('Toq kun'), 'toq')
+  assert.equal(kunTuriga('Juft kun'), 'juft')
+  assert.equal(kunTuriga('Dam olish'), 'dam_olish')
+  assert.equal(kunTuriga(''), null)
+  assert.equal(kunTuriga('nomalum'), null)
 })
 
-test('guruhlarniAjrat — bitta katakda ikkita guruh', () => {
-  const r = guruhlarniAjrat(
-    'Elementary · Madina Berdiyeva · 19:30-21:00, Toq kun + Matematika · Jamshid Abdialimov · 18:30-20:00, Juft kun',
-  )
-  assert.equal(r.length, 2)
-  assert.ok(r[0].startsWith('Elementary'))
-  assert.ok(r[1].startsWith('Matematika'))
+test('vaqtAjrat', () => {
+  assert.deepEqual(vaqtAjrat('08:30-10:00'), { boshlanish: '08:30', tugash: '10:00' })
+  assert.deepEqual(vaqtAjrat('8:30 – 10:00'), { boshlanish: '08:30', tugash: '10:00' })
+  assert.deepEqual(vaqtAjrat('18:30/20:00'), { boshlanish: '18:30', tugash: '20:00' })
+  assert.equal(vaqtAjrat(''), null)
+})
 
-  assert.deepEqual(guruhlarniAjrat(''), [])
-  assert.equal(guruhlarniAjrat('Beginner · Diana · 08:30-10:00, Toq kun').length, 1)
+test('kalitAjrat — guruh nomining ichida ham "·" bor', () => {
+  assert.deepEqual(kalitAjrat("Muslima G'ayratova (S001) · Elementary · Diyora · 18:30-20:00"), {
+    fish: "Muslima G'ayratova",
+    id: 'S001',
+    guruh: 'Elementary · Diyora · 18:30-20:00',
+  })
+  assert.deepEqual(kalitAjrat('Dilbek (S077)'), { fish: 'Dilbek', id: 'S077', guruh: null })
+  assert.deepEqual(kalitAjrat(''), { fish: '', id: null, guruh: null })
+})
+
+test('oyRaqami va davrdan — bir-birining teskarisi', () => {
+  assert.equal(oyRaqami('2026-09'), 2026 * 12 + 9)
+  assert.equal(oyRaqami('15.09.2026'), 2026 * 12 + 9)
+  assert.equal(oyRaqami('axlat'), 0)
+  assert.equal(davrdan(2026 * 12 + 9), '2026-09')
+  assert.equal(davrdan(2026 * 12 + 12), '2026-12')
+  assert.equal(davrdan(2027 * 12 + 1), '2027-01')
+})
+
+test('oylarSoni — DATEDIF "M" + 1 (to‘liq oylar)', () => {
+  const bugun = new Date('2026-09-17T00:00:00Z')
+  assert.equal(oylarSoni('2026-09-01', null, bugun), 1)
+  assert.equal(oylarSoni('2026-07-01', null, bugun), 3)
+  // 20-avgustdan 17-sentabrgacha hali to'liq oy emas
+  assert.equal(oylarSoni('2026-08-20', null, bugun), 1)
+  assert.equal(oylarSoni('2026-09-01', '2026-11-01', bugun), 3)
+  assert.equal(oylarSoni('', null, bugun), 0)
+})
+
+test('chegirmaOyda — ikki bosqich, bo‘sh "necha oy" muddatsiz degani', () => {
+  const bir = { summa: 100000, oylar: 1 }
+  const ikki = { summa: 50000, oylar: 2 }
+  assert.equal(chegirmaOyda(1, bir, ikki), 100000)
+  assert.equal(chegirmaOyda(2, bir, ikki), 50000)
+  assert.equal(chegirmaOyda(3, bir, ikki), 50000)
+  assert.equal(chegirmaOyda(4, bir, ikki), 0)
+
+  // Direktor qoidasi: 600 to'lagan -> 50 000 DOIMIY
+  const doimiy = { summa: 50000, oylar: null }
+  const yoq = { summa: 0, oylar: null }
+  assert.equal(chegirmaOyda(1, doimiy, yoq), 50000)
+  assert.equal(chegirmaOyda(99, doimiy, yoq), 50000)
+  assert.equal(chegirmaOyda(1, yoq, yoq), 0)
+})
+
+test('narxTarixi va narxOyda — o‘tgan oylar narx ko‘tarilganda o‘zgarmaydi', () => {
+  const tarix = narxTarixi([
+    { guruh: 'Elementary · Komila', narx: 650000, oydan: '2026-01' },
+    { guruh: 'Elementary · Komila', narx: 750000, oydan: '2027-01' },
+  ])
+  const el = tarix.get('Elementary · Komila')!
+  assert.equal(el.length, 2)
+  // Birinchi qator orqaga cheksiz amal qiladi
+  assert.equal(el[0].dan, 0)
+  assert.equal(el[1].gacha, CHEKSIZ)
+
+  assert.equal(narxOyda(el, oyRaqami('2025-05'), 0), 650000)
+  assert.equal(narxOyda(el, oyRaqami('2026-09'), 0), 650000)
+  assert.equal(narxOyda(el, oyRaqami('2027-03'), 0), 750000)
+
+  // Tarixi yo'q guruh — guruhning joriy narxi
+  assert.equal(narxOyda(tarix.get('Yo‘q guruh'), oyRaqami('2026-09'), 650000), 650000)
 })
 
 test('ismVaId', () => {

@@ -1,131 +1,79 @@
 /**
- * Faza 0 — Google Sheets → Postgres ko'chirish.
+ * Faza 0 — Students_wba (Google Sheets) → Postgres.
  *
- *   npm run migrate -- --dry-run     faqat ko'rsatadi, hech narsa yozmaydi
- *   npm run migrate                  bazaga yozadi
+ *   npm run migrate:dry      faqat ko'rsatadi va solishtiradi, yozmaydi
+ *   npm run migrate          bazaga yozadi
+ *   npm run migrate -- --davomat    davomat jurnallarini ham ko'chiradi
  *
- * Qoidalar:
- *   · Varaqlar NOMI bo'yicha emas, SARLAVHASI bo'yicha topiladi — nomi
- *     o'zgarsa ham ishlayveradi.
- *   · Narx guruhga yoziladi. Odam 550 000 to'lagani — chegirma, boshqa narx emas.
- *   · Axlat qatorlar (namuna, "Dars Soati: 19:30-21:00" kabi) tashlanadi.
- *   · Skript qayta ishga tushirilsa dublikat yaratmaydi (upsert).
+ * Jadval allaqachon normalizatsiya qilingan, shuning uchun bu skript
+ * taxmin qilmaydi: varaq nomi bo'yicha olinadi, ustun sarlavhasi
+ * bo'yicha o'qiladi. Ikkita joyda hisob bor va ikkalasi ham Sheets
+ * formulasini AYNAN takrorlaydi:
+ *
+ *   · hisob-faktura  — Qatnashuvda `invoices` ga mos varaq yo'q. Har oy
+ *     uchun summa = o'sha oydagi narx (Narxlar tarixi) − o'sha oyda
+ *     amal qiladigan chegirma bosqichi (U_Qatnashuv.js:100-133).
+ *   · qarz           — Σ hisob-faktura − Σ to'lov.
+ *
+ * Shuning uchun --dry-run oxirida SOLISHTIRUV chiqadi: hisoblangan
+ * summa Qatnashuvning "To'lashi kerak" / "To'langan" / "Qarz"
+ * ustunlariga mos kelmasa, ko'chirishni boshlamaslik kerak.
  */
 
 import { config } from 'dotenv'
-import { google } from 'googleapis'
 import { createClient } from '@supabase/supabase-js'
 import {
-  pulga, telefonga, sanaga, davrga, usulga, bosqichNormal,
-  guruhParse, guruhlarniAjrat, ismVaId, axlatmi,
-  type GuruhTavsifi,
+  kitobniOqi, varaq, varaqBormi, matn, qiymat, belgi,
+  type Qator,
+} from './lib/sheets'
+import {
+  pulga, telefonga, sanaga, davrga, usulga, bosqichNormal, yonalishAniqla,
+  axlatmi, kunTuriga, vaqtAjrat, kalitAjrat, oyRaqami, davrdan, oylarSoni,
+  chegirmaOyda, narxTarixi, narxOyda,
+  type KunTuri, type NarxQator,
 } from './lib/parse'
+import { jurnallarniOqi, type Dars, type Davomat, type JurnalNatija } from './lib/jurnal'
 
 config({ path: '.env.local' })
 
 const DRY = process.argv.includes('--dry-run')
+const DAVOMAT = process.argv.includes('--davomat')
 const SHEETS_ID = process.env.SHEETS_ID
-const STANDART_NARX = 650_000
-
-type Qator = Record<string, unknown>
-type Varaq = { nom: string; sarlavha: string[]; qatorlar: Qator[] }
 
 /* ------------------------------------------------------------------ */
-/*  1. Sheets'dan o'qish                                               */
+/*  Ogohlantirishlar                                                    */
 /* ------------------------------------------------------------------ */
 
-async function varaqlarniOqi(): Promise<Varaq[]> {
-  if (!SHEETS_ID) throw new Error('SHEETS_ID topilmadi (.env.local)')
-
-  const auth = new google.auth.GoogleAuth({
-    scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-  })
-  const sheets = google.sheets({ version: 'v4', auth: await auth.getClient() as never })
-
-  const meta = await sheets.spreadsheets.get({ spreadsheetId: SHEETS_ID })
-  const nomlar = (meta.data.sheets ?? [])
-    .map((s) => s.properties?.title)
-    .filter((t): t is string => Boolean(t))
-
-  const javob = await sheets.spreadsheets.values.batchGet({
-    spreadsheetId: SHEETS_ID,
-    ranges: nomlar.map((n) => `'${n}'!A1:AZ2000`),
-    valueRenderOption: 'UNFORMATTED_VALUE',
-  })
-
-  const natija: Varaq[] = []
-
-  ;(javob.data.valueRanges ?? []).forEach((vr, i) => {
-    const qatorlar = (vr.values ?? []) as unknown[][]
-    if (qatorlar.length < 2) return
-
-    // Sarlavha — eng ko'p to'ldirilgan katakli dastlabki 15 qatordan biri
-    let sIdx = 0
-    let eng = 0
-    for (let r = 0; r < Math.min(15, qatorlar.length); r++) {
-      const soni = qatorlar[r].filter((c) => String(c ?? '').trim()).length
-      if (soni > eng) {
-        eng = soni
-        sIdx = r
-      }
-    }
-
-    const sarlavha = qatorlar[sIdx].map((c) => String(c ?? '').trim())
-    const satrlar: Qator[] = []
-
-    for (let r = sIdx + 1; r < qatorlar.length; r++) {
-      const q: Qator = {}
-      let bor = false
-      sarlavha.forEach((k, c) => {
-        if (!k) return
-        const v = qatorlar[r][c]
-        q[k] = v ?? ''
-        if (String(v ?? '').trim()) bor = true
-      })
-      if (bor) satrlar.push(q)
-    }
-
-    natija.push({ nom: nomlar[i], sarlavha, qatorlar: satrlar })
-  })
-
-  return natija
-}
-
-/** Sarlavhada shu ustunlar borligi bo'yicha varaqni topadi */
-function varaqTop(varaqlar: Varaq[], ...kerak: string[]): Varaq | null {
-  const past = (s: string) => s.toLowerCase().replace(/[^a-z']/g, '')
-  for (const v of varaqlar) {
-    const s = v.sarlavha.map(past)
-    if (kerak.every((k) => s.some((x) => x.includes(past(k))))) return v
-  }
-  return null
-}
-
-function ol(q: Qator, ...kalitlar: string[]): unknown {
-  for (const k of kalitlar) {
-    for (const [key, val] of Object.entries(q)) {
-      if (key.toLowerCase().includes(k.toLowerCase())) return val
-    }
-  }
-  return ''
+const ogohlantirishlar: string[] = []
+const ogoh = (m: string) => {
+  if (ogohlantirishlar.length < 300) ogohlantirishlar.push(m)
 }
 
 /* ------------------------------------------------------------------ */
-/*  2. Qurish                                                          */
+/*  Tiplar                                                             */
 /* ------------------------------------------------------------------ */
 
-type Ustoz = { id: string; ism: string; telegram_id: number | null }
+type Ustoz = {
+  id: string
+  ism: string
+  telefon: string | null
+  telegram_id: number | null
+  holat: 'faol' | 'bloklangan'
+}
+
 type Guruh = {
   id: string
   nom: string
   subject_id: string | null
+  bosqich: string | null
   teacher_id: string | null
   boshlanish: string
   tugash: string
-  kun_turi: 'toq' | 'juft' | 'har_kuni'
+  kun_turi: KunTuri
   oylik_narx: number
-  xom: string
+  holat: 'faol' | 'yopilgan'
 }
+
 type Oquvchi = {
   id: string
   fish: string
@@ -137,270 +85,454 @@ type Oquvchi = {
   holat: 'faol' | 'tanaffus' | 'ketgan'
   izoh: string | null
 }
+
 type Yozilish = {
+  kalit: string                 // "S001|N01"
   student_id: string
-  guruhXom: string
+  group_id: string
+  guruhNomi: string
   boshlandi: string
+  tugadi: string | null
   chegirma_summa: number
-  chegirma_oy: number
+  chegirma_oy: number | null
+  chegirma2_summa: number
+  chegirma2_oy: number | null
   chegirma_sabab: string | null
+  holat: 'faol' | 'tugagan'
+  // solishtiruv uchun — Sheets o'zi hisoblagan qiymatlar
+  sheetKerak: number
+  sheetTolangan: number
+  sheetQarz: number
+  sheetOylar: number
 }
+
+type Hisob = { kalit: string; davr: string; summa: number; chegirma: number }
+
 type Tolov = {
   student_id: string
-  guruhXom: string | null
+  kalit: string | null
   sana: string
   davr: string
   summa: number
-  usul: 'naqd' | 'karta' | 'click' | 'payme'
+  usul: 'naqd' | 'karta' | 'click' | 'payme' | null
   izoh: string | null
+  tasdiqlangan: boolean
+  tasdiqlangan_vaqt: string | null
 }
 
-const ogohlantirishlar: string[] = []
-const ogoh = (m: string) => {
-  if (ogohlantirishlar.length < 200) ogohlantirishlar.push(m)
-}
+/* ------------------------------------------------------------------ */
+/*  Yordamchilar                                                       */
+/* ------------------------------------------------------------------ */
 
-function ustozlarniQur(varaqlar: Varaq[]): Ustoz[] {
-  const v = varaqTop(varaqlar, "o'qituvchi", 'guruhlari')
-  if (!v) {
-    ogoh('Ustozlar varag‘i topilmadi — guruhlardagi ismlardan tiklanadi.')
-    return []
+/**
+ * "12.09.2026 14:30" yoki Sheets seriyasi (46276.6) → ISO, Toshkent vaqti.
+ * Vaqti bo'lmasa kun boshi.
+ */
+function vaqtIso(v: unknown): string | null {
+  const kun = sanaga(v)
+  if (!kun) return null
+
+  let soat = '00:00'
+  if (typeof v === 'number') {
+    const daqiqa = Math.round((v - Math.floor(v)) * 24 * 60)
+    soat = `${String(Math.floor(daqiqa / 60)).padStart(2, '0')}:${String(daqiqa % 60).padStart(2, '0')}`
+  } else {
+    const m = String(v ?? '').match(/(\d{1,2}):(\d{2})/)
+    if (m) soat = `${m[1].padStart(2, '0')}:${m[2]}`
   }
+  return `${kun}T${soat}:00+05:00`   // Asia/Tashkent
+}
 
+function oquvchiHolati(v: string): 'faol' | 'tanaffus' | 'ketgan' {
+  const s = v.toLowerCase()
+  if (s.includes('tanaffus')) return 'tanaffus'
+  if (/ketgan|chiqqan|to'?xtat/.test(s)) return 'ketgan'
+  return 'faol'
+}
+
+/** "Necha oy" katagi: bo'sh — muddatsiz (null), 0 yoki manfiy — chegirma yo'q. */
+function chegirmaOylari(q: Qator, ...nomlar: string[]): number | null {
+  const xom = matn(q, ...nomlar)
+  if (!xom) return null
+  const n = pulga(xom)
+  return n > 0 ? n : null
+}
+
+/* ------------------------------------------------------------------ */
+/*  1. Ustozlar, guruhlar, o'quvchilar                                  */
+/* ------------------------------------------------------------------ */
+
+function ustozlarniQur(qatorlar: Qator[]): Ustoz[] {
   const natija: Ustoz[] = []
-  for (const q of v.qatorlar) {
-    const ism = String(ol(q, "o'qituvchi", 'ism') ?? '').trim()
+
+  for (const q of qatorlar) {
+    const ism = matn(q, "O'qituvchi", 'Ism')
     if (!ism || axlatmi(ism)) continue
-    const id = String(ol(q, 'id') ?? '').trim() || `U${String(natija.length + 1).padStart(2, '0')}`
-    const tg = pulga(ol(q, 'telegram'))
-    natija.push({ id, ism, telegram_id: tg > 0 ? tg : null })
-  }
-  return natija
-}
 
-function narxlarniOqi(varaqlar: Varaq[]): Map<string, number> {
-  const xarita = new Map<string, number>()
-  const v = varaqTop(varaqlar, 'guruh', 'narx')
-  if (!v) return xarita
-
-  for (const q of v.qatorlar) {
-    const guruh = String(ol(q, 'guruh') ?? '').trim()
-    const narx = pulga(ol(q, 'narx'))
-    if (!guruh || narx <= 0) continue
-    if (axlatmi(guruh.split('·')[0] ?? '')) continue
-    xarita.set(guruh, narx)
-  }
-  return xarita
-}
-
-function guruhlarniQur(
-  xomNomlar: Set<string>,
-  ustozlar: Ustoz[],
-  narxlar: Map<string, number>,
-): Guruh[] {
-  const ustozId = new Map(ustozlar.map((u) => [u.ism.toLowerCase(), u.id]))
-  const natija: Guruh[] = []
-  let n = 0
-
-  for (const xom of [...xomNomlar].sort()) {
-    const g: GuruhTavsifi | null = guruhParse(xom)
-    if (!g || axlatmi(g.nom)) {
-      ogoh(`Guruh tushunarsiz, tashlandi: "${xom}"`)
-      continue
-    }
-
-    n += 1
-    let teacher: string | null = null
-    if (g.ustoz) {
-      teacher = ustozId.get(g.ustoz.toLowerCase()) ?? null
-      if (!teacher) {
-        // Qisman moslik: "Jamshid" → "Jamshid Abdialimov"
-        const topildi = ustozlar.find(
-          (u) =>
-            u.ism.toLowerCase().startsWith(g.ustoz!.toLowerCase()) ||
-            g.ustoz!.toLowerCase().startsWith(u.ism.toLowerCase().split(' ')[0]),
-        )
-        teacher = topildi?.id ?? null
-        if (!teacher) ogoh(`Ustoz topilmadi: "${g.ustoz}" (guruh: ${g.nom})`)
-      }
-    }
+    const id = matn(q, 'ID') || `U${String(natija.length + 1).padStart(2, '0')}`
+    const tg = pulga(qiymat(q, 'Telegram ID'))
 
     natija.push({
-      id: `N${String(n).padStart(2, '0')}`,
-      nom: g.nom,
-      subject_id: g.yonalish,
-      teacher_id: teacher,
-      boshlanish: g.boshlanish ?? '09:00',
-      tugash: g.tugash ?? '10:30',
-      kun_turi: g.kunTuri,
-      oylik_narx: narxlar.get(xom) ?? (/ielts/i.test(g.nom) ? 800_000 : STANDART_NARX),
-      xom,
+      id,
+      ism,
+      telefon: telefonga(qiymat(q, 'Telefon')),
+      telegram_id: tg > 0 ? tg : null,
+      holat: /ishdan|bloklangan/i.test(matn(q, 'Holat')) ? 'bloklangan' : 'faol',
     })
-
-    if (!g.boshlanish) ogoh(`Dars vaqti yo‘q, 09:00–10:30 qo‘yildi: "${xom}"`)
-    if (!narxlar.has(xom)) {
-      ogoh(`Narx varaqda yo‘q, standart qo‘yildi (${natija.at(-1)!.oylik_narx}): "${g.nom}"`)
-    }
   }
-
   return natija
 }
 
-/* ------------------------------------------------------------------ */
-/*  3. Ma'lumotni qurish                                               */
-/* ------------------------------------------------------------------ */
+function guruhlarniQur(qatorlar: Qator[], ustozlar: Ustoz[]): Guruh[] {
+  const ustozId = new Map(ustozlar.map((u) => [u.ism.toLowerCase(), u.id]))
+  const natija: Guruh[] = []
 
-function malumotniQur(varaqlar: Varaq[]) {
-  /* ---------- ustozlar ---------- */
-  const ustozlar = ustozlarniQur(varaqlar)
-
-  /* ---------- o'quvchilar ---------- */
-  const oVaraq =
-    varaqTop(varaqlar, 'id', 'f.i.sh', 'guruh') ?? varaqTop(varaqlar, 'id', 'ism familya', 'guruh')
-  if (!oVaraq) throw new Error('O‘quvchilar varag‘i topilmadi')
-
-  const oquvchilar: Oquvchi[] = []
-  const guruhXomlar = new Set<string>()
-  const korilgan = new Set<string>()
-
-  for (const q of oVaraq.qatorlar) {
-    const fish = String(ol(q, 'f.i.sh', 'ism familya', 'ism') ?? '').trim()
-    if (axlatmi(fish)) {
-      if (fish) ogoh(`Axlat qator tashlandi: "${fish}"`)
+  for (const q of qatorlar) {
+    const nom = matn(q, 'Guruh nomi')
+    const yonalishXom = matn(q, "Yo'nalish")
+    if (!nom || axlatmi(nom)) {
+      if (nom) ogoh(`Guruh tashlandi (nomi tushunarsiz): "${nom}"`)
       continue
     }
 
-    let id = String(ol(q, 'id') ?? '').trim().toUpperCase()
-    if (!/^S\d+$/.test(id)) id = `S${String(oquvchilar.length + 1).padStart(3, '0')}`
+    const id = matn(q, 'Guruh ID') || `N${String(natija.length + 1).padStart(2, '0')}`
+    const ustozIsm = matn(q, "O'qituvchi")
+    const teacher = ustozIsm ? (ustozId.get(ustozIsm.toLowerCase()) ?? null) : null
+    if (ustozIsm && !teacher) ogoh(`Ustoz topilmadi: "${ustozIsm}" (guruh: ${nom})`)
+
+    const vaqt = vaqtAjrat(qiymat(q, 'Dars vaqti'))
+    if (!vaqt) ogoh(`Dars vaqti o'qilmadi: "${nom}" — [ANIQLANMAGAN]`)
+
+    const kun = kunTuriga(qiymat(q, 'Kun'))
+    if (!kun) ogoh(`Kun turi o'qilmadi: "${nom}" — [ANIQLANMAGAN]`)
+
+    const narx = pulga(qiymat(q, 'Oylik narx'))
+    if (narx <= 0) ogoh(`Guruh narxi yo'q: "${nom}" — [ANIQLANMAGAN]`)
+
+    const subject = yonalishAniqla(yonalishXom)
+    if (!subject) ogoh(`Yo'nalish tanilmadi: "${yonalishXom}" (guruh: ${nom})`)
+
+    natija.push({
+      id,
+      nom,
+      subject_id: subject,
+      bosqich: subject === 'ingliz-tili' || subject === 'matematika' ? bosqichNormal(yonalishXom) : null,
+      teacher_id: teacher,
+      boshlanish: vaqt?.boshlanish ?? '00:00',
+      tugash: vaqt?.tugash ?? '00:00',
+      kun_turi: kun ?? 'toq',
+      oylik_narx: narx,
+      holat: /yopilgan|tugagan/i.test(matn(q, 'Holat')) ? 'yopilgan' : 'faol',
+    })
+  }
+  return natija
+}
+
+function oquvchilarniQur(qatorlar: Qator[]): Oquvchi[] {
+  const natija: Oquvchi[] = []
+  const korilgan = new Set<string>()
+
+  for (const q of qatorlar) {
+    const fish = matn(q, 'Ism familya', 'F.I.Sh')
+    if (axlatmi(fish)) {
+      if (fish) ogoh(`O'quvchi tashlandi (axlat qator): "${fish}"`)
+      continue
+    }
+
+    const id = matn(q, 'ID').toUpperCase()
+    if (!/^S\d+$/.test(id)) {
+      ogoh(`O'quvchi tashlandi (ID noto'g'ri): "${fish}" — "${id}"`)
+      continue
+    }
     if (korilgan.has(id)) {
       ogoh(`ID takrorlandi, tashlandi: ${id} — ${fish}`)
       continue
     }
     korilgan.add(id)
 
-    const holatXom = String(ol(q, 'holat') ?? '').toLowerCase()
-    const holat = /tanaffus/.test(holatXom) ? 'tanaffus' : /ketgan|chiqqan/.test(holatXom) ? 'ketgan' : 'faol'
-
-    oquvchilar.push({
+    natija.push({
       id,
       fish,
-      tugilgan_sana: sanaga(ol(q, "tug'ilgan")),
-      ota_tel: telefonga(ol(q, 'ota')),
-      ona_tel: telefonga(ol(q, 'ona')),
-      shaxsiy_tel: telefonga(ol(q, 'shaxsiy')),
-      qoshilgan_sana: sanaga(ol(q, "qo'shilgan")) ?? '2026-09-01',
-      holat,
-      izoh: String(ol(q, 'izoh') ?? '').trim() || null,
+      tugilgan_sana: sanaga(qiymat(q, "Tug'ilgan sana")),
+      ota_tel: telefonga(qiymat(q, 'Ota telefoni')),
+      ona_tel: telefonga(qiymat(q, 'Ona telefoni')),
+      shaxsiy_tel: telefonga(qiymat(q, 'Shaxsiy telefon')),
+      qoshilgan_sana: sanaga(qiymat(q, "Qo'shilgan sana")) ?? '2026-09-01',
+      holat: oquvchiHolati(matn(q, 'Holat')),
+      izoh: matn(q, 'Izoh') || null,
     })
-
-    guruhlarniAjrat(ol(q, 'guruh')).forEach((g) => guruhXomlar.add(g))
   }
-
-  /* ---------- yozilishlar ---------- */
-  const yVaraq = varaqTop(varaqlar, "o'quvchi", 'guruh', 'boshlandi')
-  const yozilishlar: Yozilish[] = []
-
-  if (yVaraq) {
-    for (const q of yVaraq.qatorlar) {
-      const { id, fish } = ismVaId(ol(q, "o'quvchi"))
-      if (axlatmi(fish)) continue
-
-      const sid = id ?? oquvchilar.find((o) => o.fish === fish)?.id
-      if (!sid) {
-        ogoh(`Yozilish: o‘quvchi topilmadi — "${fish}"`)
-        continue
-      }
-
-      for (const g of guruhlarniAjrat(ol(q, 'guruh'))) {
-        guruhXomlar.add(g)
-        const chegirma = pulga(ol(q, '1-chegirma', 'chegirma'))
-        yozilishlar.push({
-          student_id: sid,
-          guruhXom: g,
-          boshlandi: sanaga(ol(q, 'boshlandi')) ?? '2026-09-01',
-          chegirma_summa: chegirma,
-          chegirma_oy: chegirma > 0 ? Math.max(1, pulga(ol(q, '1-necha oy', 'necha oy'))) : 0,
-          chegirma_sabab: chegirma > 0 ? 'Sheets’dan ko‘chirildi' : null,
-        })
-      }
-    }
-  } else {
-    ogoh('Yozilishlar varag‘i topilmadi — o‘quvchilar varag‘idagi guruhlardan quriladi.')
-    for (const q of oVaraq.qatorlar) {
-      const fish = String(ol(q, 'f.i.sh', 'ism familya') ?? '').trim()
-      if (axlatmi(fish)) continue
-      const o = oquvchilar.find((x) => x.fish === fish)
-      if (!o) continue
-      for (const g of guruhlarniAjrat(ol(q, 'guruh'))) {
-        yozilishlar.push({
-          student_id: o.id,
-          guruhXom: g,
-          boshlandi: o.qoshilgan_sana,
-          chegirma_summa: 0,
-          chegirma_oy: 0,
-          chegirma_sabab: null,
-        })
-      }
-    }
-  }
-
-  /* ---------- guruhlar ---------- */
-  const guruhlar = guruhlarniQur(guruhXomlar, ustozlar, narxlarniOqi(varaqlar))
-  const guruhId = new Map(guruhlar.map((g) => [g.xom, g.id]))
-
-  /* ---------- to'lovlar ---------- */
-  const tVaraq = varaqTop(varaqlar, 'sana', 'davr', 'summa', 'usul')
-  const tolovlar: Tolov[] = []
-
-  if (tVaraq) {
-    for (const q of tVaraq.qatorlar) {
-      const summa = pulga(ol(q, 'summa'))
-      if (summa <= 0) continue
-
-      const { id, fish } = ismVaId(ol(q, "o'quvchi"))
-      const sid =
-        (String(ol(q, "o'quvchi id") ?? '').trim().toUpperCase().match(/^S\d+$/)?.[0]) ??
-        id ??
-        oquvchilar.find((o) => o.fish === fish)?.id
-
-      if (!sid) {
-        ogoh(`To‘lov: o‘quvchi topilmadi — "${fish}" (${summa})`)
-        continue
-      }
-
-      const sana = sanaga(ol(q, 'sana'))
-      const davr = davrga(ol(q, 'davr')) ?? (sana ? sana.slice(0, 7) : null)
-      if (!sana || !davr) {
-        ogoh(`To‘lov: sana yo‘q — ${fish} (${summa}). 01.09.2026 qo‘yildi.`)
-      }
-
-      const usul = usulga(ol(q, 'usul'))
-      if (!usul) ogoh(`To‘lov: usul yozilmagan — ${fish} (${summa}). "naqd" qo‘yildi.`)
-
-      const guruhlarQ = guruhlarniAjrat(ol(q, 'guruh'))
-
-      tolovlar.push({
-        student_id: sid,
-        guruhXom: guruhlarQ[0] ?? null,
-        sana: sana ?? '2026-09-01',
-        davr: davr ?? '2026-09',
-        summa,
-        usul: usul ?? 'naqd',
-        izoh: String(ol(q, 'izoh') ?? '').trim() || null,
-      })
-    }
-  } else {
-    ogoh('To‘lovlar varag‘i topilmadi.')
-  }
-
-  return { ustozlar, oquvchilar, guruhlar, yozilishlar, tolovlar, guruhId }
+  return natija
 }
 
 /* ------------------------------------------------------------------ */
-/*  4. Bazaga yozish                                                   */
+/*  2. Qatnashuv → yozilish + hisob-faktura                            */
 /* ------------------------------------------------------------------ */
 
+function yozilishlarniQur(
+  qatorlar: Qator[],
+  guruhlar: Guruh[],
+  oquvchilar: Oquvchi[],
+): Yozilish[] {
+  const guruhId = new Map(guruhlar.map((g) => [g.nom, g.id]))
+  const oquvchiBor = new Set(oquvchilar.map((o) => o.id))
+  const natija: Yozilish[] = []
+
+  for (const q of qatorlar) {
+    const { fish, id } = kalitAjrat(qiymat(q, "O'quvchi"))
+    const guruhNomi = matn(q, 'Guruh')
+
+    if (!id || !oquvchiBor.has(id)) {
+      ogoh(`Qatnashuv ${q._qator}-qator: o'quvchi topilmadi — "${fish}"`)
+      continue
+    }
+    const gid = guruhId.get(guruhNomi)
+    if (!gid) {
+      ogoh(`Qatnashuv ${q._qator}-qator: guruh topilmadi — "${guruhNomi}" (${fish})`)
+      continue
+    }
+
+    const boshlandi = sanaga(qiymat(q, 'Boshlandi'))
+    if (!boshlandi) {
+      ogoh(`Qatnashuv ${q._qator}-qator: boshlanish sanasi yo'q — ${fish} · ${guruhNomi}`)
+      continue
+    }
+    const tugadi = sanaga(qiymat(q, 'Tugadi'))
+
+    const cheg1 = pulga(qiymat(q, '1-chegirma'))
+    const cheg2 = pulga(qiymat(q, '2-chegirma'))
+
+    natija.push({
+      kalit: `${id}|${gid}`,
+      student_id: id,
+      group_id: gid,
+      guruhNomi,
+      boshlandi,
+      tugadi,
+      chegirma_summa: cheg1,
+      chegirma_oy: cheg1 > 0 ? chegirmaOylari(q, '1-necha oy') : 0,
+      chegirma2_summa: cheg2,
+      chegirma2_oy: cheg2 > 0 ? chegirmaOylari(q, '2-necha oy') : 0,
+      chegirma_sabab: matn(q, 'Izoh') || null,
+      holat: tugadi ? 'tugagan' : 'faol',
+      sheetKerak: pulga(qiymat(q, "To'lashi kerak")),
+      sheetTolangan: pulga(qiymat(q, "To'langan")),
+      sheetQarz: pulga(qiymat(q, 'Qarz')),
+      sheetOylar: pulga(qiymat(q, 'Oylar')),
+    })
+  }
+  return natija
+}
+
+/**
+ * Har yozilish uchun oy-oy hisob-faktura.
+ * Formulaning o'zi: oylar boshlanish oyidan boshlab ketma-ket sanaladi,
+ * har oyning narxi Narxlar tarixidan, chegirma esa o'sha oyning
+ * BOSQICHIDAN olinadi.
+ */
+function hisoblarniQur(
+  yozilishlar: Yozilish[],
+  guruhlar: Guruh[],
+  tarix: Map<string, NarxQator[]>,
+  bugun = new Date(),
+): Hisob[] {
+  const guruhNarxi = new Map(guruhlar.map((g) => [g.id, g.oylik_narx]))
+  const natija: Hisob[] = []
+
+  for (const y of yozilishlar) {
+    const oylar = oylarSoni(y.boshlandi, y.tugadi, bugun)
+    if (oylar <= 0) continue
+    if (y.sheetOylar > 0 && y.sheetOylar !== oylar) {
+      ogoh(
+        `Oylar soni farq qiladi: ${y.student_id} · ${y.guruhNomi} — ` +
+          `Sheets ${y.sheetOylar}, hisoblangan ${oylar}`,
+      )
+    }
+
+    const boshOy = oyRaqami(y.boshlandi.slice(0, 7))
+    const zaxira = guruhNarxi.get(y.group_id) ?? 0
+
+    for (let i = 1; i <= oylar; i++) {
+      const oy = boshOy + i - 1
+      const narx = narxOyda(tarix.get(y.guruhNomi), oy, zaxira)
+      const chegirma = chegirmaOyda(
+        i,
+        { summa: y.chegirma_summa, oylar: y.chegirma_oy },
+        { summa: y.chegirma2_summa, oylar: y.chegirma2_oy },
+      )
+      natija.push({
+        kalit: y.kalit,
+        davr: davrdan(oy),
+        summa: Math.max(narx - chegirma, 0),
+        chegirma: Math.min(chegirma, narx),
+      })
+    }
+  }
+  return natija
+}
+
+/* ------------------------------------------------------------------ */
+/*  3. To'lovlar                                                       */
+/* ------------------------------------------------------------------ */
+
+function tolovlarniQur(qatorlar: Qator[], guruhlar: Guruh[], oquvchilar: Oquvchi[]): Tolov[] {
+  const guruhId = new Map(guruhlar.map((g) => [g.nom, g.id]))
+  const oquvchiBor = new Set(oquvchilar.map((o) => o.id))
+  const natija: Tolov[] = []
+
+  for (const q of qatorlar) {
+    const summa = pulga(qiymat(q, 'Summa'))
+    if (summa <= 0) continue
+
+    const { fish, id, guruh } = kalitAjrat(qiymat(q, "O'quvchi"))
+    const sid = id ?? matn(q, "O'quvchi ID").toUpperCase()
+    if (!sid || !oquvchiBor.has(sid)) {
+      ogoh(`To'lov ${q._qator}-qator: o'quvchi topilmadi — "${fish}" (${summa})`)
+      continue
+    }
+
+    const gid = guruh ? guruhId.get(guruh) : undefined
+    if (guruh && !gid) {
+      ogoh(`To'lov ${q._qator}-qator: guruh topilmadi — "${guruh}" (${fish})`)
+    }
+
+    const sana = sanaga(qiymat(q, 'Sana'))
+    const davr = davrga(qiymat(q, 'Davr')) ?? (sana ? sana.slice(0, 7) : null)
+    if (!sana || !davr) {
+      ogoh(`To'lov ${q._qator}-qator: sana yoki davr yo'q — ${fish} (${summa})`)
+      continue
+    }
+
+    const usul = usulga(qiymat(q, 'Usul'))
+    if (!usul) ogoh(`To'lov ${q._qator}-qator: usul manbada yo'q — ${fish} (${summa}) [ANIQLANMAGAN]`)
+
+    const tasdiqlangan = belgi(q, 'Tasdiq')
+
+    natija.push({
+      student_id: sid,
+      kalit: gid ? `${sid}|${gid}` : null,
+      sana,
+      davr,
+      summa,
+      usul,
+      izoh: matn(q, 'Izoh') || null,
+      tasdiqlangan,
+      tasdiqlangan_vaqt: tasdiqlangan ? vaqtIso(qiymat(q, 'Tasdiqlangan')) : null,
+    })
+  }
+  return natija
+}
+
+/* ------------------------------------------------------------------ */
+/*  3b. Davomat jurnallari                                             */
+/* ------------------------------------------------------------------ */
+
+const JURNAL_VARAQLAR = ['Davomat toq', 'Davomat juft', 'Davomat dam olish']
+
+function davomatniQur(
+  kitob: Map<string, ReturnType<typeof varaq>>,
+  guruhlar: Guruh[],
+  oquvchilar: Oquvchi[],
+): JurnalNatija {
+  const varaqlar: [string, unknown[][]][] = []
+  for (const nom of JURNAL_VARAQLAR) {
+    const v = varaqBormi(kitob, nom)
+    if (v) varaqlar.push([v.nom, v.xom])
+    else ogoh(`Jurnal varag'i topilmadi: "${nom}"`)
+  }
+
+  return jurnallarniOqi(varaqlar, {
+    guruhId: new Map(guruhlar.map((g) => [g.nom, g.id])),
+    oquvchiBor: new Set(oquvchilar.map((o) => o.id)),
+    ogoh,
+  })
+}
+
+/* ------------------------------------------------------------------ */
+/*  4. Hammasini yig'ish                                               */
+/* ------------------------------------------------------------------ */
+
+function malumotniQur(kitob: Map<string, ReturnType<typeof varaq>>) {
+  const ustozlar = ustozlarniQur(varaq(kitob, 'Ustozlar').qatorlar)
+  const guruhlar = guruhlarniQur(varaq(kitob, 'Guruhlar').qatorlar, ustozlar)
+  const oquvchilar = oquvchilarniQur(varaq(kitob, "O'quvchilar").qatorlar)
+  const yozilishlar = yozilishlarniQur(varaq(kitob, 'Qatnashuv').qatorlar, guruhlar, oquvchilar)
+
+  const narxVaraq = varaqBormi(kitob, 'Narxlar')
+  const tarix = narxTarixi(
+    (narxVaraq?.qatorlar ?? []).map((q) => ({
+      guruh: matn(q, 'Guruh'),
+      narx: pulga(qiymat(q, 'Narx')),
+      oydan: qiymat(q, 'Qaysi oydan'),
+    })),
+  )
+  if (!narxVaraq || tarix.size === 0) {
+    ogoh("Narxlar varag'i bo'sh — har oy guruhning joriy narxidan hisoblanadi.")
+  }
+
+  const hisoblar = hisoblarniQur(yozilishlar, guruhlar, tarix)
+  const tolovlar = tolovlarniQur(varaq(kitob, 'Tolovlar').qatorlar, guruhlar, oquvchilar)
+
+  const davomat = DAVOMAT
+    ? davomatniQur(kitob, guruhlar, oquvchilar)
+    : { darslar: [] as Dars[], belgilar: [] as Davomat[] }
+
+  return { ustozlar, guruhlar, oquvchilar, yozilishlar, hisoblar, tolovlar, davomat }
+}
+
 type Tayyor = ReturnType<typeof malumotniQur>
+
+/* ------------------------------------------------------------------ */
+/*  5. Solishtiruv — hisob Sheets bilan mos keladimi                    */
+/* ------------------------------------------------------------------ */
+
+function solishtir(d: Tayyor) {
+  const hisobJami = new Map<string, number>()
+  for (const h of d.hisoblar) {
+    hisobJami.set(h.kalit, (hisobJami.get(h.kalit) ?? 0) + h.summa)
+  }
+
+  const tolovJami = new Map<string, number>()
+  for (const t of d.tolovlar) {
+    if (!t.kalit) continue
+    tolovJami.set(t.kalit, (tolovJami.get(t.kalit) ?? 0) + t.summa)
+  }
+
+  const farqlar: string[] = []
+  let jamiKerak = 0, jamiKerakSheets = 0
+  let jamiTolangan = 0, jamiTolanganSheets = 0
+
+  for (const y of d.yozilishlar) {
+    const kerak = hisobJami.get(y.kalit) ?? 0
+    const tolangan = tolovJami.get(y.kalit) ?? 0
+
+    jamiKerak += kerak
+    jamiKerakSheets += y.sheetKerak
+    jamiTolangan += tolangan
+    jamiTolanganSheets += y.sheetTolangan
+
+    if (kerak !== y.sheetKerak || tolangan !== y.sheetTolangan) {
+      farqlar.push(
+        `${y.student_id} · ${y.guruhNomi}: kerak ${pul(kerak)} (Sheets ${pul(y.sheetKerak)}) · ` +
+          `to'langan ${pul(tolangan)} (Sheets ${pul(y.sheetTolangan)})`,
+      )
+    }
+  }
+
+  return {
+    farqlar,
+    jamiKerak, jamiKerakSheets,
+    jamiTolangan, jamiTolanganSheets,
+    qarz: jamiKerak - jamiTolangan,
+    qarzSheets: d.yozilishlar.reduce((a, y) => a + y.sheetQarz, 0),
+  }
+}
+
+const pul = (n: number) => n.toLocaleString('uz-UZ')
+
+/* ------------------------------------------------------------------ */
+/*  6. Bazaga yozish                                                   */
+/* ------------------------------------------------------------------ */
 
 async function yoz(d: Tayyor) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -412,106 +544,184 @@ async function yoz(d: Tayyor) {
     if (e) throw new Error(`${nom}: ${e.message}`)
   }
 
-  xato('teachers', (await db.from('teachers').upsert(
-    d.ustozlar.map((u) => ({ id: u.id, ism: u.ism, telegram_id: u.telegram_id })),
-  )).error)
+  xato('teachers', (await db.from('teachers').upsert(d.ustozlar)).error)
+
+  // Bosqich (level) — yo'nalish ichidagi nom bo'yicha topiladi
+  const { data: bosqichlar } = await db.from('levels').select('id, subject_id, nom')
+  const bosqichId = new Map(
+    (bosqichlar ?? []).map((b) => [`${b.subject_id}|${b.nom.toLowerCase()}`, b.id as number]),
+  )
 
   xato('groups', (await db.from('groups').upsert(
-    d.guruhlar.map(({ xom: _xom, ...g }) => g),
+    d.guruhlar.map(({ bosqich, ...g }) => ({
+      ...g,
+      level_id: bosqich && g.subject_id
+        ? (bosqichId.get(`${g.subject_id}|${bosqich.toLowerCase()}`) ?? null)
+        : null,
+    })),
   )).error)
 
   xato('students', (await db.from('students').upsert(d.oquvchilar)).error)
 
-  const yozilishRows = d.yozilishlar
-    .map((y) => {
-      const gid = d.guruhId.get(y.guruhXom)
-      if (!gid) return null
-      return {
-        student_id: y.student_id,
-        group_id: gid,
-        boshlandi: y.boshlandi,
-        chegirma_summa: y.chegirma_summa,
-        chegirma_oy: y.chegirma_oy,
-        chegirma_sabab: y.chegirma_sabab,
-      }
+  xato('enrollments', (await db.from('enrollments').upsert(
+    d.yozilishlar.map((y) => ({
+      student_id: y.student_id,
+      group_id: y.group_id,
+      boshlandi: y.boshlandi,
+      tugadi: y.tugadi,
+      chegirma_summa: y.chegirma_summa,
+      chegirma_oy: y.chegirma_oy,
+      chegirma2_summa: y.chegirma2_summa,
+      chegirma2_oy: y.chegirma2_oy,
+      chegirma_sabab: y.chegirma_sabab,
+      holat: y.holat,
+    })),
+    { onConflict: 'student_id,group_id' },
+  )).error)
+
+  // Yozilish ID'lari — hisob-faktura va to'lov shularga bog'lanadi
+  const { data: bazada } = await db.from('enrollments').select('id, student_id, group_id')
+  const yId = new Map((bazada ?? []).map((y) => [`${y.student_id}|${y.group_id}`, y.id as string]))
+
+  const hisobRows = d.hisoblar
+    .map((h) => {
+      const id = yId.get(h.kalit)
+      return id ? { enrollment_id: id, davr: h.davr, summa: h.summa, chegirma: h.chegirma } : null
     })
     .filter((x): x is NonNullable<typeof x> => x !== null)
 
-  xato('enrollments', (await db.from('enrollments').upsert(yozilishRows, {
-    onConflict: 'student_id,group_id',
-    ignoreDuplicates: true,
+  xato('invoices', (await db.from('invoices').upsert(hisobRows, {
+    onConflict: 'enrollment_id,davr',
   })).error)
 
-  // Hisob-fakturalar — eng erta yozilishdan bugungacha har oy uchun
-  const eng = yozilishRows.map((y) => y.boshlandi).sort()[0] ?? '2026-09-01'
-  const boshi = new Date(`${eng.slice(0, 7)}-01T00:00:00Z`)
-  const bugun = new Date()
-  for (let d0 = boshi; d0 <= bugun; d0.setUTCMonth(d0.getUTCMonth() + 1)) {
-    const davr = d0.toISOString().slice(0, 7)
-    const { data, error } = await db.rpc('create_monthly_invoices', { p_davr: davr })
-    xato(`invoices ${davr}`, error)
-    console.log(`  hisob-faktura ${davr}: ${data ?? 0} ta`)
-  }
+  // To'lovlar o'chirilmaydi, ya'ni ikki marta yozilsa tushum ikkilanadi.
+  const { count } = await db
+    .from('payments')
+    .select('id', { count: 'exact', head: true })
+    .eq('manba', 'sheets')
 
-  // To'lovlar — enrollment'ga bog'lab
-  const { data: yozilishBazada } = await db.from('enrollments').select('id, student_id, group_id')
-  const yKalit = new Map((yozilishBazada ?? []).map((y) => [`${y.student_id}|${y.group_id}`, y.id]))
-
-  const tolovRows = d.tolovlar.map((t) => {
-    const gid = t.guruhXom ? d.guruhId.get(t.guruhXom) : undefined
-    return {
+  let tolovSoni = 0
+  if ((count ?? 0) > 0) {
+    ogoh(
+      `Bazada Sheets'dan kelgan ${count} ta to'lov allaqachon bor — ` +
+        `to'lovlar QAYTA YOZILMADI (tushum ikkilanmasin).`,
+    )
+  } else {
+    const tolovRows = d.tolovlar.map((t) => ({
       student_id: t.student_id,
-      enrollment_id: gid ? (yKalit.get(`${t.student_id}|${gid}`) ?? null) : null,
+      enrollment_id: t.kalit ? (yId.get(t.kalit) ?? null) : null,
       sana: t.sana,
       davr: t.davr,
       summa: t.summa,
       usul: t.usul,
-      tasdiqlangan: false,
+      tasdiqlangan: t.tasdiqlangan,
+      tasdiqlangan_vaqt: t.tasdiqlangan_vaqt,
       izoh: t.izoh,
+      manba: 'sheets',
+    }))
+    if (tolovRows.length) {
+      xato('payments', (await db.from('payments').insert(tolovRows)).error)
+      tolovSoni = tolovRows.length
     }
-  })
-
-  if (tolovRows.length) {
-    xato('payments', (await db.from('payments').insert(tolovRows)).error)
   }
 
-  return { yozilishlar: yozilishRows.length, tolovlar: tolovRows.length }
+  /* ── Davomat ── */
+  let darsSoni = 0, belgiSoni = 0
+  if (DAVOMAT && d.davomat.darslar.length) {
+    xato('lessons', (await db.from('lessons').upsert(
+      d.davomat.darslar.map((l) => ({ group_id: l.group_id, sana: l.sana, otkazildi: true })),
+      { onConflict: 'group_id,sana' },
+    )).error)
+    darsSoni = d.davomat.darslar.length
+
+    const { data: darsRows } = await db.from('lessons').select('id, group_id, sana')
+    const darsId = new Map((darsRows ?? []).map((l) => [`${l.group_id}|${l.sana}`, l.id as string]))
+
+    const belgiRows = d.davomat.belgilar
+      .map((b) => {
+        const id = darsId.get(`${b.group_id}|${b.sana}`)
+        return id ? { lesson_id: id, student_id: b.student_id, holat: b.holat } : null
+      })
+      .filter((x): x is NonNullable<typeof x> => x !== null)
+
+    xato('attendance', (await db.from('attendance').upsert(belgiRows, {
+      onConflict: 'lesson_id,student_id',
+    })).error)
+    belgiSoni = belgiRows.length
+  }
+
+  return { hisoblar: hisobRows.length, tolovlar: tolovSoni, darslar: darsSoni, davomat: belgiSoni }
 }
 
 /* ------------------------------------------------------------------ */
 
 async function ishga() {
+  if (!SHEETS_ID) throw new Error('SHEETS_ID topilmadi (.env.local)')
   console.log(DRY ? '— QURUQ YURISH: hech narsa yozilmaydi —\n' : '— KO‘CHIRISH —\n')
 
-  const varaqlar = await varaqlarniOqi()
-  console.log('Varaqlar:', varaqlar.map((v) => `${v.nom} (${v.qatorlar.length})`).join(', '), '\n')
+  const kitob = await kitobniOqi(SHEETS_ID)
+  console.log(
+    'Varaqlar:',
+    [...kitob.values()].map((v) => `${v.nom} (${v.qatorlar.length})`).join(', '),
+    '\n',
+  )
 
-  const d = malumotniQur(varaqlar)
+  const d = malumotniQur(kitob)
 
   console.log('Tayyorlandi:')
-  console.log(`  ustozlar    ${d.ustozlar.length}`)
-  console.log(`  guruhlar    ${d.guruhlar.length}`)
-  console.log(`  o‘quvchilar ${d.oquvchilar.length}`)
-  console.log(`  yozilishlar ${d.yozilishlar.length}`)
-  console.log(`  to‘lovlar   ${d.tolovlar.length}  (${d.tolovlar.reduce((a, t) => a + t.summa, 0).toLocaleString('uz-UZ')} so‘m)\n`)
+  console.log(`  ustozlar        ${d.ustozlar.length}`)
+  console.log(`  guruhlar        ${d.guruhlar.length}`)
+  console.log(`  o‘quvchilar     ${d.oquvchilar.length}`)
+  console.log(`  qatnashuvlar    ${d.yozilishlar.length}`)
+  console.log(`  hisob-faktura   ${d.hisoblar.length}`)
+  console.log(`  to‘lovlar       ${d.tolovlar.length}  (${pul(d.tolovlar.reduce((a, t) => a + t.summa, 0))} so‘m)`)
+
+  const usulsiz = d.tolovlar.filter((t) => !t.usul).length
+  if (usulsiz) console.log(`  · shundan ${usulsiz} tasining USULI [ANIQLANMAGAN]`)
+
+  if (DAVOMAT) {
+    const kelgan = d.davomat.belgilar.filter((b) => b.holat === 'keldi').length
+    console.log(`  darslar         ${d.davomat.darslar.length}`)
+    console.log(`  davomat belgisi ${d.davomat.belgilar.length}  (${kelgan} keldi)`)
+  }
+
+  const s = solishtir(d)
+  console.log('\nSOLISHTIRUV — hisoblangan / Sheets:')
+  console.log(`  to‘lashi kerak  ${pul(s.jamiKerak)} / ${pul(s.jamiKerakSheets)}`)
+  console.log(`  to‘langan       ${pul(s.jamiTolangan)} / ${pul(s.jamiTolanganSheets)}`)
+  console.log(`  qarz            ${pul(s.qarz)} / ${pul(s.qarzSheets)}`)
+  console.log(
+    s.farqlar.length === 0
+      ? '  ✓ hamma qatnashuv mos keladi'
+      : `  ✗ ${s.farqlar.length} ta qatnashuvda farq bor:`,
+  )
+  s.farqlar.slice(0, 20).forEach((f) => console.log('     ·', f))
+  if (s.farqlar.length > 20) console.log(`     … yana ${s.farqlar.length - 20} ta`)
 
   if (ogohlantirishlar.length) {
-    console.log(`Ogohlantirishlar (${ogohlantirishlar.length}):`)
+    console.log(`\nOgohlantirishlar (${ogohlantirishlar.length}):`)
     ogohlantirishlar.slice(0, 40).forEach((m) => console.log('  ·', m))
     if (ogohlantirishlar.length > 40) console.log(`  … yana ${ogohlantirishlar.length - 40} ta`)
-    console.log()
   }
 
   if (DRY) {
-    console.log('Quruq yurish tugadi. Yozish uchun --dry-run siz ishga tushiring.')
+    console.log('\nQuruq yurish tugadi. Yozish uchun --dry-run siz ishga tushiring.')
     return
+  }
+
+  if (s.farqlar.length > 0) {
+    throw new Error(
+      `Solishtiruvda ${s.farqlar.length} ta farq bor — yozilmadi. ` +
+        `Avval farqni tushunib oling (--dry-run bilan ko‘ring).`,
+    )
   }
 
   const natija = await yoz(d)
   console.log('\nYozildi:', natija)
-  console.log('\nESLATMA: davomat tarixi ko‘chirilmadi — manba varaqda faqat oylik')
-  console.log('jamlanma bor, har bir darsning o‘zi yo‘q. Davomat yangi tizimda')
-  console.log('birinchi darsdan boshlab yig‘iladi.')
+
+  if (!DAVOMAT) {
+    console.log('\nDavomat jurnallari ko‘chirilmadi. Kerak bo‘lsa: npm run migrate -- --davomat')
+  }
 }
 
 ishga().catch((e) => {
