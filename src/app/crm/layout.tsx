@@ -1,35 +1,12 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { talabProfil, ROL_NOMI, staffmi } from '@/lib/auth'
+import { talabProfil, getUstoz, ROL_NOMI, staffmi, tasdiqlaydimi } from '@/lib/auth'
+import { menyular, type MenyuBand } from '@/lib/menyu'
 import { createClient } from '@/lib/supabase/server'
+import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Logo } from '@/components/ui'
 import { bosh } from '@/lib/format'
-import type { UserRole } from '@/lib/types'
-import {
-  IconDashboard, IconStudents, IconGroups, IconTeacher, IconAttendance,
-  IconWoblr, IconPayments, IconDebt, IconLeads, IconReports, IconSettings, IconLogout,
-} from '@/components/icons'
-
-type NavItem = {
-  href: string
-  nom: string
-  Icon: (p: { size?: number; className?: string }) => React.ReactElement
-  rollar: UserRole[]
-}
-
-const NAV: NavItem[] = [
-  { href: '/crm/dashboard',   nom: 'Dashboard',   Icon: IconDashboard,  rollar: ['admin', 'direktor', 'qabulxona', 'ustoz', 'oquvchi'] },
-  { href: '/crm/oquvchilar',  nom: 'O‘quvchilar', Icon: IconStudents,   rollar: ['admin', 'direktor', 'qabulxona', 'ustoz'] },
-  { href: '/crm/guruhlar',    nom: 'Guruhlar',    Icon: IconGroups,     rollar: ['admin', 'direktor', 'qabulxona', 'ustoz'] },
-  { href: '/crm/ustozlar',    nom: 'Ustozlar',    Icon: IconTeacher,    rollar: ['admin', 'direktor'] },
-  { href: '/crm/davomat',     nom: 'Davomat',     Icon: IconAttendance, rollar: ['admin', 'direktor', 'ustoz'] },
-  { href: '/crm/woblr',       nom: 'WOBLR',       Icon: IconWoblr,      rollar: ['admin', 'direktor', 'qabulxona', 'ustoz', 'oquvchi'] },
-  { href: '/crm/tolovlar',    nom: 'To‘lovlar',   Icon: IconPayments,   rollar: ['admin', 'direktor', 'qabulxona'] },
-  { href: '/crm/qarzdorlar',  nom: 'Qarzdorlar',  Icon: IconDebt,       rollar: ['admin', 'direktor', 'qabulxona'] },
-  { href: '/crm/lidlar',      nom: 'Lidlar',      Icon: IconLeads,      rollar: ['admin', 'direktor', 'qabulxona'] },
-  { href: '/crm/hisobotlar',  nom: 'Hisobotlar',  Icon: IconReports,    rollar: ['admin', 'direktor', 'qabulxona'] },
-  { href: '/crm/sozlamalar',  nom: 'Sozlamalar',  Icon: IconSettings,   rollar: ['admin', 'direktor'] },
-]
+import { IconLogout } from '@/components/icons'
 
 async function chiqish() {
   'use server'
@@ -38,13 +15,55 @@ async function chiqish() {
   redirect('/kirish')
 }
 
+/** Menyu bandi. Tayyor bo'lmasa — havola emas: bosib 404 ga tushmasin. */
+function Band({ band, nishon }: { band: MenyuBand; nishon?: number }) {
+  const ichi = (
+    <>
+      <band.Icon size={17} />
+      <span className="flex-1">{band.nom}</span>
+      {band.tayyor ? (
+        nishon ? (
+          <span className="tnum font-[family-name:var(--font-mono)] text-[11px] text-brand">
+            {nishon}
+          </span>
+        ) : null
+      ) : (
+        <span className="lbl text-[8.5px]">tez orada</span>
+      )}
+    </>
+  )
+
+  if (!band.tayyor) {
+    return (
+      <span
+        aria-disabled="true"
+        title="Bu sahifa prototipda hali yo‘q"
+        className="flex min-h-11 cursor-not-allowed items-center gap-3 rounded-lg px-3 text-[13.5px] text-ink-4"
+      >
+        {ichi}
+      </span>
+    )
+  }
+
+  return (
+    <Link
+      href={band.href}
+      className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-[13.5px] text-ink-2 transition hover:bg-surface-2 hover:text-ink"
+    >
+      {ichi}
+    </Link>
+  )
+}
+
 export default async function CrmLayout({ children }: { children: React.ReactNode }) {
   const profil = await talabProfil()
-  const menyu = NAV.filter((n) => n.rollar.includes(profil.rol))
+  const ustoz = await getUstoz()
+  const bolimlar = menyular(profil.rol, Boolean(ustoz))
 
-  // Tasdiqlanmagan to'lovlar soni — faqat kassa ko'radigan raqam
+  /* Tasdiqlanmagan to'lovlar soni — pul ko'radiganlarga.
+     Ustozga umuman chiqmaydi (botdagi qoida). */
   let tasdiqlanmagan = 0
-  if (staffmi(profil.rol)) {
+  if (staffmi(profil.rol) && supabaseSozlanganmi()) {
     const supabase = await createClient()
     const { count } = await supabase
       .from('payments')
@@ -54,28 +73,37 @@ export default async function CrmLayout({ children }: { children: React.ReactNod
     tasdiqlanmagan = count ?? 0
   }
 
+  const nishon = (band: MenyuBand) =>
+    band.href.startsWith('/crm/tolovlar') ? tasdiqlanmagan : undefined
+
+  // Telefon uchun: har bo'limdan eng kerakli bandlar, jami 5 tagacha
+  const mobilBandlar = bolimlar
+    .flatMap((b) => b.bandlar.filter((x) => x.mobil && x.tayyor))
+    .slice(0, 5)
+
+  /* Kim ekani — botdagi menyuMatni() kabi: ikki rol bo'lsa ikkalasi ham. */
+  const kim = [
+    ustoz ? `ustoz — ${ustoz.ism}` : null,
+    tasdiqlaydimi(profil.rol) ? 'direktor' : null,
+    profil.rol === 'admin' ? 'administrator' : null,
+    profil.rol === 'qabulxona' ? 'qabulxona' : null,
+  ].filter((x): x is string => Boolean(x))
+
   return (
     <div className="flex min-h-dvh">
       <aside className="flex w-56 shrink-0 flex-col gap-6 border-r border-line bg-[#120e0d] px-3.5 py-5 max-lg:hidden">
-        <Link href="/crm/dashboard" className="px-2">
+        <Link href="/crm" className="px-2">
           <Logo />
         </Link>
 
-        <nav className="flex flex-col gap-0.5">
-          {menyu.map(({ href, nom, Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-[13.5px] text-ink-2 transition hover:bg-surface-2 hover:text-ink"
-            >
-              <Icon size={17} />
-              <span className="flex-1">{nom}</span>
-              {href === '/crm/tolovlar' && tasdiqlanmagan > 0 && (
-                <span className="tnum font-[family-name:var(--font-mono)] text-[11px] text-brand">
-                  {tasdiqlanmagan}
-                </span>
-              )}
-            </Link>
+        <nav className="flex flex-col gap-5">
+          {bolimlar.map((bolim) => (
+            <div key={bolim.nom} className="flex flex-col gap-0.5">
+              <span className="lbl px-3 pb-1">{bolim.nom}</span>
+              {bolim.bandlar.map((band) => (
+                <Band key={band.href} band={band} nishon={nishon(band)} />
+              ))}
+            </div>
           ))}
         </nav>
 
@@ -86,7 +114,9 @@ export default async function CrmLayout({ children }: { children: React.ReactNod
             </span>
             <span className="flex min-w-0 flex-col">
               <span className="truncate text-[12.5px] font-semibold">{profil.ism}</span>
-              <span className="lbl text-[9px] text-brand">{ROL_NOMI[profil.rol]}</span>
+              <span className="lbl text-[9px] text-brand">
+                {kim.length ? kim.join(' · ') : ROL_NOMI[profil.rol]}
+              </span>
             </span>
           </div>
 
@@ -102,7 +132,33 @@ export default async function CrmLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      <main className="min-w-0 flex-1">{children}</main>
+      {/* Telefon: tepada logotip, pastda asosiy bandlar */}
+      <header className="fixed inset-x-0 top-0 z-20 flex items-center justify-between border-b border-line bg-[#120e0d] px-4 py-2.5 lg:hidden">
+        <Link href="/crm">
+          <Logo size="sm" />
+        </Link>
+        <span className="lbl text-[9px] text-brand">
+          {kim.length ? kim[0] : ROL_NOMI[profil.rol]}
+        </span>
+      </header>
+
+      <nav
+        aria-label="Asosiy menyu"
+        className="fixed inset-x-0 bottom-0 z-20 flex border-t border-line bg-[#120e0d] pb-[env(safe-area-inset-bottom,0px)] lg:hidden"
+      >
+        {mobilBandlar.map((band) => (
+          <Link
+            key={band.href}
+            href={band.href}
+            className="flex min-h-14 flex-1 flex-col items-center justify-center gap-1 px-1 text-ink-3 transition hover:text-ink"
+          >
+            <band.Icon size={18} />
+            <span className="truncate text-[10.5px]">{band.nom}</span>
+          </Link>
+        ))}
+      </nav>
+
+      <main className="min-w-0 flex-1 max-lg:pt-14 max-lg:pb-16">{children}</main>
     </div>
   )
 }

@@ -67,7 +67,7 @@ export default async function Kirish({
           </p>
         )}
 
-        <form action={kirish} className="flex flex-col gap-3.5" aria-disabled={!ulangan}>
+        <form action={kirish} className="flex flex-col gap-3.5">
           <input type="hidden" name="keyin" value={keyin ?? ''} />
 
           <label className="flex flex-col gap-1.5">

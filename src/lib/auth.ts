@@ -21,6 +21,31 @@ export const getProfile = cache(async (): Promise<Profile | null> => {
   return data ?? null
 })
 
+/**
+ * Shu odam ustozmi.
+ *
+ * Botdagi bilan bir xil qoida: "ustoz" degani rol emas, BIRIKTIRILISH —
+ * Ustozlar varag'ida Telegram ID si bor odam ustoz (BOT_Menyu.js:
+ * botRol). Bu yerda ham shunday: teachers.profile_id kimga tegishli
+ * bo'lsa, o'sha ustoz. Shuning uchun Farrux (direktor) va Jamshid
+ * (admin) ham ustoz panelini ko'radi.
+ */
+export const getUstoz = cache(async (): Promise<{ id: string; ism: string } | null> => {
+  if (!supabaseSozlanganmi()) return null
+
+  const profil = await getProfile()
+  if (!profil) return null
+
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('teachers')
+    .select('id, ism')
+    .eq('profile_id', profil.id)
+    .maybeSingle()
+
+  return data ?? null
+})
+
 /** Login shart bo'lgan sahifalar uchun. */
 export async function talabProfil(): Promise<Profile> {
   const profil = await getProfile()

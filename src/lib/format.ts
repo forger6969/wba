@@ -1,3 +1,5 @@
+import type { DayType } from '@/lib/types'
+
 /** Pul: 650000 → "650 000" */
 export function pul(n: number | string | null | undefined): string {
   const v = Number(n ?? 0)
@@ -95,9 +97,17 @@ export function vaqt(t: string | null | undefined): string {
 export function jadval(
   boshlanish: string | null,
   tugash: string | null,
-  kunTuri: 'toq' | 'juft' | 'har_kuni' | null,
+  kunTuri: DayType | null,
 ): string {
-  const kun = kunTuri === 'toq' ? 'toq kun' : kunTuri === 'juft' ? 'juft kun' : 'har kuni'
+  const kun = KUN_NOMI[kunTuri ?? 'har_kuni']
   if (!boshlanish || !tugash) return kun
   return `${vaqt(boshlanish)}–${vaqt(tugash)}, ${kun}`
+}
+
+/** Shanba ikkala turga kiradi: juft guruh ham, dam olish guruhi ham o'qiydi. */
+export const KUN_NOMI: Record<DayType, string> = {
+  toq: 'toq kun',
+  juft: 'juft kun',
+  dam_olish: 'dam olish kunlari',
+  har_kuni: 'har kuni',
 }
