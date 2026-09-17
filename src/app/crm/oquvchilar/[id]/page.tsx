@@ -3,10 +3,14 @@ import { notFound } from 'next/navigation'
 import { talabProfil, staffmi } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi } from '@/lib/supabase/env'
-import { Card, CardHeader, Stat, Badge, Empty } from '@/components/ui'
+import { Card, CardHeader, Stat, Badge, Empty, Button } from '@/components/ui'
+import { Maydon, Xabar, kirishKlass } from '@/components/forma'
+import { Yuborish } from '@/components/yuborish'
+import { guruhgaBiriktir, guruhdanChiqar } from '../actions'
+import { ChegirmaMaydonlari } from '../bolaklar'
 import { Sarlavha, Ulanmagan } from '@/components/crm'
 import { IconArrowLeft, IconPhone } from '@/components/icons'
-import { pul, sana, telefon, jadval, davrNomi, joriyDavr } from '@/lib/format'
+import { pul, sana, telefon, jadval, davrNomi, joriyDavr, bugunToshkent } from '@/lib/format'
 import type { StudentStatus, DayType, PaymentMethod, AttendanceStatus } from '@/lib/types'
 
 export const metadata = { title: 'O‘quvchi profili' }
@@ -32,8 +36,14 @@ const DAVOMAT_NOMI: Record<AttendanceStatus, string> = {
   kelmadi: 'Kelmadi',
 }
 
-export default async function OquvchiProfil({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+export default async function OquvchiProfil({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ ok?: string; xato?: string }>
+}) {
+  const [{ id }, xabar] = await Promise.all([params, searchParams])
   const profil = await talabProfil()
   if (!supabaseSozlanganmi()) return <Ulanmagan nom="O‘quvchi profili" />
 
@@ -56,6 +66,7 @@ export default async function OquvchiProfil({ params }: { params: Promise<{ id: 
     { data: tolovlar },
     { data: davomat },
     { data: woblr },
+    { data: barchaGuruhlar },
   ] = await Promise.all([
     supabase
       .from('enrollments')
@@ -75,6 +86,9 @@ export default async function OquvchiProfil({ params }: { params: Promise<{ id: 
       : Promise.resolve({ data: [] }),
     supabase.from('v_attendance_monthly').select('davr, group_id, darslar, kelgan, foiz').eq('student_id', id).order('davr', { ascending: false }).limit(6),
     supabase.from('v_woblr_balance').select('jami_ball, sarflangan, balans').eq('student_id', id).maybeSingle(),
+    pulKoradi
+      ? supabase.from('groups').select('id, nom').eq('holat', 'faol').order('nom')
+      : Promise.resolve({ data: [] as { id: string; nom: string }[] }),
   ])
 
   type Yozilish = {
@@ -151,11 +165,23 @@ export default async function OquvchiProfil({ params }: { params: Promise<{ id: 
           </>
         }
         amal={
-          <Badge ton={oquvchi.holat === 'faol' ? 'ok' : oquvchi.holat === 'tanaffus' ? 'accent' : 'jim'}>
-            {HOLAT_NOMI[oquvchi.holat as StudentStatus]}
-          </Badge>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge ton={oquvchi.holat === 'faol' ? 'ok' : oquvchi.holat === 'tanaffus' ? 'accent' : 'jim'}>
+              {HOLAT_NOMI[oquvchi.holat as StudentStatus]}
+            </Badge>
+            {pulKoradi && (
+              <>
+                <Button href={`/crm/oquvchilar/${oquvchi.id}/tahrir`} variant="ikkilamchi">
+                  Tahrirlash
+                </Button>
+                <Button href={`/crm/tolovlar/yangi?oquvchi=${oquvchi.id}`}>To‘lov qo‘shish</Button>
+              </>
+            )}
+          </div>
         }
       />
+
+      <Xabar ok={xabar.ok} xato={xabar.xato} />
 
       <div className="grid grid-cols-2 gap-3.5 xl:grid-cols-4">
         {pulKoradi && (
@@ -225,9 +251,49 @@ export default async function OquvchiProfil({ params }: { params: Promise<{ id: 
                         </span>
                       </div>
                     )}
+
+                    {pulKoradi && y.holat !== 'tugagan' && (
+                      <details className="w-full">
+                        <summary className="cursor-pointer text-[12px] text-ink-3 hover:text-ink">Guruhdan chiqarish</summary>
+                        <form action={guruhdanChiqar} className="mt-2 flex flex-wrap items-end gap-2">
+                          <input type="hidden" name="student_id" value={oquvchi.id} />
+                          <input type="hidden" name="enrollment_id" value={y.id} />
+                          <Maydon nom="Oxirgi kuni" izoh="Keyingi oylar hisobdan olinadi">
+                            <input type="date" name="sana" required defaultValue={bugunToshkent()} min={y.boshlandi} className={kirishKlass} />
+                          </Maydon>
+                          <Yuborish tur="xavfli" kutish="…">Chiqarish</Yuborish>
+                        </form>
+                      </details>
+                    )}
                   </div>
                 )
               })
+            )}
+
+            {pulKoradi && (
+              <details className="rounded-[10px] border border-dashed border-line px-4 py-3">
+                <summary className="cursor-pointer text-[13px] font-semibold text-ink-2">+ Guruhga biriktirish</summary>
+                <form action={guruhgaBiriktir} className="mt-3 flex flex-col gap-3">
+                  <input type="hidden" name="student_id" value={oquvchi.id} />
+                  <div className="grid gap-3 sm:grid-cols-[2fr_1fr]">
+                    <Maydon nom="Guruh">
+                      <select name="group_id" required defaultValue="" className={kirishKlass}>
+                        <option value="" disabled>Tanlang…</option>
+                        {((barchaGuruhlar ?? []) as { id: string; nom: string }[])
+                          .filter((g) => !yList.some((y) => y.group_id === g.id && y.holat !== 'tugagan'))
+                          .map((g) => (
+                            <option key={g.id} value={g.id}>{g.nom}</option>
+                          ))}
+                      </select>
+                    </Maydon>
+                    <Maydon nom="Boshlagan sana">
+                      <input type="date" name="boshlandi" defaultValue={bugunToshkent()} className={kirishKlass} />
+                    </Maydon>
+                  </div>
+                  <ChegirmaMaydonlari />
+                  <Yuborish>Biriktirish</Yuborish>
+                </form>
+              </details>
             )}
           </div>
         </Card>

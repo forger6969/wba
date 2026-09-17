@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { talabProfil, staffmi } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi } from '@/lib/supabase/env'
-import { Card, Badge, Empty } from '@/components/ui'
+import { Card, Badge, Empty, Button } from '@/components/ui'
 import { Sarlavha, Ulanmagan, Sahifalash } from '@/components/crm'
 import { IconSearch } from '@/components/icons'
 import { pul, telefon } from '@/lib/format'
@@ -153,6 +153,7 @@ export default async function Oquvchilar({
       <Sarlavha
         nom="O‘quvchilar"
         izoh={`${jami} ta yozuv${qidiruv ? ` · "${qidiruv}" bo‘yicha` : ''}`}
+        amal={pulKoradi ? <Button href="/crm/oquvchilar/yangi">O‘quvchi qo‘shish</Button> : undefined}
       />
 
       {/* Filtr — oddiy GET forma, JavaScriptsiz ham ishlaydi */}

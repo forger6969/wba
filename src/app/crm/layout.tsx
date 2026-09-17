@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Logo } from '@/components/ui'
 import { bosh } from '@/lib/format'
-import { IconLogout } from '@/components/icons'
+import { IconLogout, IconChevronDown } from '@/components/icons'
 
 async function chiqish() {
   'use server'
@@ -76,10 +76,11 @@ export default async function CrmLayout({ children }: { children: React.ReactNod
   const nishon = (band: MenyuBand) =>
     band.href.startsWith('/crm/tolovlar') ? tasdiqlanmagan : undefined
 
-  // Telefon uchun: har bo'limdan eng kerakli bandlar, jami 5 tagacha
+  /* Telefon uchun: eng kerakli 4 ta band + "Menyu" (qolgan hammasi).
+     Pastki panelga 5 tadan ortig'i sig'maydi, bo'limlar esa ko'p. */
   const mobilBandlar = bolimlar
     .flatMap((b) => b.bandlar.filter((x) => x.mobil && x.tayyor))
-    .slice(0, 5)
+    .slice(0, 4)
 
   /* Kim ekani — botdagi menyuMatni() kabi: ikki rol bo'lsa ikkalasi ham. */
   const kim = [
@@ -156,6 +157,13 @@ export default async function CrmLayout({ children }: { children: React.ReactNod
             <span className="truncate text-[10.5px]">{band.nom}</span>
           </Link>
         ))}
+        <Link
+          href="/crm/menyu"
+          className="flex min-h-14 flex-1 flex-col items-center justify-center gap-1 px-1 text-ink-3 transition hover:text-ink"
+        >
+          <IconChevronDown size={18} />
+          <span className="truncate text-[10.5px]">Menyu</span>
+        </Link>
       </nav>
 
       <main className="min-w-0 flex-1 max-lg:pt-14 max-lg:pb-16">{children}</main>

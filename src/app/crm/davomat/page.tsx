@@ -2,10 +2,11 @@ import Link from 'next/link'
 import { talabProfil, getUstoz } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi } from '@/lib/supabase/env'
-import { Card, Badge, Empty } from '@/components/ui'
+import { Card, CardHeader, Badge, Empty } from '@/components/ui'
+import { Maydon, kirishKlass } from '@/components/forma'
 import { Sarlavha, Ulanmagan } from '@/components/crm'
 import { IconAttendance } from '@/components/icons'
-import { sana, vaqt, bugunToshkent } from '@/lib/format'
+import { sana, vaqt, bugunToshkent, joriyDavr } from '@/lib/format'
 import type { BugungiDars } from '@/lib/types'
 
 export const metadata = { title: 'Davomat' }
@@ -27,6 +28,9 @@ export default async function Davomat() {
     .order('boshlanish')
 
   const dList = (darslar ?? []) as unknown as BugungiDars[]
+
+  // Oylik eksport uchun — RLS ustozga faqat o'z guruhlarini beradi
+  const { data: guruhlar } = await supabase.from('groups').select('id, nom').eq('holat', 'faol').order('nom')
 
   return (
     <div className="flex flex-col gap-4 px-5 py-5 lg:px-7">
@@ -72,6 +76,26 @@ export default async function Davomat() {
         </ul>
       )}
 
+      {(guruhlar ?? []).length > 0 && (
+        <Card className="flex flex-col">
+          <CardHeader title="Oylik davomat (Excel)" meta="Excel ochadigan fayl" />
+          <form action="/crm/davomat/eksport" className="grid gap-3 px-5 pb-5 sm:grid-cols-[2fr_1fr_auto] sm:items-end">
+            <Maydon nom="Guruh">
+              <select name="guruh" required className={kirishKlass}>
+                {(guruhlar ?? []).map((g) => (
+                  <option key={g.id} value={g.id}>{g.nom}</option>
+                ))}
+              </select>
+            </Maydon>
+            <Maydon nom="Oy">
+              <input type="month" name="davr" required defaultValue={joriyDavr()} className={kirishKlass} />
+            </Maydon>
+            <button type="submit" className="min-h-11 rounded-[9px] border border-line px-5 text-[13.5px] text-ink-2 transition hover:border-ink-3 hover:text-ink">
+              Yuklab olish
+            </button>
+          </form>
+        </Card>
+      )}
     </div>
   )
 }

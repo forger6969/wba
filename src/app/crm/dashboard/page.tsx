@@ -3,22 +3,34 @@ import { talabProfil, staffmi } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardHeader, Stat, BarRow, Empty } from '@/components/ui'
 import { IconAlert, IconSearch } from '@/components/icons'
-import { pul, davrNomi, joriyDavr, sana } from '@/lib/format'
-import type { DashboardStats, Qarzdor, TeacherStats } from '@/lib/types'
+import { pul, davrNomi, joriyDavr, sana, bugunToshkent } from '@/lib/format'
+import { supabaseSozlanganmi } from '@/lib/supabase/env'
+import { Ulanmagan } from '@/components/crm'
+import type { DashboardStats, Qarzdor, TeacherStats, Hisobot } from '@/lib/types'
 
 export const metadata = { title: 'Boshqaruv paneli' }
 export const dynamic = 'force-dynamic'
 
 export default async function Dashboard() {
   const profil = await talabProfil()
+  if (!supabaseSozlanganmi()) return <Ulanmagan nom="Boshqaruv paneli" />
   const supabase = await createClient()
   const davr = joriyDavr()
+  const bugun = bugunToshkent()
+  const xodim = staffmi(profil.rol)
 
-  const [{ data: stats }, { data: qarzdorlar }, { data: ustozlar }] = await Promise.all([
-    supabase.from('v_dashboard').select('*').single(),
-    supabase.from('v_qarzdorlar').select('*').limit(6),
-    supabase.from('v_teacher_stats').select('*').order('tushum', { ascending: false }),
-  ])
+  const [{ data: stats }, { data: qarzdorlar }, { data: ustozlar }, { data: kunlik }, { count: probniyBugun }] =
+    await Promise.all([
+      supabase.from('v_dashboard').select('*').single(),
+      supabase.from('v_qarzdorlar').select('*').limit(6),
+      supabase.from('v_teacher_stats').select('*').order('tushum', { ascending: false }),
+      // Botdagi "Bugun" / "Kunlik hisobot" — bitta so'rov, hisob bazada
+      xodim ? supabase.rpc('tushum_hisobot', { p_dan: bugun, p_gacha: bugun }) : Promise.resolve({ data: null }),
+      xodim
+        ? supabase.from('leads').select('id', { count: 'exact', head: true }).eq('sinov_sana', bugun).eq('holat', 'yangi')
+        : Promise.resolve({ count: 0 }),
+    ])
+  const k = kunlik as Hisobot | null
 
   const s = (stats ?? null) as DashboardStats | null
   const qList = (qarzdorlar ?? []) as Qarzdor[]
@@ -37,10 +49,12 @@ export default async function Dashboard() {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <div className="flex h-10 w-64 items-center gap-2.5 rounded-[9px] border border-line bg-surface px-3 text-ink-4">
-            <IconSearch size={15} />
-            <span className="text-[13px]">Ism, ID yoki telefon…</span>
-          </div>
+          {xodim && (
+            <form action="/crm/oquvchilar" className="flex h-11 w-64 items-center gap-2.5 rounded-[9px] border border-line bg-surface px-3 max-sm:w-full">
+              <IconSearch size={15} />
+              <input name="q" placeholder="Ism, ID yoki telefon…" className="min-w-0 flex-1 bg-transparent text-[13px] text-ink outline-none placeholder:text-ink-4" />
+            </form>
+          )}
           <span className="flex h-10 items-center rounded-[9px] border border-line bg-surface px-3 font-[family-name:var(--font-mono)] text-[12.5px]">
             {davr}
           </span>
@@ -68,7 +82,32 @@ export default async function Dashboard() {
         </Link>
       )}
 
-      <div className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
+      {xodim && k && (
+        <section className="flex flex-col gap-2">
+          <h2 className="lbl">Bugun · {sana(bugun)}</h2>
+          <div className="grid grid-cols-2 gap-3.5 xl:grid-cols-4">
+            <Stat label="Bugungi tushum" value={Number(k.tushum)} sub={`${k.soni} ta to‘lov`} />
+            <Link href="/crm/hisobotlar?tur=bugun" className="contents">
+              <Stat
+                label="Davomat qo‘yilmagan"
+                value={k.darslar.qilinmagan}
+                sub={`${k.darslar.kutilgan} ta darsdan`}
+                ton={k.darslar.qilinmagan > 0 ? 'brand' : 'ok'}
+              />
+            </Link>
+            <Link href="/crm/probniylar" className="contents">
+              <Stat label="Bugun sinov darsi" value={probniyBugun ?? 0} sub="probniy kutilmoqda" ton="accent" />
+            </Link>
+            <Stat
+              label="Bugungi davomat"
+              value={k.davomat.belgilar ? `${Math.round((k.davomat.kelgan * 100) / k.davomat.belgilar)}%` : '—'}
+              sub={`${k.davomat.kelgan} keldi · ${k.davomat.kelmadi} kelmadi`}
+            />
+          </div>
+        </section>
+      )}
+
+      <div className="grid grid-cols-2 gap-3.5 xl:grid-cols-4">
         <Stat
           label={`${davrNomi(davr)} tushumi`}
           value={s?.joriy_oy_tushumi ?? 0}

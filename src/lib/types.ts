@@ -15,7 +15,8 @@ export type EnrollmentStatus = 'faol' | 'tanaffus' | 'tugagan'
 export type AttendanceStatus = 'keldi' | 'kechikdi' | 'sababli' | 'kelmadi'
 export type PaymentMethod = 'naqd' | 'karta' | 'click' | 'payme'
 export type InvoiceStatus = 'ochiq' | 'yopilgan' | 'bekor'
-export type LeadStatus = 'yangi' | 'qongiroq' | 'keldi' | 'yozildi' | 'rad'
+/** Botdagi Probniylar: Probniy→yangi · Doimiy→yozildi · Kelmadi→kelmadi · Rad etdi→rad */
+export type LeadStatus = 'yangi' | 'qongiroq' | 'keldi' | 'kelmadi' | 'yozildi' | 'rad'
 export type LeadSource = 'sayt' | 'telegram' | 'instagram' | 'tavsiya' | 'boshqa'
 export type WoblrReason = 'faollik' | 'uy_vazifasi' | 'yordam' | 'qoida' | 'boshqa'
 export type SalaryType = 'foiz' | 'oquvchi_soni' | 'fiks'
@@ -191,6 +192,9 @@ export type Lead = {
   holat: LeadStatus
   izoh: string | null
   student_id: string | null
+  group_id: string | null
+  tugilgan_sana: string | null
+  sinov_sana: string | null
   created_at: string
   updated_at: string
 }
@@ -324,6 +328,23 @@ export type DavomatNatija = {
   ball: number
 }
 
+/** 0010 · tushum_hisobot() natijasi */
+export type HisobotQator = { nom: string; summa: number; soni: number }
+export type Hisobot = {
+  tushum: number
+  soni: number
+  odam: number
+  tasdiqlanmagan: number
+  usul: HisobotQator[]
+  ustoz: HisobotQator[]
+  yonalish: HisobotQator[]
+  kunlar: { sana: string; summa: number; soni: number }[]
+  davomat: { belgilar: number; kelgan: number; kelmadi: number; sababli: number }
+  darslar: { kutilgan: number; qilinmagan: number }
+  qilinmagan: { ustoz: string; nom: string; sana: string }[]
+  probniy: { jami: number; kutilmoqda: number; yozildi: number; kelmadi: number; rad: number }
+}
+
 /* ---------- Supabase klient uchun sxema ---------- */
 
 type Table<Row, Insert = Partial<Row>, Update = Partial<Row>> = {
@@ -387,6 +408,16 @@ export type Database = {
         Returns: DavomatNatija
       }
       dars_kunimi: { Args: { p_kun: DayType; p_sana: string }; Returns: boolean }
+      keyingi_id: { Args: { p_jadval: string; p_prefiks: string; p_uzunlik?: number }; Returns: string }
+      oquvchi_qosh: { Args: { p: Record<string, unknown> }; Returns: string }
+      guruhga_biriktir: {
+        Args: { p_student: string; p_group: string; p_boshlandi?: string | null; p_chegirma?: Record<string, unknown> }
+        Returns: string
+      }
+      guruhdan_chiqar: { Args: { p_enrollment: string; p_sana?: string | null }; Returns: undefined }
+      yozilish_hisoblari: { Args: { p_enrollment: string }; Returns: number }
+      probniy_doimiy: { Args: { p_lead: string; p_boshlandi?: string | null }; Returns: string }
+      tushum_hisobot: { Args: { p_dan: string; p_gacha: string }; Returns: Hisobot }
     }
     Enums: {
       user_role: UserRole

@@ -195,7 +195,7 @@ function guruhlarniQur(qatorlar: Qator[], ustozlar: Ustoz[]): Guruh[] {
       continue
     }
 
-    const id = matn(q, 'Guruh ID') || `N${String(natija.length + 1).padStart(2, '0')}`
+    const id = matn(q, 'Guruh ID') || `G${String(natija.length + 1).padStart(2, '0')}`
     const ustozIsm = matn(q, "O'qituvchi")
     const teacher = ustozIsm ? (ustozId.get(ustozIsm.toLowerCase()) ?? null) : null
     if (ustozIsm && !teacher) ogoh(`Ustoz topilmadi: "${ustozIsm}" (guruh: ${nom})`)

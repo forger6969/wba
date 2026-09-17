@@ -9,7 +9,7 @@
     "lint": "eslint",
     "migrate": "tsx scripts/migrate-from-sheets.ts",
     "migrate:dry": "tsx scripts/migrate-from-sheets.ts --dry-run",
-    "test": "tsx --test scripts/**/*.test.ts",
+    "test": "tsx --test scripts/**/*.test.ts src/**/*.test.ts",
     "typecheck": "tsc --noEmit",
     "db:test": "bash supabase/run-local-test.sh",
     "db:start": "npx supabase start -x realtime,storage-api,imgproxy,edge-runtime,logflare,vector,supavisor,mailpit",

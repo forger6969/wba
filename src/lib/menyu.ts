@@ -11,8 +11,8 @@
  * Bir odam ikki rolda bo'lishi mumkin — u holda ikkala bo'lim ham
  * ko'rinadi (Farrux: direktor + ustoz, Jamshid: admin + ustoz).
  *
- * `tayyor: false` — prototipda hali yo'q sahifa. Menyuda ko'rinadi,
- * lekin havola emas: bosib 404 ga tushib qolmasin.
+ * `tayyor: false` — hali yozilmagan sahifa. Menyuda ko'rinadi, lekin
+ * havola emas: bosib 404 ga tushib qolmasin.
  */
 
 import type { UserRole } from '@/lib/types'
@@ -47,7 +47,7 @@ export function menyular(rol: UserRole, ustozmi: boolean): MenyuBolim[] {
       bandlar: [
         { href: '/crm/davomat', nom: 'Davomat', Icon: IconAttendance, tayyor: true, mobil: true },
         { href: '/crm/guruhlar', nom: 'Guruhlarim', Icon: IconGroups, tayyor: true, mobil: true },
-        { href: '/crm/woblr', nom: 'WOBLR', Icon: IconWoblr, tayyor: false },
+        { href: '/crm/woblr', nom: 'WOBLR', Icon: IconWoblr, tayyor: true },
       ],
     })
   }
@@ -59,14 +59,14 @@ export function menyular(rol: UserRole, ustozmi: boolean): MenyuBolim[] {
         { href: '/crm/dashboard', nom: 'Bugun', Icon: IconDashboard, tayyor: true, mobil: true },
         { href: '/crm/oquvchilar', nom: 'O‘quvchilar', Icon: IconStudents, tayyor: true, mobil: true },
         ...(ustozmi ? [] : [{ href: '/crm/guruhlar', nom: 'Guruhlar', Icon: IconGroups, tayyor: true, mobil: true }]),
-        { href: '/crm/qarzdorlar', nom: 'Qarzdorlar', Icon: IconDebt, tayyor: false },
-        { href: '/crm/tolovlar', nom: 'To‘lovlar', Icon: IconPayments, tayyor: false },
-        { href: '/crm/probniylar', nom: 'Probniylar', Icon: IconLeads, tayyor: false },
-        { href: '/crm/hisobotlar', nom: 'Hisobotlar', Icon: IconReports, tayyor: false },
+        { href: '/crm/qarzdorlar', nom: 'Qarzdorlar', Icon: IconDebt, tayyor: true },
+        { href: '/crm/tolovlar', nom: 'To‘lovlar', Icon: IconPayments, tayyor: true },
+        { href: '/crm/probniylar', nom: 'Probniylar', Icon: IconLeads, tayyor: true },
+        { href: '/crm/hisobotlar', nom: 'Hisobotlar', Icon: IconReports, tayyor: true },
         ...(adminmi(rol)
           ? [
-              { href: '/crm/ustozlar', nom: 'Ustozlar', Icon: IconTeacher, tayyor: false },
-              { href: '/crm/sozlamalar', nom: 'Sozlamalar', Icon: IconSettings, tayyor: false },
+              { href: '/crm/ustozlar', nom: 'Ustozlar', Icon: IconTeacher, tayyor: true },
+              { href: '/crm/sozlamalar', nom: 'Sozlamalar', Icon: IconSettings, tayyor: true },
             ]
           : []),
       ],
@@ -81,7 +81,7 @@ export function menyular(rol: UserRole, ustozmi: boolean): MenyuBolim[] {
           href: '/crm/tolovlar?filtr=tasdiqlanmagan',
           nom: 'Tasdiqlash',
           Icon: IconPayments,
-          tayyor: false,
+          tayyor: true,
           mobil: true,
         },
       ],
@@ -93,7 +93,7 @@ export function menyular(rol: UserRole, ustozmi: boolean): MenyuBolim[] {
       nom: 'Mening sahifam',
       bandlar: [
         { href: '/crm/dashboard', nom: 'Bosh sahifa', Icon: IconDashboard, tayyor: true, mobil: true },
-        { href: '/crm/woblr', nom: 'WOBLR', Icon: IconWoblr, tayyor: false },
+        { href: '/crm/woblr', nom: 'WOBLR', Icon: IconWoblr, tayyor: true },
       ],
     })
   }

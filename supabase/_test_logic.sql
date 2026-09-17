@@ -187,6 +187,10 @@ reset role;
 --  7. DIREKTOR · ikki bosqichli chegirma · dam olish guruhi
 -- ============================================================
 
+-- Oldingi bo'limdagi "kim kirgan" belgisi reset role dan keyin ham qoladi.
+-- Sozlash superuser nomidan bo'lsin (Supabase'da ham shunday: auth.uid() bo'sh).
+reset request.jwt.claim.sub;
+
 insert into auth.users (id, email) values
   ('66666666-6666-6666-6666-666666666666', 'farrux@wba.uz');
 update profiles set rol = 'direktor', ism = 'Farrux'
@@ -459,6 +463,46 @@ end $$;
 
 \echo '--- ustoz hisobotda pulni ko''rmasligi kerak (tushum 0) ---'
 select tushum_hisobot('2026-09-01', '2026-09-30') ->> 'tushum' as ustoz_korgan_tushum;
+
+reset role;
+
+-- ============================================================
+--  11. DIREKTOR ROLI HIMOYASI (0011)
+-- ============================================================
+
+set role authenticated;
+
+\echo '--- admin O''ZINI direktor qila olmasligi kerak ---'
+set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
+do $$
+begin
+  update profiles set rol = 'direktor' where id = '11111111-1111-1111-1111-111111111111';
+  raise exception 'XATO: admin o''zini direktor qildi!';
+exception when others then
+  if sqlerrm like '%O''z rolingizni%' then raise notice 'OK: o''z rolini o''zgartirish to''sildi';
+  else raise; end if;
+end $$;
+
+\echo '--- admin BOSHQANI direktor qila olmasligi kerak ---'
+do $$
+begin
+  update profiles set rol = 'direktor' where id = '22222222-2222-2222-2222-222222222222';
+  raise exception 'XATO: admin boshqaga direktor rolini berdi!';
+exception when others then
+  if sqlerrm like '%faqat direktor%' then raise notice 'OK: direktor rolini admin bera olmadi';
+  else raise; end if;
+end $$;
+
+\echo '--- admin oddiy rolni o''zgartira oladi (qabulxona -> ustoz -> qabulxona) ---'
+update profiles set rol = 'ustoz' where id = '22222222-2222-2222-2222-222222222222';
+update profiles set rol = 'qabulxona' where id = '22222222-2222-2222-2222-222222222222';
+select ism, rol from profiles where id = '22222222-2222-2222-2222-222222222222';
+
+\echo '--- direktor boshqaga direktor rolini bera oladi va qaytarib oladi ---'
+set request.jwt.claim.sub = '66666666-6666-6666-6666-666666666666';
+update profiles set rol = 'direktor' where id = '22222222-2222-2222-2222-222222222222';
+update profiles set rol = 'qabulxona' where id = '22222222-2222-2222-2222-222222222222';
+select ism, rol from profiles where id = '22222222-2222-2222-2222-222222222222';
 
 reset role;
 \echo ''

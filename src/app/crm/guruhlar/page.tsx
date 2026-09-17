@@ -1,8 +1,8 @@
 import Link from 'next/link'
-import { talabProfil, getUstoz, staffmi } from '@/lib/auth'
+import { talabProfil, getUstoz, staffmi, adminmi } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi } from '@/lib/supabase/env'
-import { Card, Badge, Empty } from '@/components/ui'
+import { Card, Badge, Empty, Button } from '@/components/ui'
 import { Sarlavha, Ulanmagan } from '@/components/crm'
 import { pul, jadval } from '@/lib/format'
 import type { DayType } from '@/lib/types'
@@ -58,6 +58,7 @@ export default async function Guruhlar() {
       <Sarlavha
         nom={ustoz && !pulKoradi ? 'Guruhlarim' : 'Guruhlar'}
         izoh={`${faol} ta faol guruh${gList.length > faol ? ` · ${gList.length - faol} ta yopilgan` : ''}`}
+        amal={adminmi(profil.rol) ? <Button href="/crm/guruhlar/yangi">Guruh ochish</Button> : undefined}
       />
 
       {gList.length === 0 ? (

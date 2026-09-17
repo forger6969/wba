@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { talabProfil, staffmi } from '@/lib/auth'
+import { talabProfil, staffmi, adminmi } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi } from '@/lib/supabase/env'
-import { Card, CardHeader, Stat, Badge, Empty } from '@/components/ui'
+import { Card, CardHeader, Stat, Badge, Empty, Button } from '@/components/ui'
+import { Xabar } from '@/components/forma'
 import { Sarlavha, Ulanmagan } from '@/components/crm'
 import { IconArrowLeft } from '@/components/icons'
 import { pul, jadval, sana, davrNomi, joriyDavr } from '@/lib/format'
@@ -12,8 +13,14 @@ import type { DayType } from '@/lib/types'
 export const metadata = { title: 'Guruh' }
 export const dynamic = 'force-dynamic'
 
-export default async function GuruhProfil({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+export default async function GuruhProfil({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ ok?: string; xato?: string }>
+}) {
+  const [{ id }, xabar] = await Promise.all([params, searchParams])
   const profil = await talabProfil()
   if (!supabaseSozlanganmi()) return <Ulanmagan nom="Guruh" />
 
@@ -110,8 +117,20 @@ export default async function GuruhProfil({ params }: { params: Promise<{ id: st
             {g.teachers?.ism ?? '[ANIQLANMAGAN]'} · {jadval(g.boshlanish, g.tugash, g.kun_turi)}
           </>
         }
-        amal={g.holat === 'faol' ? <Badge ton="ok">Faol</Badge> : <Badge ton="jim">Yopilgan</Badge>}
+        amal={
+          <div className="flex flex-wrap items-center gap-2">
+            {g.holat === 'faol' ? <Badge ton="ok">Faol</Badge> : <Badge ton="jim">Yopilgan</Badge>}
+            <Button href={`/crm/davomat/eksport?guruh=${g.id}&davr=${davr}`} variant="ikkilamchi">
+              Oylik davomat (Excel)
+            </Button>
+            {adminmi(profil.rol) && (
+              <Button href={`/crm/guruhlar/${g.id}/tahrir`} variant="ikkilamchi">Tahrirlash</Button>
+            )}
+          </div>
+        }
       />
+
+      <Xabar ok={xabar.ok} xato={xabar.xato} />
 
       <div className="grid grid-cols-2 gap-3.5 xl:grid-cols-4">
         <Stat label="O‘quvchilar" value={yList.length} sub={`sig‘imi ${g.sigim} kishi`} />
