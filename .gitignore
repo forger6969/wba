@@ -46,4 +46,7 @@ next-env.d.ts
 .secrets/
 supabase/_test_*.sql.out
 
+# Haqiqiy ma'lumot — ism va telefon bor, git'ga tushmaydi
+*.xlsx
+
 !.env.example
