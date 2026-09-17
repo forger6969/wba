@@ -9,6 +9,7 @@ import { IconArrowLeft } from '@/components/icons'
 import { pul, jadval, sana, davrNomi, joriyDavr } from '@/lib/format'
 import type { DayType } from '@/lib/types'
 
+export const metadata = { title: 'Guruh' }
 export const dynamic = 'force-dynamic'
 
 export default async function GuruhProfil({ params }: { params: Promise<{ id: string }> }) {
@@ -112,11 +113,11 @@ export default async function GuruhProfil({ params }: { params: Promise<{ id: st
         amal={g.holat === 'faol' ? <Badge ton="ok">Faol</Badge> : <Badge ton="jim">Yopilgan</Badge>}
       />
 
-      <div className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3.5 xl:grid-cols-4">
         <Stat label="O‘quvchilar" value={yList.length} sub={`sig‘imi ${g.sigim} kishi`} />
         <Stat
           label={`Davomat · ${davrNomi(davr)}`}
-          value={ortacha === null ? '[ANIQLANMAGAN]' : `${ortacha}%`}
+          value={ortacha === null ? '—' : `${ortacha}%`}
           sub={ortacha === null ? 'shu oyda belgilanmagan' : 'o‘rtacha'}
           ton={ortacha !== null && ortacha >= 80 ? 'ok' : 'accent'}
         />

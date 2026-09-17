@@ -346,5 +346,33 @@ exception
 end $$;
 
 reset role;
+
+-- ============================================================
+--  9. ROL XAVFSIZLIGI — o'zini admin qilib ro'yxatdan o'tolmasin
+-- ============================================================
+
+\echo '--- user_metadata da rol=admin yozgan odam OQUVCHI bo''lishi kerak ---'
+insert into auth.users (id, email, raw_user_meta_data) values
+  ('77777777-7777-7777-7777-777777777777', 'buzgunchi@example.com',
+   '{"ism": "Buzg''unchi", "rol": "admin"}');
+select ism, rol from profiles where id = '77777777-7777-7777-7777-777777777777';
+
+\echo '--- app_metadata (faqat server yozadi) dagi rol qabul qilinadi ---'
+insert into auth.users (id, email, raw_user_meta_data, raw_app_meta_data) values
+  ('88888888-8888-8888-8888-888888888888', 'yangi.ustoz@wba.uz',
+   '{"ism": "Yangi ustoz"}', '{"rol": "ustoz"}');
+select ism, rol from profiles where id = '88888888-8888-8888-8888-888888888888';
+
+do $$
+begin
+  if (select rol from profiles where id = '77777777-7777-7777-7777-777777777777') <> 'oquvchi' then
+    raise exception 'XATO: user_metadata orqali rol olib bo''lindi!';
+  end if;
+  if (select rol from profiles where id = '88888888-8888-8888-8888-888888888888') <> 'ustoz' then
+    raise exception 'XATO: app_metadata dagi rol qabul qilinmadi';
+  end if;
+  raise notice 'OK: rolni faqat server bera oladi';
+end $$;
+
 \echo ''
 \echo '=== TEST TUGADI ==='

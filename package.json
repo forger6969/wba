@@ -11,7 +11,10 @@
     "migrate:dry": "tsx scripts/migrate-from-sheets.ts --dry-run",
     "test": "tsx --test scripts/**/*.test.ts",
     "typecheck": "tsc --noEmit",
-    "db:test": "bash supabase/run-local-test.sh"
+    "db:test": "bash supabase/run-local-test.sh",
+    "db:start": "npx supabase start -x realtime,storage-api,imgproxy,edge-runtime,logflare,vector,supavisor,mailpit",
+    "db:stop": "npx supabase stop",
+    "hisob": "tsx scripts/hisob-och.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

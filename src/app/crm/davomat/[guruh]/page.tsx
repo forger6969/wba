@@ -10,6 +10,7 @@ import { sana, vaqt, bugunToshkent } from '@/lib/format'
 import { DavomatForma, type Qatnashuvchi } from './forma'
 import type { AttendanceStatus, DayType } from '@/lib/types'
 
+export const metadata = { title: 'Dars davomati' }
 export const dynamic = 'force-dynamic'
 
 export default async function DarsDavomati({ params }: { params: Promise<{ guruh: string }> }) {

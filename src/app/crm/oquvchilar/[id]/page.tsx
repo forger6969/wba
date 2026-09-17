@@ -9,6 +9,7 @@ import { IconArrowLeft, IconPhone } from '@/components/icons'
 import { pul, sana, telefon, jadval, davrNomi, joriyDavr } from '@/lib/format'
 import type { StudentStatus, DayType, PaymentMethod, AttendanceStatus } from '@/lib/types'
 
+export const metadata = { title: 'O‘quvchi profili' }
 export const dynamic = 'force-dynamic'
 
 const HOLAT_NOMI: Record<StudentStatus, string> = {
@@ -156,7 +157,7 @@ export default async function OquvchiProfil({ params }: { params: Promise<{ id: 
         }
       />
 
-      <div className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3.5 xl:grid-cols-4">
         {pulKoradi && (
           <>
             <Stat label="Qarz" value={jamiQarz} sub="so‘m" ton={jamiQarz > 0 ? 'brand' : 'ok'} border={jamiQarz > 0 ? 'brand' : undefined} />

@@ -5,7 +5,7 @@ import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Card, Badge, Empty } from '@/components/ui'
 import { Sarlavha, Ulanmagan } from '@/components/crm'
 import { IconAttendance } from '@/components/icons'
-import { sana, vaqt, jadval, bugunToshkent } from '@/lib/format'
+import { sana, vaqt, bugunToshkent } from '@/lib/format'
 import type { BugungiDars } from '@/lib/types'
 
 export const metadata = { title: 'Davomat' }
@@ -72,10 +72,6 @@ export default async function Davomat() {
         </ul>
       )}
 
-      <p className="lbl">
-        {dList.length > 0 &&
-          `Jadval: ${jadval(dList[0].boshlanish, dList[0].tugash, dList[0].kun_turi)}`}
-      </p>
     </div>
   )
 }
