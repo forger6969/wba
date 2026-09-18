@@ -515,5 +515,41 @@ update profiles set rol = 'qabulxona' where id = '22222222-2222-2222-2222-222222
 select ism, rol from profiles where id = '22222222-2222-2222-2222-222222222222';
 
 reset role;
+
+-- ============================================================
+--  12. CHEGIRMANI TAHRIRLASH (0014)
+-- ============================================================
+
+set role authenticated;
+set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';   -- admin
+
+\echo '--- S004: 250 000 x1 oy -> 50 000 doimiy edi. Endi 100 000 DOIMIY: hamma oy 550 000 ---'
+select chegirma_ozgartir(
+  (select id from enrollments where student_id = 'S004' and group_id = 'N03'),
+  jsonb_build_object('chegirma_summa', 100000, 'chegirma_oy', '', 'chegirma_sabab', 'direktor qarori')
+) as ozgardi;
+select i.davr, i.summa, i.chegirma from invoices i
+join enrollments e on e.id = i.enrollment_id where e.student_id = 'S004' order by i.davr;
+
+\echo '--- chegirma olib tashlandi: to''liq narx 650 000 ---'
+select chegirma_ozgartir(
+  (select id from enrollments where student_id = 'S004' and group_id = 'N03'),
+  jsonb_build_object('chegirma_summa', 0)
+) as ozgardi;
+select i.davr, i.summa, i.chegirma from invoices i
+join enrollments e on e.id = i.enrollment_id where e.student_id = 'S004' order by i.davr;
+
+\echo '--- ustoz chegirmani o''zgartira olmasligi kerak ---'
+set request.jwt.claim.sub = '33333333-3333-3333-3333-333333333333';
+do $$
+begin
+  perform chegirma_ozgartir((select id from enrollments where student_id = 'S001' limit 1), '{"chegirma_summa": 999}');
+  raise exception 'XATO: ustoz chegirma berdi!';
+exception when others then
+  if sqlerrm like '%huquqingiz yo%' then raise notice 'OK: ustozga chegirma yopiq';
+  else raise; end if;
+end $$;
+
+reset role;
 \echo ''
 \echo '=== TEST TUGADI ==='

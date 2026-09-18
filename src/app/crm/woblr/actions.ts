@@ -10,7 +10,7 @@ import type { WoblrReason } from '@/lib/types'
 const SABABLAR: WoblrReason[] = ['faollik', 'uy_vazifasi', 'yordam', 'qoida', 'boshqa']
 
 /**
- * Dars tashqarisida ball berish (dars ichida davomat ekranida beriladi).
+ * Woblar berish — dars tashqarisida ham (masalan davomatdan keyin).
  * Ustoz faqat O'Z o'quvchisiga bera oladi — buni RLS ham tekshiradi
  * (woblr_teacher_insert: app_teaches_student va bergan_profile = auth.uid()).
  */
@@ -20,7 +20,7 @@ export async function woblrBer(fd: FormData) {
   const yol = `/crm/woblr${matn(fd.get('guruh')) ? `?guruh=${matn(fd.get('guruh'))}` : ''}`
 
   if (!ustoz && !adminmi(profil.rol)) {
-    redirect(xabarliYol(yol, { xato: 'Ball berish huquqingiz yo‘q.' }))
+    redirect(xabarliYol(yol, { xato: 'Woblar berish huquqingiz yo‘q.' }))
   }
 
   const studentId = matn(fd.get('student_id'))
@@ -29,7 +29,7 @@ export async function woblrBer(fd: FormData) {
 
   if (!studentId) redirect(xabarliYol(yol, { xato: 'O‘quvchini tanlang.' }))
   if (ball === null || ball === 0 || ball < -10 || ball > 10) {
-    redirect(xabarliYol(yol, { xato: 'Ball −10 dan +10 gacha bo‘lsin, 0 emas.' }))
+    redirect(xabarliYol(yol, { xato: 'Woblar −10 dan +10 gacha bo‘lsin, 0 emas.' }))
   }
 
   const supabase = await createClient()
@@ -46,5 +46,5 @@ export async function woblrBer(fd: FormData) {
   if (error) redirect(xabarliYol(yol, { xato: xatoMatni(error) }))
 
   revalidatePath('/crm/woblr')
-  redirect(xabarliYol(yol, { ok: `${ball! > 0 ? '+' : ''}${ball} ball yozildi.` }))
+  redirect(xabarliYol(yol, { ok: `${ball! > 0 ? '+' : ''}${ball} woblar yozildi.` }))
 }

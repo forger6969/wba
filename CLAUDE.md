@@ -94,6 +94,14 @@ Qatnashuvning `To'lashi kerak` / `To'langan` / `Qarz` ustunlari bilan solishtiri
    yana oddiy klient bilan, oxirida `audit_log` ga iz. Rol
    `app_metadata` ga yoziladi (0008) — foydalanuvchi o'zi o'zgartira olmaydi.
 
+   Ikkinchi tor istisno — **o'z loginini almashtirish** (`/crm/profil/actions.ts`):
+   loginlar haqiqiy pochta emas, Supabase esa email o'zgarishini pochta
+   orqali tasdiqlatadi. Tasdiqni joriy parol bilan o'zimiz qilamiz va
+   faqat O'Z hisobi (`men.id`) o'zgaradi. Parolni almashtirish esa
+   oddiy sessiya bilan (`auth.updateUser`), admin kalitisiz.
+
+   Login — oddiy so'z (`aziza`), tizim `@wba.uz` ni o'zi qo'shadi (`src/lib/login.ts`).
+
 ---
 
 ## Buyruqlar

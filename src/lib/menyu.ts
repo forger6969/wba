@@ -47,7 +47,7 @@ export function menyular(rol: UserRole, ustozmi: boolean): MenyuBolim[] {
       bandlar: [
         { href: '/crm/davomat', nom: 'Davomat', Icon: IconAttendance, tayyor: true, mobil: true },
         { href: '/crm/guruhlar', nom: 'Guruhlarim', Icon: IconGroups, tayyor: true, mobil: true },
-        { href: '/crm/woblr', nom: 'WOBLR', Icon: IconWoblr, tayyor: true },
+        { href: '/crm/woblr', nom: 'Woblar', Icon: IconWoblr, tayyor: true },
       ],
     })
   }
@@ -58,7 +58,14 @@ export function menyular(rol: UserRole, ustozmi: boolean): MenyuBolim[] {
       bandlar: [
         { href: '/crm/dashboard', nom: 'Bugun', Icon: IconDashboard, tayyor: true, mobil: true },
         { href: '/crm/oquvchilar', nom: 'O‘quvchilar', Icon: IconStudents, tayyor: true, mobil: true },
-        ...(ustozmi ? [] : [{ href: '/crm/guruhlar', nom: 'Guruhlar', Icon: IconGroups, tayyor: true, mobil: true }]),
+        // Ustoz ham bo'lsa bu uchtasi yuqoridagi "Ustoz paneli"da bor
+        ...(ustozmi
+          ? []
+          : [
+              { href: '/crm/guruhlar', nom: 'Guruhlar', Icon: IconGroups, tayyor: true, mobil: true },
+              { href: '/crm/davomat', nom: 'Davomat', Icon: IconAttendance, tayyor: true },
+              { href: '/crm/woblr', nom: 'Woblar', Icon: IconWoblr, tayyor: true },
+            ]),
         { href: '/crm/qarzdorlar', nom: 'Qarzdorlar', Icon: IconDebt, tayyor: true },
         { href: '/crm/tolovlar', nom: 'To‘lovlar', Icon: IconPayments, tayyor: true },
         { href: '/crm/probniylar', nom: 'Probniylar', Icon: IconLeads, tayyor: true },
@@ -93,10 +100,16 @@ export function menyular(rol: UserRole, ustozmi: boolean): MenyuBolim[] {
       nom: 'Mening sahifam',
       bandlar: [
         { href: '/crm/men', nom: 'Bosh sahifa', Icon: IconDashboard, tayyor: true, mobil: true },
-        { href: '/crm/woblr', nom: 'WOBLR reytingi', Icon: IconWoblr, tayyor: true, mobil: true },
+        { href: '/crm/woblr', nom: 'Woblar reytingi', Icon: IconWoblr, tayyor: true, mobil: true },
       ],
     })
   }
+
+  // Har bir panelda: o'z ismi, logini va paroli
+  bolimlar.push({
+    nom: 'Hisobim',
+    bandlar: [{ href: '/crm/profil', nom: 'Profil va parol', Icon: IconSettings, tayyor: true }],
+  })
 
   return bolimlar
 }

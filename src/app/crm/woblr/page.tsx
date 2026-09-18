@@ -10,11 +10,11 @@ import { woblrBer } from './actions'
 import { davrNomi, joriyDavr } from '@/lib/format'
 import type { LeaderboardRow } from '@/lib/types'
 
-export const metadata = { title: 'WOBLR' }
+export const metadata = { title: 'Woblar' }
 export const dynamic = 'force-dynamic'
 
 /**
- * WOBLR reytingi. Ball darsda davomat bilan birga beriladi
+ * Woblar reytingi. Woblar — o'quvchini rag'batlantiruvchi mukofot birligi; darsda davomat bilan birga yoki shu yerda beriladi
  * (/crm/davomat). Reyting funksiya orqali olinadi: o'quvchi butun
  * guruhning ballini ko'radi, lekin telefon, qarz, davomat — yo'q.
  */
@@ -24,7 +24,7 @@ export default async function Woblr({
   searchParams: Promise<{ guruh?: string; davr?: string; ok?: string; xato?: string }>
 }) {
   const profil = await talabProfil()
-  if (!supabaseSozlanganmi()) return <Ulanmagan nom="WOBLR" />
+  if (!supabaseSozlanganmi()) return <Ulanmagan nom="Woblar" />
 
   const s = await searchParams
   const supabase = await createClient()
@@ -41,7 +41,7 @@ export default async function Woblr({
 
   const { data: maxBall } = await supabase.from('settings').select('qiymat').eq('kalit', 'woblr.max_ball_dars').maybeSingle()
 
-  /* Ball berish huquqi: ustoz (o'z o'quvchisiga) yoki admin.
+  /* Woblar berish huquqi: ustoz (o'z o'quvchisiga) yoki admin.
      Ro'yxatni RLS cheklaydi — ustozga faqat o'z guruhlari keladi. */
   const ustoz = await getUstoz()
   const beraOladi = Boolean(ustoz) || adminmi(profil.rol)
@@ -61,7 +61,7 @@ export default async function Woblr({
   return (
     <div className="flex flex-col gap-4 px-5 py-5 lg:px-7">
       <Sarlavha
-        nom="WOBLR reytingi"
+        nom="Woblar reytingi"
         izoh={`${guruh ? gList.find((g) => g.id === guruh)?.nom : 'Butun markaz'} · ${davr ? davrNomi(davr) : 'hamma vaqt'}`}
       />
 
@@ -92,7 +92,7 @@ export default async function Woblr({
         <CardHeader title="Reyting" meta={`${reyting.length} o‘quvchi`} />
         {reyting.length === 0 ? (
           <div className="px-5 pb-5">
-            <Empty>Bu davrda hali ball berilmagan. Ball davomat ekranida, dars paytida qo‘yiladi.</Empty>
+            <Empty>Bu davrda hali woblar berilmagan. Woblar davomat ekranida yoki pastdagi bo‘limda beriladi.</Empty>
           </div>
         ) : (
           <ol>
@@ -114,7 +114,7 @@ export default async function Woblr({
                   </Link>
                 )}
                 <Badge ton={r.ball > 0 ? 'accent' : 'brand'}>
-                  {r.ball > 0 ? `+${r.ball}` : r.ball}
+                  {r.ball > 0 ? `+${r.ball}` : r.ball} W
                 </Badge>
               </li>
             ))}
@@ -124,7 +124,7 @@ export default async function Woblr({
 
       {beraOladi && guruh && oquvchilar.length > 0 && (
         <Card className="flex flex-col">
-          <CardHeader title="Ball berish" meta="dars tashqarisida" />
+          <CardHeader title="Woblar berish" meta="davomatdan keyin ham beriladi" />
           <form action={woblrBer} className="grid gap-3 px-5 pb-5 sm:grid-cols-[2fr_1fr_1.2fr_1.5fr_auto] sm:items-end">
             <input type="hidden" name="guruh" value={guruh} />
             <Maydon nom="O‘quvchi">
@@ -135,7 +135,7 @@ export default async function Woblr({
                 ))}
               </select>
             </Maydon>
-            <Maydon nom="Ball" izoh="−10…+10">
+            <Maydon nom="Woblar" izoh="−10…+10">
               <input name="ball" type="number" min={-10} max={10} step={1} defaultValue={1} required className={kirishKlass} />
             </Maydon>
             <Maydon nom="Sabab">
@@ -156,7 +156,7 @@ export default async function Woblr({
       )}
 
       <p className="text-[12px] text-ink-3">
-        Bir darsda eng ko‘p ball: {maxBall?.qiymat != null ? String(maxBall.qiymat) : '[ANIQLANMAGAN]'} ·
+        Bir darsda eng ko‘p woblar: {maxBall?.qiymat != null ? String(maxBall.qiymat) : '[ANIQLANMAGAN]'} ·
         bazadagi chegara −10…+10.
       </p>
     </div>

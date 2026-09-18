@@ -34,7 +34,7 @@ const DAVOMAT_NOMI: Record<AttendanceStatus, string> = {
  * ham begona ma'lumot chiqmaydi.
  *
  * Nima ko'rsatiladi: guruhlari, keyingi darslari, qarzi, to'lovlari,
- * davomati va WOBLR bali.
+ * davomati va woblari.
  */
 export default async function MeningSahifam({
   searchParams,
@@ -164,9 +164,9 @@ export default async function MeningSahifam({
           border={jamiQarz > 0 ? 'brand' : undefined}
         />
         <Stat
-          label="WOBLR balansim"
+          label="Woblarim"
           value={w ? Number(w.balans) : 0}
-          sub={w ? `${Number(w.jami_ball)} ball berilgan` : 'hali ball yo‘q'}
+          sub={w ? `jami ${Number(w.jami_ball)} woblar olingan` : 'hali woblar yo‘q'}
           ton="accent"
         />
         <Stat
@@ -230,7 +230,7 @@ export default async function MeningSahifam({
               ))
             )}
             <Link href="/crm/woblr" className="mt-2 text-[12.5px] text-accent hover:text-brand">
-              WOBLR reytingini ko‘rish →
+              Woblar reytingini ko‘rish →
             </Link>
           </div>
         </Card>

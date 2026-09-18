@@ -136,3 +136,26 @@ export async function guruhdanChiqar(fd: FormData) {
   revalidatePath('/crm', 'layout')
   redirect(xabarliYol(yol, { ok: 'Guruhdan chiqarildi. Keyingi oylar hisobdan olindi.' }))
 }
+
+/**
+ * Chegirmani istalgan vaqtda o'zgartirish. Hamma oylar qayta
+ * hisoblanadi — Sheets formulasi ham shunday qiladi (0014).
+ */
+export async function chegirmaOzgartir(fd: FormData) {
+  await talabRol('admin', 'direktor', 'qabulxona')
+  const studentId = matn(fd.get('student_id'))
+  const enrollmentId = matn(fd.get('enrollment_id'))
+  const yol = `/crm/oquvchilar/${studentId}`
+  if (!studentId || !enrollmentId) redirect('/crm/oquvchilar')
+
+  const supabase = await createClient()
+  const { data: soni, error } = await supabase.rpc('chegirma_ozgartir', {
+    p_enrollment: enrollmentId!,
+    p: chegirma(fd),
+  })
+
+  if (error) redirect(xabarliYol(yol, { xato: xatoMatni(error) }))
+
+  revalidatePath('/crm', 'layout')
+  redirect(xabarliYol(yol, { ok: `Chegirma saqlandi. ${soni ?? 0} oyning hisobi qayta hisoblandi.` }))
+}

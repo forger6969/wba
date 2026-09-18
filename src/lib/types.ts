@@ -433,6 +433,7 @@ export type Database = {
       yozilish_hisoblari: { Args: { p_enrollment: string }; Returns: number }
       probniy_doimiy: { Args: { p_lead: string; p_boshlandi?: string | null }; Returns: string }
       tushum_hisobot: { Args: { p_dan: string; p_gacha: string }; Returns: Hisobot }
+      chegirma_ozgartir: { Args: { p_enrollment: string; p: Record<string, unknown> }; Returns: number }
     }
     Enums: {
       user_role: UserRole

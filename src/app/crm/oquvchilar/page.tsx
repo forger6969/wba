@@ -41,7 +41,7 @@ export default async function Oquvchilar({
 }: {
   searchParams: Promise<Sorov>
 }) {
-  // Ustozda faqat botdagi huquq: davomat, guruhlari, WOBLR. O'quvchi
+  // Ustozda faqat botdagi huquq: davomat, guruhlari, woblar. O'quvchi
   // profili (telefonlar, to'lovlar) — xodim ishi.
   const profil = await talabRol('admin', 'direktor', 'qabulxona')
   if (!supabaseSozlanganmi()) return <Ulanmagan nom="O‘quvchilar" />

@@ -118,8 +118,9 @@ export default async function DarsDavomati({ params }: { params: Promise<{ guruh
       )}
 
       <p className="lbl leading-relaxed">
-        Davomat va WOBLR bitta amalda saqlanadi. Qayta saqlasangiz ball ikkilanmaydi —
-        o‘sha darsning ballari qaytadan yoziladi.
+        Davomat majburiy, woblar ixtiyoriy. Qayta saqlasangiz woblar ikkilanmaydi —
+        o‘sha darsning woblari qaytadan yoziladi. Keyinroq berish uchun:{' '}
+        <Link href={`/crm/woblr?guruh=${guruh}`} className="text-accent hover:text-brand">Woblar bo‘limi</Link>.
       </p>
     </div>
   )

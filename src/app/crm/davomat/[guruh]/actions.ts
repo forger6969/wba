@@ -9,7 +9,7 @@ export type SaqlashNatijasi =
   | { ok: false; xato: string }
 
 /**
- * Davomat va WOBLR — bitta amal.
+ * Davomat va woblar — bitta amal.
  *
  * Uchala jadvalga (lessons, attendance, woblr) bazadagi bitta
  * funksiya yozadi, ya'ni yarim saqlanib qolish holati yo'q.

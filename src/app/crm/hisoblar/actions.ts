@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { talabRol } from '@/lib/auth'
 import { matn, xabarliYol, xatoMatni } from '@/lib/kiritish'
+import { loginEmail, loginNomi, LOGIN_QOIDASI } from '@/lib/login'
 
 /**
  * O'QUVCHI VA USTOZ UCHUN HISOB OCHISH.
@@ -35,13 +36,13 @@ export async function hisobOch(fd: FormData) {
 
   const ustozmi = fd.get('turi') === 'ustoz'
   const nishon = matn(fd.get('nishon'))
-  const email = matn(fd.get('email'))?.toLowerCase()
+  const email = loginEmail(fd.get('email'))
   const parol = String(fd.get('parol') ?? '')
   const yol = ustozmi ? '/crm/ustozlar' : `/crm/oquvchilar/${nishon}`
 
   if (!nishon) redirect(xabarliYol(yol, { xato: 'Kim uchun ekani ko‘rsatilmagan.' }))
-  if (!email || !/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(email)) {
-    redirect(xabarliYol(yol, { xato: 'Email noto‘g‘ri. Masalan: aziza@wba.uz' }))
+  if (!email) {
+    redirect(xabarliYol(yol, { xato: `Login noto‘g‘ri. ${LOGIN_QOIDASI}` }))
   }
   if (parol.length < 8) {
     redirect(xabarliYol(yol, { xato: 'Parol kamida 8 belgidan bo‘lsin.' }))
@@ -110,8 +111,8 @@ export async function hisobOch(fd: FormData) {
   redirect(
     xabarliYol(yol, {
       ok: bor
-        ? `${ism} uchun parol almashtirildi (${email}). Parolni o‘ziga yetkazing.`
-        : `${ism} uchun hisob ochildi: ${email}. Parolni o‘ziga yetkazing — u boshqa ko‘rinmaydi.`,
+        ? `${ism} uchun parol almashtirildi (login: ${loginNomi(email)}). Parolni o‘ziga yetkazing.`
+        : `${ism} uchun hisob ochildi — login: ${loginNomi(email)}. Parolni o‘ziga yetkazing — u boshqa ko‘rinmaydi.`,
     }),
   )
 }

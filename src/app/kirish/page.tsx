@@ -3,12 +3,13 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi, SUPABASE_YOQ } from '@/lib/supabase/env'
 import { Logo } from '@/components/ui'
+import { loginEmail } from '@/lib/login'
 
 export const metadata = { title: 'Tizimga kirish' }
 
 const XATOLAR: Record<string, string> = {
-  notogri: 'Email yoki parol noto‘g‘ri.',
-  bosh: 'Email va parolni kiriting.',
+  notogri: 'Login yoki parol noto‘g‘ri.',
+  bosh: 'Login va parolni kiriting.',
   bloklangan: 'Hisobingiz vaqtincha to‘xtatilgan. Admin bilan bog‘laning.',
   huquq: 'Bu bo‘limga kirish huquqingiz yo‘q.',
   ulanmagan: SUPABASE_YOQ,
@@ -17,7 +18,8 @@ const XATOLAR: Record<string, string> = {
 async function kirish(formData: FormData) {
   'use server'
 
-  const email = String(formData.get('email') ?? '').trim()
+  // "aziza" ham, "aziza@wba.uz" ham qabul qilinadi
+  const email = loginEmail(formData.get('email')) ?? ''
   const parol = String(formData.get('parol') ?? '')
   // /crm rolga qarab yo'naltiradi: xodim boshqaruvga, ustoz davomatga,
   // o'quvchi o'z sahifasiga. Hammani dashboardga yuborish "ochiq emas"
@@ -74,13 +76,15 @@ export default async function Kirish({
           <input type="hidden" name="keyin" value={keyin ?? ''} />
 
           <label className="flex flex-col gap-1.5">
-            <span className="lbl">Email</span>
+            <span className="lbl">Login</span>
             <input
               name="email"
-              type="email"
+              type="text"
               autoComplete="username"
+              autoCapitalize="none"
+              spellCheck={false}
               required
-              placeholder="ism@wba.uz"
+              placeholder="masalan: aziza"
               className="min-h-12 rounded-[9px] border border-line bg-surface px-3.5 text-[14px] text-ink placeholder:text-ink-4"
             />
           </label>

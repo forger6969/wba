@@ -6,7 +6,7 @@ import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Card, CardHeader, Stat, Badge, Empty, Button } from '@/components/ui'
 import { Maydon, Xabar, kirishKlass } from '@/components/forma'
 import { Yuborish } from '@/components/yuborish'
-import { guruhgaBiriktir, guruhdanChiqar } from '../actions'
+import { guruhgaBiriktir, guruhdanChiqar, chegirmaOzgartir } from '../actions'
 import { ChegirmaMaydonlari } from '../bolaklar'
 import { HisobForma } from '@/components/hisob'
 import { Sarlavha, Ulanmagan } from '@/components/crm'
@@ -45,7 +45,7 @@ export default async function OquvchiProfil({
   searchParams: Promise<{ ok?: string; xato?: string }>
 }) {
   const [{ id }, xabar] = await Promise.all([params, searchParams])
-  // Ustozda faqat botdagi huquq: davomat, guruhlari, WOBLR. O'quvchi
+  // Ustozda faqat botdagi huquq: davomat, guruhlari, woblar. O'quvchi
   // profili (telefonlar, to'lovlar) — xodim ishi.
   const profil = await talabRol('admin', 'direktor', 'qabulxona')
   if (!supabaseSozlanganmi()) return <Ulanmagan nom="O‘quvchi profili" />
@@ -204,9 +204,9 @@ export default async function OquvchiProfil({
           sub={`jami ${yList.length} ta yozilish`}
         />
         <Stat
-          label="WOBLR balansi"
+          label="Woblar"
           value={w ? Number(w.balans) : 0}
-          sub={w ? `${Number(w.jami_ball)} ball berilgan` : 'hali ball berilmagan'}
+          sub={w ? `jami ${Number(w.jami_ball)} woblar olgan` : 'hali woblar berilmagan'}
           ton="accent"
         />
       </div>
@@ -258,6 +258,21 @@ export default async function OquvchiProfil({
                           {qarz > 0 ? `qarz ${pul(qarz)}` : 'qarzi yo‘q'}
                         </span>
                       </div>
+                    )}
+
+                    {pulKoradi && y.holat !== 'tugagan' && (
+                      <details className="w-full">
+                        <summary className="cursor-pointer text-[12px] text-ink-3 hover:text-ink">Chegirmani o‘zgartirish</summary>
+                        <form action={chegirmaOzgartir} className="mt-2 flex flex-col gap-2">
+                          <input type="hidden" name="student_id" value={oquvchi.id} />
+                          <input type="hidden" name="enrollment_id" value={y.id} />
+                          <ChegirmaMaydonlari qiymat={y} ochiq sarlavha="Bosqichlar" />
+                          <p className="text-[11.5px] text-ink-3">
+                            Saqlanganda hamma oylar yangi chegirma bilan qayta hisoblanadi (Sheets’dagi kabi).
+                          </p>
+                          <Yuborish kutish="…">Chegirmani saqlash</Yuborish>
+                        </form>
+                      </details>
                     )}
 
                     {pulKoradi && y.holat !== 'tugagan' && (
