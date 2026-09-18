@@ -14,7 +14,10 @@
     "db:test": "bash supabase/run-local-test.sh",
     "db:start": "npx supabase start -x realtime,storage-api,imgproxy,edge-runtime,logflare,vector,supavisor,mailpit",
     "db:stop": "npx supabase stop",
-    "hisob": "tsx scripts/hisob-och.ts"
+    "hisob": "tsx scripts/hisob-och.ts",
+    "ishga": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/ishga-tushir.ps1",
+    "toxta": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/toxtat.ps1",
+    "tekshir": "npm test && tsc --noEmit && eslint src scripts && bash supabase/run-local-test.sh"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
