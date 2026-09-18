@@ -53,7 +53,9 @@ export async function updateSession(request: NextRequest) {
 
   if (user && pathname === '/kirish') {
     const url = request.nextUrl.clone()
-    url.pathname = '/crm/dashboard'
+    // /crm har kimni o'z paneliga yuboradi (o'quvchi — o'z sahifasiga).
+    // Dashboardga yuborilsa o'quvchi "ochiq emas" xabarini ko'rardi.
+    url.pathname = '/crm'
     url.search = ''
     return NextResponse.redirect(url)
   }

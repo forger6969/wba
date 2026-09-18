@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi } from '@/lib/supabase/env'
+import { getProfile } from '@/lib/auth'
 import type { AttendanceStatus } from '@/lib/types'
 
 /**
@@ -26,6 +27,14 @@ function katak(v: string | number): string {
 
 export async function GET(req: NextRequest) {
   if (!supabaseSozlanganmi()) return new NextResponse('Supabase ulanmagan', { status: 503 })
+
+  /* Eksport — xodim va ustoz ishi. O'quvchiga RLS baribir faqat o'z
+     qatorini berardi, lekin guruh jurnali unga umuman kerak emas. */
+  const profil = await getProfile()
+  if (!profil) return new NextResponse('Tizimga kiring', { status: 401 })
+  if (!['admin', 'direktor', 'qabulxona', 'ustoz'].includes(profil.rol)) {
+    return new NextResponse('Bu fayl sizga ochiq emas', { status: 403 })
+  }
 
   const guruh = req.nextUrl.searchParams.get('guruh') ?? ''
   const davr = req.nextUrl.searchParams.get('davr') ?? ''

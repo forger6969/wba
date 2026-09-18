@@ -85,7 +85,14 @@ Qatnashuvning `To'lashi kerak` / `To'langan` / `Qarz` ustunlari bilan solishtiri
 5. **View'larda `security_invoker = on`** bo'lishi shart, aks holda RLS
    chetlab o'tiladi.
 6. **`service_role` kaliti** faqat: saytdagi ariza formasi, cron, ko'chirish
-   skripti. Foydalanuvchi so'rovlarida hech qachon.
+   skripti va **hisob ochish** (`/crm/hisoblar/actions.ts`). Boshqa hech qayerda.
+
+   Hisob ochish — bitta ataylab qilingan istisno: auth foydalanuvchisini
+   yaratishni RLS bilan qilib bo'lmaydi. U yerda tartib shunday: avval
+   oddiy (RLS) klient bilan `talabRol('admin','direktor')`, keyin
+   service_role FAQAT `auth.admin.createUser` uchun, qolgan yozuvlar
+   yana oddiy klient bilan, oxirida `audit_log` ga iz. Rol
+   `app_metadata` ga yoziladi (0008) — foydalanuvchi o'zi o'zgartira olmaydi.
 
 ---
 

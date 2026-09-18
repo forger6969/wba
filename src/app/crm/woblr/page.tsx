@@ -1,10 +1,12 @@
 import Link from 'next/link'
-import { talabProfil } from '@/lib/auth'
+import { talabProfil, getUstoz, adminmi, staffmi } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Card, CardHeader, Badge, Empty } from '@/components/ui'
 import { Sarlavha, Ulanmagan } from '@/components/crm'
-import { Maydon, kirishKlass } from '@/components/forma'
+import { Maydon, Xabar, kirishKlass } from '@/components/forma'
+import { Yuborish } from '@/components/yuborish'
+import { woblrBer } from './actions'
 import { davrNomi, joriyDavr } from '@/lib/format'
 import type { LeaderboardRow } from '@/lib/types'
 
@@ -19,7 +21,7 @@ export const dynamic = 'force-dynamic'
 export default async function Woblr({
   searchParams,
 }: {
-  searchParams: Promise<{ guruh?: string; davr?: string }>
+  searchParams: Promise<{ guruh?: string; davr?: string; ok?: string; xato?: string }>
 }) {
   const profil = await talabProfil()
   if (!supabaseSozlanganmi()) return <Ulanmagan nom="WOBLR" />
@@ -39,12 +41,31 @@ export default async function Woblr({
 
   const { data: maxBall } = await supabase.from('settings').select('qiymat').eq('kalit', 'woblr.max_ball_dars').maybeSingle()
 
+  /* Ball berish huquqi: ustoz (o'z o'quvchisiga) yoki admin.
+     Ro'yxatni RLS cheklaydi — ustozga faqat o'z guruhlari keladi. */
+  const ustoz = await getUstoz()
+  const beraOladi = Boolean(ustoz) || adminmi(profil.rol)
+
+  const { data: qatnashuvchilar } = beraOladi && guruh
+    ? await supabase
+        .from('enrollments')
+        .select('student_id, students(fish)')
+        .eq('group_id', guruh)
+        .neq('holat', 'tugagan')
+    : { data: [] }
+
+  const oquvchilar = ((qatnashuvchilar ?? []) as unknown as { student_id: string; students: { fish: string } | null }[])
+    .map((e) => ({ id: e.student_id, fish: e.students?.fish ?? e.student_id }))
+    .sort((a, b) => a.fish.localeCompare(b.fish, 'uz'))
+
   return (
     <div className="flex flex-col gap-4 px-5 py-5 lg:px-7">
       <Sarlavha
         nom="WOBLR reytingi"
         izoh={`${guruh ? gList.find((g) => g.id === guruh)?.nom : 'Butun markaz'} · ${davr ? davrNomi(davr) : 'hamma vaqt'}`}
       />
+
+      <Xabar ok={s.ok} xato={s.xato} />
 
       <form className="flex flex-wrap items-end gap-2.5">
         <Maydon nom="Guruh">
@@ -84,7 +105,8 @@ export default async function Woblr({
                 >
                   {r.orin}
                 </span>
-                {profil.rol === 'oquvchi' ? (
+                {/* Profil faqat xodimga ochiq — ustoz va o'quvchiga oddiy ism */}
+                {!staffmi(profil.rol) ? (
                   <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold">{r.fish}</span>
                 ) : (
                   <Link href={`/crm/oquvchilar/${r.student_id}`} className="min-w-0 flex-1 truncate text-[13.5px] font-semibold hover:text-brand">
@@ -99,6 +121,39 @@ export default async function Woblr({
           </ol>
         )}
       </Card>
+
+      {beraOladi && guruh && oquvchilar.length > 0 && (
+        <Card className="flex flex-col">
+          <CardHeader title="Ball berish" meta="dars tashqarisida" />
+          <form action={woblrBer} className="grid gap-3 px-5 pb-5 sm:grid-cols-[2fr_1fr_1.2fr_1.5fr_auto] sm:items-end">
+            <input type="hidden" name="guruh" value={guruh} />
+            <Maydon nom="O‘quvchi">
+              <select name="student_id" required defaultValue="" className={kirishKlass}>
+                <option value="" disabled>Tanlang…</option>
+                {oquvchilar.map((o) => (
+                  <option key={o.id} value={o.id}>{o.fish}</option>
+                ))}
+              </select>
+            </Maydon>
+            <Maydon nom="Ball" izoh="−10…+10">
+              <input name="ball" type="number" min={-10} max={10} step={1} defaultValue={1} required className={kirishKlass} />
+            </Maydon>
+            <Maydon nom="Sabab">
+              <select name="sabab" defaultValue="faollik" className={kirishKlass}>
+                <option value="faollik">Faollik</option>
+                <option value="uy_vazifasi">Uy vazifasi</option>
+                <option value="yordam">Yordam berdi</option>
+                <option value="qoida">Qoida buzdi</option>
+                <option value="boshqa">Boshqa</option>
+              </select>
+            </Maydon>
+            <Maydon nom="Izoh">
+              <input name="izoh" placeholder="Ixtiyoriy" className={kirishKlass} />
+            </Maydon>
+            <Yuborish>Berish</Yuborish>
+          </form>
+        </Card>
+      )}
 
       <p className="text-[12px] text-ink-3">
         Bir darsda eng ko‘p ball: {maxBall?.qiymat != null ? String(maxBall.qiymat) : '[ANIQLANMAGAN]'} ·

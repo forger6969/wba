@@ -7,6 +7,7 @@ import { Maydon, Xabar, kirishKlass } from '@/components/forma'
 import { Yuborish } from '@/components/yuborish'
 import { pul, telefon } from '@/lib/format'
 import { ustozQosh, ustozTahrir } from './actions'
+import { HisobForma } from '@/components/hisob'
 import type { TeacherStats } from '@/lib/types'
 
 export const metadata = { title: 'Ustozlar' }
@@ -32,11 +33,13 @@ export default async function Ustozlar({
   const xabar = await searchParams
   const supabase = await createClient()
 
-  const [{ data: ustozlar }, { data: stats }, { data: maosh }] = await Promise.all([
+  const [{ data: ustozlar }, { data: stats }, { data: maosh }, { data: hisoblar }] = await Promise.all([
     supabase.from('teachers').select('id, ism, telefon, telegram_id, profile_id, holat').order('holat').order('ism'),
     supabase.from('v_teacher_stats').select('*'),
     supabase.from('settings').select('qiymat').eq('kalit', 'maosh.qoida').maybeSingle(),
+    supabase.from('profiles').select('id, email'),
   ])
+  const emailMap = new Map(((hisoblar ?? []) as { id: string; email: string | null }[]).map((h) => [h.id, h.email]))
 
   const uList = (ustozlar ?? []) as Ustoz[]
   const sMap = new Map(((stats ?? []) as TeacherStats[]).map((s) => [s.teacher_id, s]))
@@ -87,6 +90,14 @@ export default async function Ustozlar({
                     <span><span className="lbl">tushum </span>{pul(s?.tushum ?? 0)}</span>
                     <span className={qarz > 0 ? 'text-brand' : ''}><span className="lbl">qarz </span>{pul(qarz)}</span>
                   </div>
+
+                  <HisobForma
+                    turi="ustoz"
+                    nishon={u.id}
+                    ism={u.ism}
+                    bormi={Boolean(u.profile_id)}
+                    email={u.profile_id ? (emailMap.get(u.profile_id) ?? null) : null}
+                  />
 
                   <details>
                     <summary className="cursor-pointer text-[12px] text-ink-3 hover:text-ink">Tahrirlash</summary>

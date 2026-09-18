@@ -54,10 +54,26 @@ export async function talabProfil(): Promise<Profile> {
   return profil
 }
 
-/** Rol talab qiladigan sahifalar uchun. */
+/**
+ * Kim qayerdan boshlaydi: har rol o'z paneliga tushadi.
+ * Ustozmi yoki yo'qmi — bu yerda so'rov qilmaymiz (arzon bo'lsin):
+ * ustoz roli davomatga, o'quvchi o'z sahifasiga, xodim boshqaruvga.
+ */
+export function panelYoli(rol: UserRole): string {
+  if (rol === 'oquvchi') return '/crm/men'
+  if (rol === 'ustoz') return '/crm/davomat'
+  return '/crm/dashboard'
+}
+
+/**
+ * Rol talab qiladigan sahifalar uchun.
+ * Huquq yetmasa — odam O'Z paneliga qaytariladi. Hammani dashboardga
+ * yuborish aylanma yo'naltirishga olib kelardi: dashboard ham faqat
+ * xodimga ochiq.
+ */
 export async function talabRol(...rollar: UserRole[]): Promise<Profile> {
   const profil = await talabProfil()
-  if (!rollar.includes(profil.rol)) redirect('/crm/dashboard?xato=huquq')
+  if (!rollar.includes(profil.rol)) redirect(`${panelYoli(profil.rol)}?xato=huquq`)
   return profil
 }
 

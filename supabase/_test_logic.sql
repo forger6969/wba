@@ -319,6 +319,13 @@ select count(*) as ball_yozuvlari from woblr w
 join lessons l on l.id = w.lesson_id
 where l.group_id = 'N03' and l.sana = current_date;
 
+\echo '--- server nomidan (auth.uid() bo''sh) davomat yozilishi kerak (0013) ---'
+reset role;
+reset request.jwt.claim.sub;
+select davomat_saqla('N03', current_date, jsonb_build_object('S004', 'sababli')) -> 'davomat' as server_yozdi;
+set role authenticated;
+set request.jwt.claim.sub = '66666666-6666-6666-6666-666666666666';
+
 \echo '--- begona guruhga saqlashga urinish XATO berishi kerak ---'
 set request.jwt.claim.sub = '33333333-3333-3333-3333-333333333333';
 do $$
@@ -360,6 +367,9 @@ insert into auth.users (id, email, raw_user_meta_data) values
   ('77777777-7777-7777-7777-777777777777', 'buzgunchi@example.com',
    '{"ism": "Buzg''unchi", "rol": "admin"}');
 select ism, rol from profiles where id = '77777777-7777-7777-7777-777777777777';
+
+\echo '--- profilga email ham ko''chirilgan bo''lishi kerak (0012) ---'
+select email, rol from profiles where id = '77777777-7777-7777-7777-777777777777';
 
 \echo '--- app_metadata (faqat server yozadi) dagi rol qabul qilinadi ---'
 insert into auth.users (id, email, raw_user_meta_data, raw_app_meta_data) values

@@ -19,7 +19,10 @@ async function kirish(formData: FormData) {
 
   const email = String(formData.get('email') ?? '').trim()
   const parol = String(formData.get('parol') ?? '')
-  const keyin = String(formData.get('keyin') ?? '') || '/crm/dashboard'
+  // /crm rolga qarab yo'naltiradi: xodim boshqaruvga, ustoz davomatga,
+  // o'quvchi o'z sahifasiga. Hammani dashboardga yuborish "ochiq emas"
+  // degan keraksiz xabar chiqarardi.
+  const keyin = String(formData.get('keyin') ?? '') || '/crm'
 
   if (!email || !parol) redirect('/kirish?xato=bosh')
   if (!supabaseSozlanganmi()) redirect('/kirish?xato=ulanmagan')

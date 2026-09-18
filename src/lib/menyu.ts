@@ -92,8 +92,8 @@ export function menyular(rol: UserRole, ustozmi: boolean): MenyuBolim[] {
     bolimlar.push({
       nom: 'Mening sahifam',
       bandlar: [
-        { href: '/crm/dashboard', nom: 'Bosh sahifa', Icon: IconDashboard, tayyor: true, mobil: true },
-        { href: '/crm/woblr', nom: 'WOBLR', Icon: IconWoblr, tayyor: true },
+        { href: '/crm/men', nom: 'Bosh sahifa', Icon: IconDashboard, tayyor: true, mobil: true },
+        { href: '/crm/woblr', nom: 'WOBLR reytingi', Icon: IconWoblr, tayyor: true, mobil: true },
       ],
     })
   }
@@ -103,6 +103,7 @@ export function menyular(rol: UserRole, ustozmi: boolean): MenyuBolim[] {
 
 /** Kirgan odam qaysi sahifadan boshlaydi — botdagi "o'z ishi" tamoyili. */
 export function boshSahifa(rol: UserRole, ustozmi: boolean): string {
+  if (rol === 'oquvchi') return '/crm/men'
   if (ustozmi && !staffmi(rol)) return '/crm/davomat'
   return '/crm/dashboard'
 }

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { talabProfil, getUstoz, staffmi, adminmi } from '@/lib/auth'
+import { talabRol, getUstoz, staffmi, adminmi } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Card, Badge, Empty, Button } from '@/components/ui'
@@ -11,7 +11,7 @@ export const metadata = { title: 'Guruhlar' }
 export const dynamic = 'force-dynamic'
 
 export default async function Guruhlar() {
-  const profil = await talabProfil()
+  const profil = await talabRol('admin', 'direktor', 'qabulxona', 'ustoz')
   if (!supabaseSozlanganmi()) return <Ulanmagan nom="Guruhlar" />
 
   const ustoz = await getUstoz()

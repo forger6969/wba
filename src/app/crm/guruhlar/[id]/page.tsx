@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { talabProfil, staffmi, adminmi } from '@/lib/auth'
+import { talabRol, staffmi, adminmi } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Card, CardHeader, Stat, Badge, Empty, Button } from '@/components/ui'
@@ -11,6 +11,19 @@ import { pul, jadval, sana, davrNomi, joriyDavr } from '@/lib/format'
 import type { DayType } from '@/lib/types'
 
 export const metadata = { title: 'Guruh' }
+
+/** O'quvchi qatori: xodimga profilga havola, ustozga oddiy qator. */
+function Qator({ href, children }: { href: string | null; children: React.ReactNode }) {
+  const klass =
+    'grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 border-b border-line-soft py-2.5 last:border-0'
+  return href ? (
+    <Link href={href} className={`${klass} transition hover:bg-surface-2`}>
+      {children}
+    </Link>
+  ) : (
+    <div className={klass}>{children}</div>
+  )
+}
 export const dynamic = 'force-dynamic'
 
 export default async function GuruhProfil({
@@ -21,7 +34,7 @@ export default async function GuruhProfil({
   searchParams: Promise<{ ok?: string; xato?: string }>
 }) {
   const [{ id }, xabar] = await Promise.all([params, searchParams])
-  const profil = await talabProfil()
+  const profil = await talabRol('admin', 'direktor', 'qabulxona', 'ustoz')
   if (!supabaseSozlanganmi()) return <Ulanmagan nom="Guruh" />
 
   const supabase = await createClient()
@@ -165,10 +178,9 @@ export default async function GuruhProfil({
                 const d = davomatMap.get(y.student_id)
                 const qarz = qarzMap.get(y.id) ?? 0
                 return (
-                  <Link
+                  <Qator
                     key={y.id}
-                    href={`/crm/oquvchilar/${y.student_id}`}
-                    className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 border-b border-line-soft py-2.5 transition last:border-0 hover:bg-surface-2"
+                    href={pulKoradi ? `/crm/oquvchilar/${y.student_id}` : null}
                   >
                     <span className="flex min-w-0 flex-col gap-0.5">
                       <span className="truncate text-[13px] font-semibold">
@@ -196,7 +208,7 @@ export default async function GuruhProfil({
                         {d && <Badge ton={d.foiz >= 80 ? 'ok' : 'accent'}>{d.foiz}%</Badge>}
                       </span>
                     )}
-                  </Link>
+                  </Qator>
                 )
               })
             )}

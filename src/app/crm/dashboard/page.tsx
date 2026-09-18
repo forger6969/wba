@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { talabProfil, staffmi } from '@/lib/auth'
+import { talabRol, staffmi } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardHeader, Stat, BarRow, Empty } from '@/components/ui'
 import { IconAlert, IconSearch } from '@/components/icons'
@@ -12,7 +12,7 @@ export const metadata = { title: 'Boshqaruv paneli' }
 export const dynamic = 'force-dynamic'
 
 export default async function Dashboard() {
-  const profil = await talabProfil()
+  const profil = await talabRol('admin', 'direktor', 'qabulxona')
   if (!supabaseSozlanganmi()) return <Ulanmagan nom="Boshqaruv paneli" />
   const supabase = await createClient()
   const davr = joriyDavr()

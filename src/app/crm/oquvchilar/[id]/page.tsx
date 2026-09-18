@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { talabProfil, staffmi } from '@/lib/auth'
+import { talabRol, staffmi } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Card, CardHeader, Stat, Badge, Empty, Button } from '@/components/ui'
@@ -8,6 +8,7 @@ import { Maydon, Xabar, kirishKlass } from '@/components/forma'
 import { Yuborish } from '@/components/yuborish'
 import { guruhgaBiriktir, guruhdanChiqar } from '../actions'
 import { ChegirmaMaydonlari } from '../bolaklar'
+import { HisobForma } from '@/components/hisob'
 import { Sarlavha, Ulanmagan } from '@/components/crm'
 import { IconArrowLeft, IconPhone } from '@/components/icons'
 import { pul, sana, telefon, jadval, davrNomi, joriyDavr, bugunToshkent } from '@/lib/format'
@@ -44,7 +45,9 @@ export default async function OquvchiProfil({
   searchParams: Promise<{ ok?: string; xato?: string }>
 }) {
   const [{ id }, xabar] = await Promise.all([params, searchParams])
-  const profil = await talabProfil()
+  // Ustozda faqat botdagi huquq: davomat, guruhlari, WOBLR. O'quvchi
+  // profili (telefonlar, to'lovlar) — xodim ishi.
+  const profil = await talabRol('admin', 'direktor', 'qabulxona')
   if (!supabaseSozlanganmi()) return <Ulanmagan nom="O‘quvchi profili" />
 
   const supabase = await createClient()
@@ -52,7 +55,7 @@ export default async function OquvchiProfil({
 
   const { data: oquvchi } = await supabase
     .from('students')
-    .select('id, fish, tugilgan_sana, ota_tel, ona_tel, shaxsiy_tel, qoshilgan_sana, holat, izoh')
+    .select('id, fish, tugilgan_sana, ota_tel, ona_tel, shaxsiy_tel, qoshilgan_sana, holat, izoh, profile_id')
     .eq('id', id)
     .maybeSingle()
 
@@ -90,6 +93,11 @@ export default async function OquvchiProfil({
       ? supabase.from('groups').select('id, nom').eq('holat', 'faol').order('nom')
       : Promise.resolve({ data: [] as { id: string; nom: string }[] }),
   ])
+
+  /* Hisobi bormi — email profilda turadi (0012), RLS uni adminga ko'rsatadi */
+  const { data: hisob } = pulKoradi && oquvchi.profile_id
+    ? await supabase.from('profiles').select('email').eq('id', oquvchi.profile_id).maybeSingle()
+    : { data: null }
 
   type Yozilish = {
     id: string
@@ -323,6 +331,16 @@ export default async function OquvchiProfil({
               <p className="rounded-[10px] border border-dashed border-line px-4 py-3 text-[12.5px] leading-relaxed text-ink-2">
                 {oquvchi.izoh}
               </p>
+            )}
+
+            {pulKoradi && (
+              <HisobForma
+                turi="oquvchi"
+                nishon={oquvchi.id}
+                ism={oquvchi.fish}
+                bormi={Boolean(oquvchi.profile_id)}
+                email={hisob?.email ?? null}
+              />
             )}
           </div>
         </Card>

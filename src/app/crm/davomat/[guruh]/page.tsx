@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { talabProfil } from '@/lib/auth'
+import { talabRol } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Card, Empty } from '@/components/ui'
@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function DarsDavomati({ params }: { params: Promise<{ guruh: string }> }) {
   const { guruh } = await params
-  await talabProfil()
+  await talabRol('admin', 'direktor', 'qabulxona', 'ustoz')
   if (!supabaseSozlanganmi()) return <Ulanmagan nom="Davomat" />
 
   const supabase = await createClient()

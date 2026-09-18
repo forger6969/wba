@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { talabProfil, staffmi } from '@/lib/auth'
+import { talabRol, staffmi } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Card, Badge, Empty, Button } from '@/components/ui'
@@ -41,7 +41,9 @@ export default async function Oquvchilar({
 }: {
   searchParams: Promise<Sorov>
 }) {
-  const profil = await talabProfil()
+  // Ustozda faqat botdagi huquq: davomat, guruhlari, WOBLR. O'quvchi
+  // profili (telefonlar, to'lovlar) — xodim ishi.
+  const profil = await talabRol('admin', 'direktor', 'qabulxona')
   if (!supabaseSozlanganmi()) return <Ulanmagan nom="O‘quvchilar" />
 
   const s = await searchParams

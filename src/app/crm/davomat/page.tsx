@@ -1,9 +1,9 @@
 import Link from 'next/link'
-import { talabProfil, getUstoz } from '@/lib/auth'
+import { talabRol, getUstoz } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Card, CardHeader, Badge, Empty } from '@/components/ui'
-import { Maydon, kirishKlass } from '@/components/forma'
+import { Maydon, Xabar, kirishKlass } from '@/components/forma'
 import { Sarlavha, Ulanmagan } from '@/components/crm'
 import { IconAttendance } from '@/components/icons'
 import { sana, vaqt, bugunToshkent, joriyDavr } from '@/lib/format'
@@ -12,8 +12,13 @@ import type { BugungiDars } from '@/lib/types'
 export const metadata = { title: 'Davomat' }
 export const dynamic = 'force-dynamic'
 
-export default async function Davomat() {
-  await talabProfil()
+export default async function Davomat({
+  searchParams,
+}: {
+  searchParams: Promise<{ ok?: string; xato?: string }>
+}) {
+  const xabar = await searchParams
+  await talabRol('admin', 'direktor', 'qabulxona', 'ustoz')
   if (!supabaseSozlanganmi()) return <Ulanmagan nom="Davomat" />
 
   const ustoz = await getUstoz()
@@ -38,6 +43,8 @@ export default async function Davomat() {
         nom="Bugungi darslar"
         izoh={`${sana(bugun)}${ustoz ? ` · ${ustoz.ism}` : ''}`}
       />
+
+      <Xabar ok={xabar.ok} xato={xabar.xato === 'huquq' ? 'Bu bo‘lim sizga ochiq emas.' : xabar.xato} />
 
       {dList.length === 0 ? (
         <Card className="p-5">

@@ -1,0 +1,50 @@
+'use server'
+
+import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
+import { createClient } from '@/lib/supabase/server'
+import { talabProfil, getUstoz, adminmi } from '@/lib/auth'
+import { matn, sonOqi, xabarliYol, xatoMatni } from '@/lib/kiritish'
+import type { WoblrReason } from '@/lib/types'
+
+const SABABLAR: WoblrReason[] = ['faollik', 'uy_vazifasi', 'yordam', 'qoida', 'boshqa']
+
+/**
+ * Dars tashqarisida ball berish (dars ichida davomat ekranida beriladi).
+ * Ustoz faqat O'Z o'quvchisiga bera oladi — buni RLS ham tekshiradi
+ * (woblr_teacher_insert: app_teaches_student va bergan_profile = auth.uid()).
+ */
+export async function woblrBer(fd: FormData) {
+  const profil = await talabProfil()
+  const ustoz = await getUstoz()
+  const yol = `/crm/woblr${matn(fd.get('guruh')) ? `?guruh=${matn(fd.get('guruh'))}` : ''}`
+
+  if (!ustoz && !adminmi(profil.rol)) {
+    redirect(xabarliYol(yol, { xato: 'Ball berish huquqingiz yo‘q.' }))
+  }
+
+  const studentId = matn(fd.get('student_id'))
+  const ball = sonOqi(fd.get('ball'))
+  const sabab = SABABLAR.find((s) => s === fd.get('sabab')) ?? 'faollik'
+
+  if (!studentId) redirect(xabarliYol(yol, { xato: 'O‘quvchini tanlang.' }))
+  if (ball === null || ball === 0 || ball < -10 || ball > 10) {
+    redirect(xabarliYol(yol, { xato: 'Ball −10 dan +10 gacha bo‘lsin, 0 emas.' }))
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.from('woblr').insert({
+    student_id: studentId!,
+    teacher_id: ustoz?.id ?? null,
+    bergan_profile: profil.id,
+    ball: ball!,
+    sabab,
+    izoh: matn(fd.get('izoh')),
+    lesson_id: null,
+  })
+
+  if (error) redirect(xabarliYol(yol, { xato: xatoMatni(error) }))
+
+  revalidatePath('/crm/woblr')
+  redirect(xabarliYol(yol, { ok: `${ball! > 0 ? '+' : ''}${ball} ball yozildi.` }))
+}

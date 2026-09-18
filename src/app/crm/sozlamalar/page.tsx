@@ -67,6 +67,7 @@ export default async function Sozlamalar({
                     <input type="hidden" name="id" value={x.id} />
                     <span className="flex min-w-0 flex-col gap-0.5 self-center">
                       <span className="truncate text-[13.5px] font-semibold">{x.ism}</span>
+                      {x.email && <span className="truncate font-[family-name:var(--font-mono)] text-[11px] text-ink-3">{x.email}</span>}
                       <span className="flex gap-1.5">
                         <Badge ton="brand">{ROL_NOMI[x.rol]}</Badge>
                         {ozim && <Badge ton="jim">siz</Badge>}

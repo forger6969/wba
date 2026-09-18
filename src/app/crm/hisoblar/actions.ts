@@ -1,0 +1,117 @@
+'use server'
+
+import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
+import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { talabRol } from '@/lib/auth'
+import { matn, xabarliYol, xatoMatni } from '@/lib/kiritish'
+
+/**
+ * O'QUVCHI VA USTOZ UCHUN HISOB OCHISH.
+ *
+ * ── NEGA BU YERDA service_role ISHLATILADI ──
+ * Auth foydalanuvchisini yaratish faqat admin kaliti bilan mumkin —
+ * RLS bilan bo'lmaydi. Shuning uchun qoidaga TOR istisno qilinadi va
+ * u shu funksiyada quyidagicha chegaralangan:
+ *
+ *   1. Avval oddiy (RLS) klient bilan talabRol('admin','direktor') —
+ *      ya'ni chaqiruvchining huquqi bazaning o'z qoidalari bilan
+ *      tekshiriladi.
+ *   2. Kim uchun hisob ochilayotgani ham RLS klienti bilan o'qiladi.
+ *   3. service_role FAQAT bitta ish uchun: auth foydalanuvchisini
+ *      yaratish yoki parolini almashtirish.
+ *   4. Rol app_metadata ga yoziladi (0008): foydalanuvchi o'zi
+ *      o'zgartira olmaydi. Direktor roli bu yerdan berilmaydi.
+ *   5. Har hisob audit_log ga yozib qo'yiladi — kim kimga ochgani
+ *      keyin ham ko'rinadi.
+ *
+ * Parol admin ko'rib turgan formadan keladi (manzilga tushmaydi,
+ * jurnalga ham yozilmaydi) — shuning uchun uni o'quvchiga aytish
+ * adminning o'z qo'lida.
+ */
+export async function hisobOch(fd: FormData) {
+  const men = await talabRol('admin', 'direktor')
+
+  const ustozmi = fd.get('turi') === 'ustoz'
+  const nishon = matn(fd.get('nishon'))
+  const email = matn(fd.get('email'))?.toLowerCase()
+  const parol = String(fd.get('parol') ?? '')
+  const yol = ustozmi ? '/crm/ustozlar' : `/crm/oquvchilar/${nishon}`
+
+  if (!nishon) redirect(xabarliYol(yol, { xato: 'Kim uchun ekani ko‘rsatilmagan.' }))
+  if (!email || !/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(email)) {
+    redirect(xabarliYol(yol, { xato: 'Email noto‘g‘ri. Masalan: aziza@wba.uz' }))
+  }
+  if (parol.length < 8) {
+    redirect(xabarliYol(yol, { xato: 'Parol kamida 8 belgidan bo‘lsin.' }))
+  }
+
+  const supabase = await createClient()
+
+  const { data: kim } = ustozmi
+    ? await supabase.from('teachers').select('id, ism, profile_id').eq('id', nishon!).maybeSingle()
+    : await supabase.from('students').select('id, fish, profile_id').eq('id', nishon!).maybeSingle()
+
+  if (!kim) redirect(xabarliYol(yol, { xato: `${nishon} topilmadi.` }))
+
+  const ism = ustozmi
+    ? (kim as { ism: string }).ism
+    : (kim as { fish: string }).fish
+
+  /* ── Faqat shu qadam admin kaliti bilan ── */
+  const admin = createAdminClient()
+  const { data: royxat, error: xatoRoyxat } = await admin.auth.admin.listUsers({ perPage: 1000 })
+  if (xatoRoyxat) redirect(xabarliYol(yol, { xato: xatoMatni(xatoRoyxat) }))
+
+  const bor = royxat.users.find((u) => u.email?.toLowerCase() === email)
+  let userId: string
+
+  if (bor) {
+    const { error } = await admin.auth.admin.updateUserById(bor.id, {
+      password: parol,
+      user_metadata: { ism },
+      app_metadata: { rol: ustozmi ? 'ustoz' : 'oquvchi' },
+    })
+    if (error) redirect(xabarliYol(yol, { xato: xatoMatni(error) }))
+    userId = bor.id
+  } else {
+    const { data, error } = await admin.auth.admin.createUser({
+      email: email!,
+      password: parol,
+      email_confirm: true,
+      user_metadata: { ism },
+      app_metadata: { rol: ustozmi ? 'ustoz' : 'oquvchi' },
+    })
+    if (error || !data.user) redirect(xabarliYol(yol, { xato: xatoMatni(error) }))
+    userId = data.user.id
+  }
+
+  /* ── Qolgani yana oddiy huquq bilan ── */
+  const { error: xatoProfil } = await supabase.from('profiles').update({ ism }).eq('id', userId)
+  if (xatoProfil) redirect(xabarliYol(yol, { xato: xatoMatni(xatoProfil) }))
+
+  // Bitta hisob bitta odamga: eski bog'lanish uziladi
+  const jadval = ustozmi ? 'teachers' : 'students'
+  await supabase.from(jadval).update({ profile_id: null }).eq('profile_id', userId)
+  const { error: xatoBog } = await supabase.from(jadval).update({ profile_id: userId }).eq('id', nishon!)
+  if (xatoBog) redirect(xabarliYol(yol, { xato: xatoMatni(xatoBog) }))
+
+  // Iz: audit_log ga faqat server yozadi
+  await admin.from('audit_log').insert({
+    profile_id: men.id,
+    amal: bor ? 'HISOB_PAROL' : 'HISOB_OCHILDI',
+    jadval,
+    obyekt_id: nishon!,
+    yangi: { email, ism },
+  })
+
+  revalidatePath('/crm', 'layout')
+  redirect(
+    xabarliYol(yol, {
+      ok: bor
+        ? `${ism} uchun parol almashtirildi (${email}). Parolni o‘ziga yetkazing.`
+        : `${ism} uchun hisob ochildi: ${email}. Parolni o‘ziga yetkazing — u boshqa ko‘rinmaydi.`,
+    }),
+  )
+}

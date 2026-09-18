@@ -27,6 +27,8 @@ export type Profile = {
   rol: UserRole
   ism: string
   telefon: string | null
+  /** Kirish uchun email — auth.users dan ko'chiriladi (0012) */
+  email: string | null
   holat: AccountStatus
   created_at: string
   updated_at: string
@@ -197,6 +199,18 @@ export type Lead = {
   sinov_sana: string | null
   created_at: string
   updated_at: string
+}
+
+/** 0001 · o'chirilmaydigan iz: kim, qachon, nimani o'zgartirdi */
+export type AuditLog = {
+  id: number
+  profile_id: string | null
+  amal: string
+  jadval: string
+  obyekt_id: string | null
+  eski: unknown
+  yangi: unknown
+  created_at: string
 }
 
 export type Setting = {
@@ -374,6 +388,7 @@ export type Database = {
       payments: Table<Payment>
       leads: Table<Lead>
       settings: Table<Setting>
+      audit_log: Table<AuditLog>
     }
     Views: {
       v_enrollment_balance: View<EnrollmentBalance>
