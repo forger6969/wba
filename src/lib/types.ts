@@ -97,6 +97,8 @@ export type Group = {
 
 export type Enrollment = {
   id: string
+  /** Sheets qatorining ID'si (Q001 / T0001 / P001); CRM'da yaratilganda null */
+  sheets_id: string | null
   student_id: string
   group_id: string
   boshlandi: string
@@ -166,6 +168,8 @@ export type Invoice = {
 
 export type Payment = {
   id: number
+  /** Sheets qatorining ID'si (Q001 / T0001 / P001); CRM'da yaratilganda null */
+  sheets_id: string | null
   student_id: string
   enrollment_id: string | null
   sana: string
@@ -187,6 +191,8 @@ export type Payment = {
 
 export type Lead = {
   id: string
+  /** Sheets qatorining ID'si (Q001 / T0001 / P001); CRM'da yaratilganda null */
+  sheets_id: string | null
   ism: string
   telefon: string
   subject_id: string | null

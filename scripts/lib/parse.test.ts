@@ -16,9 +16,9 @@ test('pulga — Sheets formatlari', () => {
 })
 
 test('telefonga — turli ko‘rinishlar bitta formatga tushadi', () => {
-  assert.equal(telefonga('+998-90-968-07-12'), '+998909680712')
-  assert.equal(telefonga('90 968 07 12'), '+998909680712')
-  assert.equal(telefonga('998909680712'), '+998909680712')
+  assert.equal(telefonga('+998-90-123-45-67'), '+998901234567')
+  assert.equal(telefonga('90 123 45 67'), '+998901234567')
+  assert.equal(telefonga('998901234567'), '+998901234567')
   assert.equal(telefonga('nomalum'), null)
   assert.equal(telefonga(''), null)
 })

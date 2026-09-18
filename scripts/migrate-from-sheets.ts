@@ -17,7 +17,14 @@
  *
  * Shuning uchun --dry-run oxirida SOLISHTIRUV chiqadi: hisoblangan
  * summa Qatnashuvning "To'lashi kerak" / "To'langan" / "Qarz"
- * ustunlariga mos kelmasa, ko'chirishni boshlamaslik kerak.
+ * ustunlariga mos kelmasa, ko'chirish boshlanmaydi. Istisno — sababi
+ * aniq Sheets xatosi bo'lgan farq (bir guruhga ikki marta yozilish,
+ * matn bo'lib kiritilgan sana): u alohida ro'yxatda chiqadi, bazada esa
+ * to'g'ri hisoblanadi.
+ *
+ * Qatnashuv, Tolovlar va Probniylar qatorlari o'z ID'si (Q001, T0001,
+ * P001) bilan yoziladi — skriptni qayta yurgizish xavfsiz: yozuv
+ * yangilanadi, ikkilanmaydi (0015_sheets_id.sql).
  */
 
 import { config } from 'dotenv'
@@ -47,6 +54,12 @@ const SHEETS_ID = process.env.SHEETS_ID
 const ogohlantirishlar: string[] = []
 const ogoh = (m: string) => {
   if (ogohlantirishlar.length < 300) ogohlantirishlar.push(m)
+}
+
+/** Yozishni to'xtatadigan muammolar — taxmin qilmasdan hal qilib bo'lmaydi. */
+const toxtatuvchilar: string[] = []
+const toxtat = (m: string) => {
+  toxtatuvchilar.push(m)
 }
 
 /* ------------------------------------------------------------------ */
@@ -88,6 +101,7 @@ type Oquvchi = {
 
 type Yozilish = {
   kalit: string                 // "S001|N01"
+  sheets_id: string | null      // Qatnashuv ID — Q001
   student_id: string
   group_id: string
   guruhNomi: string
@@ -104,11 +118,14 @@ type Yozilish = {
   sheetTolangan: number
   sheetQarz: number
   sheetOylar: number
+  /** Sheets'ning o'zi noto'g'ri hisoblagan bo'lsa — sababi. Farq shu bilan tushuntiriladi. */
+  sheetsXato: string | null
 }
 
 type Hisob = { kalit: string; davr: string; summa: number; chegirma: number }
 
 type Tolov = {
+  sheets_id: string | null      // Tolovlar ID — T0001
   student_id: string
   kalit: string | null
   sana: string
@@ -118,6 +135,19 @@ type Tolov = {
   izoh: string | null
   tasdiqlangan: boolean
   tasdiqlangan_vaqt: string | null
+}
+
+type Probniy = {
+  sheets_id: string             // Probniylar ID — P001
+  ism: string
+  telefon: string
+  tugilgan_sana: string | null
+  subject_id: string | null
+  group_id: string | null
+  holat: 'yangi' | 'yozildi' | 'kelmadi' | 'rad'
+  student_id: string | null
+  izoh: string | null
+  created_at: string | null
 }
 
 /* ------------------------------------------------------------------ */
@@ -292,7 +322,8 @@ function yozilishlarniQur(
       continue
     }
 
-    const boshlandi = sanaga(qiymat(q, 'Boshlandi'))
+    const boshlandiXom = qiymat(q, 'Boshlandi')
+    const boshlandi = sanaga(boshlandiXom)
     if (!boshlandi) {
       ogoh(`Qatnashuv ${q._qator}-qator: boshlanish sanasi yo'q — ${fish} · ${guruhNomi}`)
       continue
@@ -302,8 +333,17 @@ function yozilishlarniQur(
     const cheg1 = pulga(qiymat(q, '1-chegirma'))
     const cheg2 = pulga(qiymat(q, '2-chegirma'))
 
+    const sheetsId = matn(q, 'ID').toUpperCase() || null
+    if (!sheetsId) toxtat(`Qatnashuv ${q._qator}-qator: ID yo'q — ${fish} · ${guruhNomi}`)
+
+    // Sana katakka matn bo'lib yozilsa (masalan "16.09.2026 "), Sheets
+    // formulasi DATEDIF'da #VALUE! beradi va hisob chiqmaydi. Biz sanani
+    // o'qiy olamiz — farq Sheets xatosi deb belgilanadi.
+    const sanaMatn = typeof boshlandiXom === 'string'
+
     natija.push({
       kalit: `${id}|${gid}`,
+      sheets_id: sheetsId,
       student_id: id,
       group_id: gid,
       guruhNomi,
@@ -319,6 +359,73 @@ function yozilishlarniQur(
       sheetTolangan: pulga(qiymat(q, "To'langan")),
       sheetQarz: pulga(qiymat(q, 'Qarz')),
       sheetOylar: pulga(qiymat(q, 'Oylar')),
+      sheetsXato: sanaMatn
+        ? `${sheetsId ?? q._qator + '-qator'}: "Boshlandi" sanasi matn bo'lib kiritilgan ("${String(boshlandiXom)}") — Sheets hisoblay olmagan`
+        : null,
+    })
+  }
+  return takrorlarniBirlashtir(natija)
+}
+
+/**
+ * Bir o'quvchi bir guruhga ikki marta yozilgan bo'lsa.
+ *
+ * Davrlari ustma-ust tushsa — bu kiritishdagi xato (bir odam bir vaqtda
+ * bir guruhda ikki marta o'qimaydi), Sheets esa ikkala qator uchun ham
+ * hisob chiqaradi. Bazaga bitta yozilish ketadi: eng erta boshlangani,
+ * tugash sanasi — ochiq bo'lsa ochiq, aks holda eng kechi.
+ *
+ * Davrlari ustma-ust tushmasa (tugatib, keyin qaytib kelgan) — bu haqiqiy
+ * holat, lekin to'lovni qaysi biriga bog'lashni taxmin qilib bo'lmaydi.
+ * Bunday juftlik tushuntirilmagan farq bo'lib qoladi va yozishni to'xtatadi.
+ */
+function takrorlarniBirlashtir(yozilishlar: Yozilish[]): Yozilish[] {
+  const kalitBoyicha = new Map<string, Yozilish[]>()
+  for (const y of yozilishlar) {
+    kalitBoyicha.set(y.kalit, [...(kalitBoyicha.get(y.kalit) ?? []), y])
+  }
+
+  const natija: Yozilish[] = []
+  for (const guruh of kalitBoyicha.values()) {
+    if (guruh.length === 1) {
+      natija.push(guruh[0])
+      continue
+    }
+
+    const tartib = [...guruh].sort((a, b) => a.boshlandi.localeCompare(b.boshlandi))
+    const ustma = tartib.every((y, i) => {
+      const oldingi = tartib[i - 1]
+      return i === 0 || !oldingi.tugadi || oldingi.tugadi >= y.boshlandi
+    })
+    const idlar = tartib.map((y) => y.sheets_id ?? '?').join(', ')
+
+    if (!ustma) {
+      toxtat(`Qayta yozilish (${idlar}) — ${tartib[0].student_id} · ${tartib[0].guruhNomi}: to'lovni qaysi biriga bog'lash noma'lum`)
+      natija.push(...tartib)
+      continue
+    }
+
+    const [asosiy, ...qolgan] = tartib
+    const ochiq = tartib.some((y) => !y.tugadi)
+    const farqliChegirma = qolgan.some(
+      (y) => y.chegirma_summa !== asosiy.chegirma_summa || y.chegirma2_summa !== asosiy.chegirma2_summa,
+    )
+    if (farqliChegirma) {
+      ogoh(`${idlar}: chegirmalari farq qiladi — ${asosiy.sheets_id} dagi olindi`)
+    }
+
+    natija.push({
+      ...asosiy,
+      tugadi: ochiq ? null : tartib.map((y) => y.tugadi!).sort().at(-1)!,
+      holat: ochiq ? 'faol' : 'tugagan',
+      // Sheets ustunlarining jami o'zgarmasin — solishtiruvda haqiqiy
+      // Sheets raqami ko'rinsin (u yerda bitta to'lov ikkala qatorda sanalgan).
+      sheetKerak: tartib.reduce((a, y) => a + y.sheetKerak, 0),
+      sheetTolangan: tartib.reduce((a, y) => a + y.sheetTolangan, 0),
+      sheetQarz: tartib.reduce((a, y) => a + y.sheetQarz, 0),
+      sheetsXato:
+        `${idlar}: bir guruhga ikki marta yozilgan (ustma-ust davr) — ` +
+        `Sheets ikki barobar hisoblaydi, bazaga bitta yozildi (${asosiy.sheets_id})`,
     })
   }
   return natija
@@ -408,7 +515,12 @@ function tolovlarniQur(qatorlar: Qator[], guruhlar: Guruh[], oquvchilar: Oquvchi
 
     const tasdiqlangan = belgi(q, 'Tasdiq')
 
+    // ID'siz to'lovni qayta ko'chirishda ikkilanmasligini kafolatlab bo'lmaydi
+    const sheetsId = matn(q, 'ID').toUpperCase() || null
+    if (!sheetsId) toxtat(`To'lov ${q._qator}-qator: ID yo'q — ${fish} (${summa})`)
+
     natija.push({
+      sheets_id: sheetsId,
       student_id: sid,
       kalit: gid ? `${sid}|${gid}` : null,
       sana,
@@ -418,6 +530,74 @@ function tolovlarniQur(qatorlar: Qator[], guruhlar: Guruh[], oquvchilar: Oquvchi
       izoh: matn(q, 'Izoh') || null,
       tasdiqlangan,
       tasdiqlangan_vaqt: tasdiqlangan ? vaqtIso(qiymat(q, 'Tasdiqlangan')) : null,
+    })
+  }
+  return natija
+}
+
+/* ------------------------------------------------------------------ */
+/*  3a. Probniylar → leads                                             */
+/* ------------------------------------------------------------------ */
+
+/** Botdagi holatlar (Y_Probniy.js: PROB_HOLAT) → lead_status. */
+const PROBNIY_HOLAT: Record<string, Probniy['holat']> = {
+  probniy: 'yangi',
+  doimiy: 'yozildi',
+  kelmadi: 'kelmadi',
+  'rad etdi': 'rad',
+}
+
+function probniylarniQur(qatorlar: Qator[], guruhlar: Guruh[], oquvchilar: Oquvchi[]): Probniy[] {
+  const guruhId = new Map(guruhlar.map((g) => [g.nom, g.id]))
+  const natija: Probniy[] = []
+
+  for (const q of qatorlar) {
+    const ism = matn(q, 'F.I.Sh')
+    if (!ism || axlatmi(ism)) continue
+
+    const sheetsId = matn(q, 'ID').toUpperCase()
+    if (!sheetsId) {
+      toxtat(`Probniy ${q._qator}-qator: ID yo'q — ${ism}`)
+      continue
+    }
+
+    const telefon =
+      telefonga(qiymat(q, 'Shaxsiy telefon')) ??
+      telefonga(qiymat(q, 'Ota telefoni')) ??
+      telefonga(qiymat(q, 'Ona telefoni'))
+    if (!telefon) {
+      ogoh(`Probniy ${sheetsId}: telefon yo'q — ${ism}, ko'chirilmadi`)
+      continue
+    }
+
+    const holatXom = matn(q, 'Holat').toLowerCase()
+    const holat = PROBNIY_HOLAT[holatXom]
+    if (!holat) ogoh(`Probniy ${sheetsId}: holat tanilmadi "${matn(q, 'Holat')}" — "Kutilmoqda" deb olindi`)
+
+    const guruhNomi = matn(q, 'Guruh')
+    const group = guruhNomi ? (guruhId.get(guruhNomi) ?? null) : null
+    if (guruhNomi && !group) ogoh(`Probniy ${sheetsId}: guruh topilmadi — "${guruhNomi}"`)
+
+    // Doimiy bo'lgan probniy O'quvchilarga ko'chgan. Bot ham ismni AYNAN
+    // solishtiradi (Y_Probniy.js: PROB_TUZAT) — biz ham shunday qilamiz.
+    let student: string | null = null
+    if (holat === 'yozildi') {
+      const moslar = oquvchilar.filter((o) => o.fish === ism)
+      if (moslar.length === 1) student = moslar[0].id
+      else ogoh(`Probniy ${sheetsId} (${ism}): O'quvchilarda ${moslar.length} ta aynan mos — bog'lanmadi`)
+    }
+
+    natija.push({
+      sheets_id: sheetsId,
+      ism,
+      telefon,
+      tugilgan_sana: sanaga(qiymat(q, "Tug'ilgan sana")),
+      subject_id: yonalishAniqla(matn(q, "Yo'nalish")),
+      group_id: group,
+      holat: holat ?? 'yangi',
+      student_id: student,
+      izoh: matn(q, 'Izoh') || null,
+      created_at: vaqtIso(qiymat(q, "Qo'shilgan")),
     })
   }
   return natija
@@ -473,11 +653,14 @@ function malumotniQur(kitob: Map<string, ReturnType<typeof varaq>>) {
   const hisoblar = hisoblarniQur(yozilishlar, guruhlar, tarix)
   const tolovlar = tolovlarniQur(varaq(kitob, 'Tolovlar').qatorlar, guruhlar, oquvchilar)
 
+  const probVaraq = varaqBormi(kitob, 'Probniylar')
+  const probniylar = probVaraq ? probniylarniQur(probVaraq.qatorlar, guruhlar, oquvchilar) : []
+
   const davomat = DAVOMAT
     ? davomatniQur(kitob, guruhlar, oquvchilar)
     : { darslar: [] as Dars[], belgilar: [] as Davomat[] }
 
-  return { ustozlar, guruhlar, oquvchilar, yozilishlar, hisoblar, tolovlar, davomat }
+  return { ustozlar, guruhlar, oquvchilar, yozilishlar, hisoblar, tolovlar, probniylar, davomat }
 }
 
 type Tayyor = ReturnType<typeof malumotniQur>
@@ -499,6 +682,7 @@ function solishtir(d: Tayyor) {
   }
 
   const farqlar: string[] = []
+  const tushuntirilgan: string[] = []
   let jamiKerak = 0, jamiKerakSheets = 0
   let jamiTolangan = 0, jamiTolanganSheets = 0
 
@@ -512,15 +696,17 @@ function solishtir(d: Tayyor) {
     jamiTolanganSheets += y.sheetTolangan
 
     if (kerak !== y.sheetKerak || tolangan !== y.sheetTolangan) {
-      farqlar.push(
+      const matn =
         `${y.student_id} · ${y.guruhNomi}: kerak ${pul(kerak)} (Sheets ${pul(y.sheetKerak)}) · ` +
-          `to'langan ${pul(tolangan)} (Sheets ${pul(y.sheetTolangan)})`,
-      )
+        `to'langan ${pul(tolangan)} (Sheets ${pul(y.sheetTolangan)})`
+      if (y.sheetsXato) tushuntirilgan.push(`${matn}\n       sabab: ${y.sheetsXato}`)
+      else farqlar.push(matn)
     }
   }
 
   return {
     farqlar,
+    tushuntirilgan,
     jamiKerak, jamiKerakSheets,
     jamiTolangan, jamiTolanganSheets,
     qarz: jamiKerak - jamiTolangan,
@@ -563,8 +749,10 @@ async function yoz(d: Tayyor) {
 
   xato('students', (await db.from('students').upsert(d.oquvchilar)).error)
 
+  // Qatnashuv ID (Q001) bo'yicha — qayta yurgizilsa yangilanadi, ikkilanmaydi
   xato('enrollments', (await db.from('enrollments').upsert(
     d.yozilishlar.map((y) => ({
+      sheets_id: y.sheets_id,
       student_id: y.student_id,
       group_id: y.group_id,
       boshlandi: y.boshlandi,
@@ -576,11 +764,15 @@ async function yoz(d: Tayyor) {
       chegirma_sabab: y.chegirma_sabab,
       holat: y.holat,
     })),
-    { onConflict: 'student_id,group_id' },
+    { onConflict: 'sheets_id' },
   )).error)
 
-  // Yozilish ID'lari — hisob-faktura va to'lov shularga bog'lanadi
-  const { data: bazada } = await db.from('enrollments').select('id, student_id, group_id')
+  // Yozilish ID'lari — hisob-faktura va to'lov shularga bog'lanadi.
+  // Faqat Sheets'dan kelganlari: CRM'da ochilgan yozilish bu yerga aralashmaydi.
+  const { data: bazada } = await db
+    .from('enrollments')
+    .select('id, student_id, group_id')
+    .not('sheets_id', 'is', null)
   const yId = new Map((bazada ?? []).map((y) => [`${y.student_id}|${y.group_id}`, y.id as string]))
 
   const hisobRows = d.hisoblar
@@ -595,34 +787,47 @@ async function yoz(d: Tayyor) {
   })).error)
 
   // To'lovlar o'chirilmaydi, ya'ni ikki marta yozilsa tushum ikkilanadi.
-  const { count } = await db
+  // Endi har to'lov Tolovlar ID (T0001) bo'yicha yoziladi. ID'siz eski
+  // ko'chirish qolgan bo'lsa — qaysi biri qaysi ekanini bilib bo'lmaydi.
+  const { count: eski } = await db
     .from('payments')
     .select('id', { count: 'exact', head: true })
     .eq('manba', 'sheets')
-
-  let tolovSoni = 0
-  if ((count ?? 0) > 0) {
-    ogoh(
-      `Bazada Sheets'dan kelgan ${count} ta to'lov allaqachon bor — ` +
-        `to'lovlar QAYTA YOZILMADI (tushum ikkilanmasin).`,
+    .is('sheets_id', null)
+  if ((eski ?? 0) > 0) {
+    throw new Error(
+      `Bazada ID'siz ${eski} ta Sheets to'lovi bor (eski ko'chirish) — ` +
+        `qayta yozilsa tushum ikkilanadi. Avval ularni ko'rib chiqing.`,
     )
-  } else {
-    const tolovRows = d.tolovlar.map((t) => ({
-      student_id: t.student_id,
-      enrollment_id: t.kalit ? (yId.get(t.kalit) ?? null) : null,
-      sana: t.sana,
-      davr: t.davr,
-      summa: t.summa,
-      usul: t.usul,
-      tasdiqlangan: t.tasdiqlangan,
-      tasdiqlangan_vaqt: t.tasdiqlangan_vaqt,
-      izoh: t.izoh,
-      manba: 'sheets',
-    }))
-    if (tolovRows.length) {
-      xato('payments', (await db.from('payments').insert(tolovRows)).error)
-      tolovSoni = tolovRows.length
-    }
+  }
+
+  const tolovRows = d.tolovlar.map((t) => ({
+    sheets_id: t.sheets_id,
+    student_id: t.student_id,
+    enrollment_id: t.kalit ? (yId.get(t.kalit) ?? null) : null,
+    sana: t.sana,
+    davr: t.davr,
+    summa: t.summa,
+    usul: t.usul,
+    tasdiqlangan: t.tasdiqlangan,
+    tasdiqlangan_vaqt: t.tasdiqlangan_vaqt,
+    izoh: t.izoh,
+    manba: 'sheets',
+  }))
+  if (tolovRows.length) {
+    xato('payments', (await db.from('payments').upsert(tolovRows, { onConflict: 'sheets_id' })).error)
+  }
+
+  /* ── Probniylar ── */
+  if (d.probniylar.length) {
+    xato('leads', (await db.from('leads').upsert(
+      d.probniylar.map(({ created_at, ...p }) => ({
+        ...p,
+        manba: 'boshqa',            // qayerdan kelgani Sheets'da yozilmagan
+        ...(created_at ? { created_at } : {}),
+      })),
+      { onConflict: 'sheets_id' },
+    )).error)
   }
 
   /* ── Davomat ── */
@@ -650,7 +855,13 @@ async function yoz(d: Tayyor) {
     belgiSoni = belgiRows.length
   }
 
-  return { hisoblar: hisobRows.length, tolovlar: tolovSoni, darslar: darsSoni, davomat: belgiSoni }
+  return {
+    hisoblar: hisobRows.length,
+    tolovlar: tolovRows.length,
+    probniylar: d.probniylar.length,
+    darslar: darsSoni,
+    davomat: belgiSoni,
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -675,6 +886,7 @@ async function ishga() {
   console.log(`  qatnashuvlar    ${d.yozilishlar.length}`)
   console.log(`  hisob-faktura   ${d.hisoblar.length}`)
   console.log(`  to‘lovlar       ${d.tolovlar.length}  (${pul(d.tolovlar.reduce((a, t) => a + t.summa, 0))} so‘m)`)
+  console.log(`  probniylar      ${d.probniylar.length}`)
 
   const usulsiz = d.tolovlar.filter((t) => !t.usul).length
   if (usulsiz) console.log(`  · shundan ${usulsiz} tasining USULI [ANIQLANMAGAN]`)
@@ -692,11 +904,23 @@ async function ishga() {
   console.log(`  qarz            ${pul(s.qarz)} / ${pul(s.qarzSheets)}`)
   console.log(
     s.farqlar.length === 0
-      ? '  ✓ hamma qatnashuv mos keladi'
+      ? '  ✓ tushuntirilmagan farq yo‘q'
       : `  ✗ ${s.farqlar.length} ta qatnashuvda farq bor:`,
   )
   s.farqlar.slice(0, 20).forEach((f) => console.log('     ·', f))
   if (s.farqlar.length > 20) console.log(`     … yana ${s.farqlar.length - 20} ta`)
+
+  if (s.tushuntirilgan.length) {
+    console.log(`
+Sheets'ning o'z xatosi (${s.tushuntirilgan.length}) — bazada TO'G'RI hisoblanadi, Sheets'da tuzatish kerak:`)
+    s.tushuntirilgan.forEach((f) => console.log('  ·', f))
+  }
+
+  if (toxtatuvchilar.length) {
+    console.log(`
+Yozishni to'xtatadi (${toxtatuvchilar.length}):`)
+    toxtatuvchilar.forEach((m) => console.log('  ✗', m))
+  }
 
   if (ogohlantirishlar.length) {
     console.log(`\nOgohlantirishlar (${ogohlantirishlar.length}):`)
@@ -709,10 +933,11 @@ async function ishga() {
     return
   }
 
-  if (s.farqlar.length > 0) {
+  if (s.farqlar.length > 0 || toxtatuvchilar.length > 0) {
     throw new Error(
-      `Solishtiruvda ${s.farqlar.length} ta farq bor — yozilmadi. ` +
-        `Avval farqni tushunib oling (--dry-run bilan ko‘ring).`,
+      `Solishtiruvda ${s.farqlar.length} ta tushuntirilmagan farq, ` +
+        `${toxtatuvchilar.length} ta to'xtatuvchi muammo — yozilmadi. ` +
+        `Avval sababini tushunib oling (--dry-run bilan ko‘ring).`,
     )
   }
 
