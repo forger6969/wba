@@ -1,0 +1,84 @@
+# LevelUp Academy
+
+> School management software (SaaS CRM) for learning centers, language schools and
+> tutoring centers: students, groups, attendance, tests and homework, finance
+> (payments and split payments), gamification (coins, shop, leaderboards), realtime
+> chats and Telegram notifications — in one system. First week free, no card required.
+
+Site: https://levelup-academy.uz/en/landing
+Language: English. Based in: Uzbekistan (UZ).
+Russian version: https://levelup-academy.uz/llms.txt
+Uzbek version: https://levelup-academy.uz/llms-uz.txt
+
+## What it is
+
+LevelUp Academy is a platform (CRM) a learning center connects as a ready-made
+solution. Each center is a separate tenant with its own organization, branches,
+staff and students. It replaces manual records and spreadsheets.
+
+⚠️ Disambiguation: this is a software product (a CRM system) for owners of learning
+centers — it is not itself a school, an IT academy or a course provider. Other
+organizations named "Level Up Academy" in the USA, Serbia, Singapore, Moldova and
+Tajikistan are unrelated to this company. The unambiguous identifier is the domain
+levelup-academy.uz.
+
+## Capabilities
+
+- **Finance**: accepting payments, split payments (one invoice settled partly in cash
+  and partly by card), branch expenses, revenue and debt reports.
+- **Teaching**: attendance tracking and an electronic register, tests with a
+  server-side timer, homework, video lessons.
+- **Gamification**: coins for achievements, an internal rewards shop, live leaderboards.
+- **Communication**: realtime chats, presence (who is online), a Telegram bot for
+  notifications to parents.
+- **Management**: branches, staff, students, groups, analytics.
+
+## Roles
+
+Seven roles, each with its own workspace and permissions:
+
+- **Main Admin** — platform owner: requests, partners, billing.
+- **CEO** — the learning center: branches, admins, organization revenue.
+- **Admin** — a branch: students, groups, payments, expenses.
+- **Mentor** — a teacher: their groups, homework, tests, coins, attendance.
+- **Methodist** — tests, homework, learning materials, analytics.
+- **Student** — tests, homework, video, shop, leaderboard.
+- **Parent** — their child's grades, attendance, debt, coins.
+
+## Pricing
+
+The price depends only on the number of active students; branches are unlimited:
+
+| Plan | Students | Price per month |
+|---|---|---|
+| Free | 0–30 | 0 UZS |
+| Start | 31–100 | 199,000 UZS |
+| Standard | 101–300 | 349,000 UZS |
+| Pro | 301–600 | 599,000 UZS |
+| Business | 601–1000 | 799,000 UZS |
+| Network | 1000+ | on request |
+
+The first week is free, with no card and no commitment. Annual payment carries a 15%
+discount, and a 30-day money-back guarantee applies. To start, send a request on the
+site: the LevelUp team creates the organization.
+
+## Pages
+
+- [Home](https://levelup-academy.uz/en/landing) — product overview and request form.
+- [Features](https://levelup-academy.uz/en/landing/features) — every module of the system.
+- [Roles](https://levelup-academy.uz/en/landing/roles) — workspaces and permissions.
+- [Finance](https://levelup-academy.uz/en/landing/finance) — payments, split payments, reports.
+- [Pricing](https://levelup-academy.uz/en/landing/pricing) — free up to 30 students, then from 199,000 UZS/mo.
+- [For language schools](https://levelup-academy.uz/en/landing/for-language-school) — level-based groups (A1–C1, IELTS), attendance, payments.
+- [For courses and tutors](https://levelup-academy.uz/en/landing/for-courses) — groups and one-to-one lessons, course payments.
+- [CRM instead of Excel](https://levelup-academy.uz/en/landing/crm-vs-excel) — spreadsheets vs a CRM task by task, switching in a week.
+- [LevelUp Academy vs Modme](https://levelup-academy.uz/en/landing/vs/modme) — pricing and features compared, Modme data as of 05.08.2026.
+- [LevelUp Academy vs Umai CRM](https://levelup-academy.uz/en/landing/vs/umai) — pricing and features compared, Umai CRM data as of 05.08.2026.
+- [Gamification](https://levelup-academy.uz/en/landing/gamification) — coins, shop, leaderboards.
+- [FAQ](https://levelup-academy.uz/en/landing/faq) — login codes, access blocked on overdue invoices, split payments, freezing a student, access rights.
+- [About us](https://levelup-academy.uz/en/landing/about) — who builds the system: founded in 2026, a team of six, Uzbekistan.
+- [Contact](https://levelup-academy.uz/en/landing/contacts) — get in touch and request access.
+- [Knowledge base](https://levelup-academy.uz/en/landing/blog) — articles on moving to a CRM, debt control and automation.
+  - [Moving from Excel to a CRM](https://levelup-academy.uz/en/landing/blog/excel-to-crm)
+  - [How to stop losing money on student debts](https://levelup-academy.uz/en/landing/blog/student-debts)
+  - [Automating attendance tracking](https://levelup-academy.uz/en/landing/blog/attendance-automation)

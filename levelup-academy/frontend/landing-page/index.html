@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- favicon.ico must exist and be linked: Yandex.Webmaster reports "favicon not
+         found" for an SVG-only icon, and it fetches the root of the site (which
+         308-redirects here), so the raster file is the only signal it accepts.
+         Modern browsers still prefer the SVG below. -->
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" href="/logo-mark.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#1d2417" />
+
+    <!-- Yandex.Webmaster ownership verification. Meta method (not the yandex_*.html
+         file): vercel.json cleanUrls:true 308-redirects .html paths, which breaks
+         Yandex's exact-URL file check. Same code across all verification methods. -->
+    <meta name="yandex-verification" content="3fad9273b6b005db" />
+
+    <!-- Warm up the GA connection early (DNS + TLS) so the async tag loads faster. -->
+    <link rel="preconnect" href="https://www.googletagmanager.com" />
+    <link rel="preconnect" href="https://www.google-analytics.com" crossorigin />
+
+    <!-- Google Analytics (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RWCK0B6TXP"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      // SPA: automatic page_view fires only on the first load. We disable it here
+      // and emit every page_view manually from the router (src/lib/analytics.js).
+      gtag('config', 'G-RWCK0B6TXP', { send_page_view: false });
+    </script>
+
+    <!-- Microsoft Clarity — session replays + heatmaps. Answers what GA4 cannot:
+         where visitors hesitate or abandon the lead form. Loads async, so it never
+         blocks render. Project xvidms2zus, created from Bing Webmaster Tools. -->
+    <script>
+      (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i+"?ref=bwt";
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+      })(window, document, "clarity", "script", "xvidms2zus");
+    </script>
+
+    <!--
+      Переменная часть <head> (title, description, robots, canonical, og:url, JSON-LD
+      маршрута) впечатывается сюда на этапе сборки — scripts/prerender.js. Тот же набор
+      тегов клиентский useCeo обновляет при переходах между роутами.
+      Постоянная часть (ниже) в prerender не участвует и одинакова для всех страниц.
+    -->
+    <!--app-head-->
+
+    <!-- Open Graph — постоянная часть -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="LevelUp Academy" />
+    <meta property="og:image" content="https://levelup-academy.uz/og-cover.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="LevelUp Academy — CRM для учебного центра" />
+
+    <!-- Twitter Card — постоянная часть -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://levelup-academy.uz/og-cover.png" />
+
+    <!-- Structured data: Organization + WebSite + SoftwareApplication -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://levelup-academy.uz/#organization",
+            "name": "LevelUp Academy",
+            "alternateName": [
+              "LevelUp Academy CRM",
+              "LevelUp Academy — CRM для учебных центров",
+              "LevelUp Academy CRM tizimi",
+              "LevelUp CRM O'zbekiston",
+              "LevelUp CRM Oʻzbekiston"
+            ],
+            "url": "https://levelup-academy.uz",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://levelup-academy.uz/logo.png",
+              "width": 896,
+              "height": 160
+            },
+            "description": "LevelUp Academy — SaaS-платформа (программное обеспечение, CRM) для управления учебными центрами в Узбекистане. Это IT-продукт для владельцев учебных центров, а не сам учебный центр или IT-школа: финансы и сплит-платежи, посещаемость, тесты и домашние задания, геймификация, чаты и Telegram-уведомления в одной системе.",
+            "disambiguatingDescription": "Не путать с одноимёнными организациями: LevelUp Academy на levelup-academy.uz — это CRM-система (SaaS-продукт) для учебных центров Узбекистана, а не IT-школа, не образовательные курсы и не учебный центр. Одноимённые Level Up Academy в США, Сербии, Сингапуре, Молдове и Таджикистане — другие организации, не связанные с этой.",
+            "slogan": "CRM для учебного центра",
+            "knowsAbout": [
+              "CRM для учебных центров",
+              "автоматизация учебного центра",
+              "учёт оплат и сплит-платежи",
+              "посещаемость (davomat)",
+              "управление студентами и группами",
+              "o'quv markazi uchun CRM",
+              "o'quv markazini avtomatlashtirish",
+              "davomat va elektron jurnal",
+              "to'lovlar va qarzlar hisobi",
+              "o'quvchilar va guruhlarni boshqarish"
+            ],
+            "areaServed": { "@type": "Country", "name": "Узбекистан" },
+            "foundingLocation": { "@type": "Country", "name": "Узбекистан" },
+            "foundingDate": "2026",
+            "numberOfEmployees": { "@type": "QuantitativeValue", "value": 6 },
+            "founder": { "@id": "https://levelup-academy.uz/#founder" },
+            "sameAs": [
+              "https://t.me/levelupacademycrm",
+              "https://www.instagram.com/levelup_academy_uz/"
+            ]
+          },
+          {
+            "@type": "Person",
+            "@id": "https://levelup-academy.uz/#founder",
+            "name": "Azizbek Amangeldiev",
+            "jobTitle": "Founder & Team Lead",
+            "url": "https://levelup-academy.uz/landing/team/azizbek-amangeldiev",
+            "image": "https://levelup-academy.uz/team/azizbek-amangeldiev.png",
+            "worksFor": { "@id": "https://levelup-academy.uz/#organization" },
+            "sameAs": ["https://www.linkedin.com/in/azizbek-amangeldiev-6045a342b"]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://levelup-academy.uz/#website",
+            "url": "https://levelup-academy.uz",
+            "name": "LevelUp Academy",
+            "alternateName": "LevelUp Academy CRM",
+            "inLanguage": ["uz-UZ", "ru-UZ", "en"],
+            "publisher": { "@id": "https://levelup-academy.uz/#organization" }
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://levelup-academy.uz/#software",
+            "name": "LevelUp Academy",
+            "alternateName": "LevelUp Academy CRM",
+            "applicationCategory": "BusinessApplication",
+            "applicationSubCategory": "CRM",
+            "operatingSystem": "Web",
+            "url": "https://levelup-academy.uz",
+            "description": "CRM для учебного центра: оплаты и сплит-платежи, посещаемость (davomat), тесты с серверным таймером, коины и лидерборды, realtime-чаты, отчёты и Telegram-бот.",
+            "inLanguage": ["uz-UZ", "ru-UZ", "en"],
+            "featureList": [
+              "Учёт оплат, сплит-платежи наличными и картой, инвойсы и чеки",
+              "Контроль долгов учеников и отчёты по выручке филиала",
+              "Посещаемость (davomat) и электронный журнал",
+              "Тесты с серверным таймером и домашние задания",
+              "Видео-уроки и учебные материалы",
+              "Геймификация: коины, магазин наград, лидерборды",
+              "Realtime-чаты и статус «онлайн»",
+              "Telegram-бот для уведомлений родителям",
+              "Мультифилиальность: неограниченное число филиалов",
+              "Семь ролей с разграничением прав на сервере (RBAC)",
+              "Кабинет родителя: оценки, посещаемость, долг ребёнка",
+              "Двуязычный интерфейс: узбекский и русский"
+            ],
+            "publisher": { "@id": "https://levelup-academy.uz/#organization" },
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "UZS",
+              "description": "Первая неделя бесплатно, без карты и обязательств."
+            }
+          }
+        ]
+      }
+    </script>
+    <!--
+      FAQPage здесь намеренно НЕТ: разметка обязана быть на языке страницы, а этот блок
+      общий для ru и uz. Её отдаёт сама страница через useCeo (см. src/lib/ceo.js → faqPage).
+    -->
+  </head>
+  <body>
+    <div id="root"><!--app-html--></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

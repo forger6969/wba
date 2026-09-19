@@ -1,0 +1,96 @@
+# Render Blueprint — LevelUp Academy backend, один Starter web-сервис.
+# HTTP API + Telegram bot (webhook) + BullMQ очереди/краны — всё в одном
+# процессе (`src/server.js`), см. WORKER-MERGE (11.08.2026) ниже.
+# БД/Redis/S3 — внешние (Neon/Upstash/Storj), подключаются через env ниже.
+services:
+  # ─── API (HTTP) ───
+  - type: web
+    # ⚠️ Имя должно совпадать с именем РЕАЛЬНОГО сервиса в Render, иначе весь этот
+    # файл — фикция: Blueprint сопоставляет сервисы по имени и просто не находит,
+    # что настраивать. До 04.08 здесь стояло `levelup-backend`, а трафик
+    # обслуживал другой сервис — проверено запросами:
+    # levelup-backend.onrender.com/health → 404, levelup-academy-1/health → 200.
+    # Из-за этого preDeployCommand и NODE_ENV ниже никогда не применялись:
+    # прод отдавал /api/docs.json (200), то есть работал с NODE_ENV=development.
+    # Точное имя сверено с дашбордом (srv-d97r5vurnols738rhum0) — регистр и
+    # подчёркивание значимы. Переименовывать «покрасивее» нельзя: сначала
+    # переименуй сервис в дашборде.
+    name: LevelUP_academy-1
+    runtime: node
+    rootDir: backend
+    region: ohio          # сверено с дашбордом: сервис создан в ohio, не в frankfurt
+    plan: starter          # 11.08.2026: апгрейд с free — 0.5 CPU/512MB, не засыпает
+    branch: main
+    buildCommand: npm install
+    # На free-плане это поле было заблокировано («Pre-Deploy Command is
+    # available for paid instances only») — миграции висели на Start Command.
+    # С 11.08.2026 (Starter) можно перенести в preDeployCommand по-нормальному,
+    # но startCommand ниже пока не трогал: `migrate && start` даёт то же
+    # свойство «упало = прод остался на прошлой версии», что и pre-deploy —
+    # оставлено как есть, чтобы не менять два места сразу без причины.
+    preDeployCommand: npm run migrate
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      # --- фиксированные (не секреты) ---
+      - key: NODE_ENV
+        value: production
+      - key: DB_SSL
+        value: "true"          # Neon требует TLS
+      - key: S3_REGION
+        value: us-east-1
+      - key: S3_BUCKET
+        value: levelup
+      # --- JWT: Render сгенерит сильный секрет сам ---
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      # --- секреты: вводятся в дашборде Render (значения из backend/.env) ---
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_ACCESS_KEY
+        sync: false
+      - key: S3_SECRET_KEY
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      # URL фронта для CORS — пока фронт не задеплоен, можно указать URL самого сервиса
+      - key: CLIENT_URL
+        sync: false
+      # --- Telegram ---
+      # Бот живёт в ЭТОМ сервисе через webhook, а не в worker'е: long-polling
+      # на free-плане не работает (см. комментарий в modules/telegram/bot.js).
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      # Без username deep-link не построить → bind-token и login/start отдают 503
+      - key: TELEGRAM_BOT_USERNAME
+        sync: false
+      # Публичный адрес API: https://api.levelup-academy.uz
+      - key: PUBLIC_API_URL
+        sync: false
+      # Задан вместе с PUBLIC_API_URL → включается webhook. Render сгенерит сам.
+      - key: TELEGRAM_WEBHOOK_SECRET
+        generateValue: true
+
+  # ─── Worker — НЕТ, и не будет ───
+  # WORKER-MERGE (11.08.2026): раньше здесь был шаблон отдельного `type: worker`
+  # сервиса под BullMQ+cron (levelup-worker, никогда не создавался — прод работал
+  # без очередей вообще). Решили не платить за второй Starter ($7/мес) ради этого:
+  # очереди/краны/AI-review теперь стартуют прямо в web-сервисе выше (`src/server.js`,
+  # см. коммит WORKER-MERGE) — того же самого уже оплаченного процесса достаточно.
+  # Trade-off сознательный: баг в обработчике очереди теперь может уронить весь
+  # процесс, а не только фоновую доставку — для одного учебного центра это принято.

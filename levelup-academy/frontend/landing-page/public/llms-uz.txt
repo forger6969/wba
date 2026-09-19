@@ -1,0 +1,82 @@
+# LevelUp Academy
+
+> O'zbekistondagi o'quv markazlarini boshqarish uchun SaaS-CRM: o'quvchilar, guruhlar,
+> davomat, testlar va uy vazifalari, moliya (to'lovlar va split-to'lovlar),
+> geymifikatsiya (koinlar, do'kon, reytinglar), realtime chatlar va Telegram
+> bildirishnomalari — bitta tizimda. Birinchi hafta bepul, kartasiz va majburiyatsiz.
+
+Sayt: https://levelup-academy.uz/uz/landing
+Til: o'zbek. Mintaqa: O'zbekiston (UZ).
+Ruscha versiya: https://levelup-academy.uz/llms.txt
+Inglizcha versiya: https://levelup-academy.uz/llms-en.txt
+
+## Bu nima
+
+LevelUp Academy — o'quv markazi tayyor yechim sifatida ulaydigan platforma (CRM).
+Har bir markaz — alohida tenant: o'z tashkiloti, filiallari, xodimlari va o'quvchilari
+bilan. Qo'lda yuritilgan hisob va jadvallar o'rnini bosadi.
+
+⚠️ Adashtirmang: bu o'quv markazi yoki IT-maktab EMAS, balki o'quv markazlari
+egalari uchun mo'ljallangan dasturiy mahsulot (CRM tizimi). Dunyodagi boshqa
+"Level Up Academy" nomli tashkilotlar bu kompaniyaga aloqador emas.
+
+## Imkoniyatlar
+
+- **Moliya**: to'lovlarni qabul qilish, split-to'lovlar (bitta hisob qisman —
+  naqd va karta bilan to'lanadi), filial xarajatlari, tushum va qarzlar bo'yicha
+  hisobotlar.
+- **O'quv jarayoni**: davomat va elektron jurnal, server taymerli testlar,
+  uy vazifalari, video darslar.
+- **Geymifikatsiya**: yutuqlar uchun koinlar, ichki do'kon, jonli reytinglar.
+- **Aloqa**: realtime chatlar, presence (kim onlayn), bildirishnomalar uchun
+  Telegram bot.
+- **Boshqaruv**: filiallar, xodimlar, o'quvchilar, guruhlar, analitika.
+
+## Rollar
+
+Yettita rol, har birining o'z kabineti va ruxsatlari bor:
+
+- **Main Admin** — platforma egasi: arizalar, hamkorlar, billing.
+- **CEO** — o'quv markazi: filiallar, adminlar, tashkilot tushumi.
+- **Admin** — filial: o'quvchilar, guruhlar, to'lovlar, xarajatlar.
+- **Mentor** — o'qituvchi: o'z guruhlari, uy vazifalari, testlar, koinlar, davomat.
+- **Metodist** — testlar, uy vazifalari, o'quv materiallari, analitika.
+- **O'quvchi** — testlar, uy vazifalari, video, do'kon, reyting.
+- **Ota-ona** — farzandining baholari, davomati, qarzi, koinlari.
+
+## Narxlar
+
+Narx o'quvchilar soniga qarab belgilanadi, filiallar soni cheklanmagan:
+
+| Tarif | O'quvchilar | Narx (oyiga) |
+|---|---|---|
+| Free | 0–30 | 0 so'm |
+| Start | 31–100 | 199 000 so'm |
+| Standard | 101–300 | 349 000 so'm |
+| Pro | 301–600 | 599 000 so'm |
+| Business | 601–1000 | 799 000 so'm |
+| Network | 1000+ | kelishuv asosida |
+
+Birinchi hafta bepul, kartasiz va majburiyatsiz. Boshlash uchun saytda ariza
+qoldirish kerak: tashkilotni LevelUp jamoasi yaratib beradi.
+
+## Sahifalar
+
+- [Bosh sahifa](https://levelup-academy.uz/uz/landing) — platforma haqida umumiy ma'lumot va ariza shakli.
+- [Imkoniyatlar](https://levelup-academy.uz/uz/landing/features) — tizim modullari.
+- [Rollar](https://levelup-academy.uz/uz/landing/roles) — kabinetlar va ruxsatlar.
+- [Moliya](https://levelup-academy.uz/uz/landing/finance) — to'lovlar, split-to'lovlar, hisobotlar.
+- [Tariflar](https://levelup-academy.uz/uz/landing/pricing) — 30 o'quvchigacha bepul, keyin 199 000 so'mdan.
+- [Til markazi uchun](https://levelup-academy.uz/uz/landing/for-language-school) — darajali guruhlar (A1–C1, IELTS), davomat, to'lovlar.
+- [Kurslar va repetitorlar uchun](https://levelup-academy.uz/uz/landing/for-courses) — guruh va yakkama-yakka darslar, kurs uchun to'lovlar.
+- [Excel o'rniga CRM](https://levelup-academy.uz/uz/landing/crm-vs-excel) — jadvallar va CRM taqqoslash, bir haftada o'tish.
+- [LevelUp Academy yoki Modme](https://levelup-academy.uz/uz/landing/vs/modme) — narx va funksiyalar taqqoslash, Modme sayti ma'lumotlari 05.08.2026 holatiga.
+- [LevelUp Academy yoki Umai CRM](https://levelup-academy.uz/uz/landing/vs/umai) — narx va funksiyalar taqqoslash, Umai CRM sayti ma'lumotlari 05.08.2026 holatiga.
+- [Geymifikatsiya](https://levelup-academy.uz/uz/landing/gamification) — koinlar, do'kon, reytinglar.
+- [Savol va javoblar](https://levelup-academy.uz/uz/landing/faq) — login-kod bilan kirish, to'lov kechikkanda bloklash, bo'lib to'lash, o'quvchini muzlatish, kirish huquqlari.
+- [Kompaniya haqida](https://levelup-academy.uz/uz/landing/about) — tizimni kim ishlab chiqmoqda: 2026-yilda tashkil etilgan, 6 kishilik jamoa, O'zbekiston.
+- [Aloqa](https://levelup-academy.uz/uz/landing/contacts) — bog'lanish va ulanish uchun ariza.
+- [Bilimlar bazasi](https://levelup-academy.uz/uz/landing/blog) — CRM'ga o'tish, qarzlarni nazorat qilish va avtomatlashtirish haqida maqolalar.
+  - [Excel'dan CRM'ga o'tish](https://levelup-academy.uz/uz/landing/blog/excel-to-crm)
+  - [O'quvchilar qarzida pul yo'qotmaslik](https://levelup-academy.uz/uz/landing/blog/student-debts)
+  - [Davomatni avtomatlashtirish](https://levelup-academy.uz/uz/landing/blog/attendance-automation)

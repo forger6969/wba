@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ru" data-theme="levelup">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      Only /login is public and indexable. Everything behind it is private — kept out
+      of the index by robots.txt (Disallow all but /login) and the X-Robots-Tag header
+      (vercel.json, noindex on every path except /login). No meta robots here: it is a
+      single-page app, one index.html for every route, so a static tag could not target
+      only the login page.
+    -->
+    <meta
+      name="description"
+      content="Вход в панель управления LevelUp Academy для сотрудников учебного центра: администратор, CEO, ментор и методист."
+    />
+    <link rel="icon" type="image/svg+xml" href="/logo-mark.svg" />
+    <title>Вход — LevelUp Academy для сотрудников</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

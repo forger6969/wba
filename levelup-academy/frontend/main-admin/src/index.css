@@ -1,0 +1,148 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv11', 'ss01';
+}
+
+/* Кривые заданы отдельно от duration намеренно: встроенные CSS-easing'и
+   (ease, ease-out) слишком слабые — не дают ощущения отклика. Эти взяты из
+   практики Apple/Vercel: сильный ease-out для входа/интерактивных элементов,
+   сильный ease-in-out для движения уже на экране. ease-in для UI не
+   используется нигде намеренно — он тормозит именно в момент, когда
+   пользователь смотрит внимательнее всего. */
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+/* Кнопки должны ощущаться отзывчивыми — реакция на press, а не только на
+   hover. Подавлено для reduced-motion ниже. */
+.btn {
+  transition: transform 120ms var(--ease-out), background-color 150ms var(--ease-out),
+    border-color 150ms var(--ease-out), box-shadow 150ms var(--ease-out), opacity 150ms var(--ease-out);
+}
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* карточки — единый мягкий стиль */
+.card {
+  border: 1px solid theme('colors.base-300');
+  box-shadow: 0 1px 2px rgba(29, 36, 23, 0.04), 0 4px 16px rgba(29, 36, 23, 0.04);
+}
+
+/* таблицы — салатовая шапка + мягкий hover строк */
+.table thead th {
+  background: #eef7e4;
+  color: #46543a;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.table tbody tr {
+  transition: background-color 150ms var(--ease-out);
+}
+.table tbody tr:hover {
+  background: #f6faef;
+}
+
+/* Модалка daisyUI по умолчанию всплывает без масштаба — добавляем лёгкий
+   scale-in из 0.96 (не 0 — ничего в реальном мире не появляется из точки),
+   плюс сильный ease-out, чтобы вход ощущался мгновенным. */
+.modal-box {
+  transition: transform 200ms var(--ease-out), opacity 200ms var(--ease-out);
+}
+.modal:not(.modal-open) .modal-box {
+  transform: scale(0.96) translateY(4px);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .btn:active:not(:disabled),
+  .table tbody tr,
+  .modal-box,
+  .modal:not(.modal-open) .modal-box {
+    transition-duration: 1ms !important;
+    transform: none !important;
+  }
+}
+
+/* скролл-контейнеры */
+.overflow-x-auto {
+  scrollbar-width: thin;
+}
+
+/* Sidebar: Windows Chromium otherwise renders a wide white native scrollbar
+   with arrow buttons, visually splitting the navigation from the page. */
+.main-sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(198, 255, 52, 0.22) transparent;
+  scrollbar-gutter: stable;
+}
+.main-sidebar-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+.main-sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.main-sidebar-scroll::-webkit-scrollbar-thumb {
+  min-height: 36px;
+  border-radius: 999px;
+  background: rgba(198, 255, 52, 0.16);
+}
+.main-sidebar-scroll:hover::-webkit-scrollbar-thumb {
+  background: rgba(198, 255, 52, 0.32);
+}
+.main-sidebar-scroll::-webkit-scrollbar-button,
+.main-sidebar-scroll::-webkit-scrollbar-corner {
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+/* DaisyUI drawer-side itself is scrollable by default. That produced the wide
+   Windows scrollbar across the whole sidebar whenever Partners expanded. */
+.main-sidebar-drawer {
+  overflow: hidden !important;
+}
+
+/* The main menu must remain scrollable on short screens, otherwise lower
+   links (Audit/Settings) are clipped and cannot be clicked. Keep that scroll
+   functional but visually hidden; Partners has its own visible mini-scroll. */
+.main-nav-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior: contain;
+}
+.main-nav-scroll::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Затемнение модального окна должно накрывать ЭКРАН, а не область контента.
+   У DaisyUI `.modal` это `position: fixed; inset: 0; width: 100%; height: 100%`,
+   и проценты считаются от предка, если у того осталась трансформация — так и
+   выходило: сверху и справа оставались непокрытые полосы. Трансформации в
+   конечных кадрах анимаций убраны (см. @keyframes выше — теперь `transform: none`),
+   а здесь размеры заданы в единицах экрана, чтобы случай не повторился.
+   dvh, а не vh: на телефоне адресная строка съедает часть vh. */
+.modal {
+  width: 100vw;
+  max-width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+}

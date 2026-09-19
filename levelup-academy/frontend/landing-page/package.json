@@ -1,0 +1,26 @@
+{
+  "name": "levelup-academy-landing",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run sitemap && npm run build:client && npm run build:server && npm run prerender",
+    "build:client": "vite build",
+    "build:server": "vite build --ssr src/entry-server.jsx --outDir dist/server",
+    "prerender": "node scripts/prerender.js",
+    "sitemap": "node scripts/sitemap.js",
+    "preview": "vite preview",
+    "indexnow": "node scripts/indexnow.js"
+  },
+  "dependencies": {
+    "@fontsource-variable/manrope": "^5.0.19",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.0"
+  }
+}

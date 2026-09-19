@@ -1,0 +1,901 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+  background-color: var(--bg) !important;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv11', 'ss01';
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ТЁМНОЙ ТЕМЫ БОЛЬШЕ НЕТ.
+   Панель работает в единственной светлой теме `levelup`
+   (см. tailwind.config.js). Раньше здесь жили ~300 строк
+   `html.dark …` с !important и переопределение `--p`/`--pc`
+   в RGB, которое DaisyUI 4.12 подставлял в `oklch()` — из-за
+   этого весь primary был нечитаем. Оба источника проблемы
+   удалены: primary теперь задаётся один раз, в конфиге темы.
+   Если тёмная тема когда-нибудь понадобится — её надо делать
+   переменными темы DaisyUI, а не слоем !important-патчей.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════
+   DESIGN TOKENS
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  /* Brand — kept for semantic green (online dot, today highlight, attendance) */
+  --green: #dc2626;
+  --green-bg: rgba(220, 38, 38, 0.10);
+
+  /* --primary объявлена здесь, потому что её не было НИГДЕ, а обращались к ней
+     из двадцати с лишним мест: кнопки в модалках, столбики в графике расходов,
+     кнопка оплаты, шапка профиля, выбор способа платежа. Невалидная var()
+     обнуляет свойство, поэтому кнопка «Создать» в модалке филиала получала
+     прозрачный фон при жёстко белом тексте — белое по белому, кнопки не видно.
+     Значение то же, что у брендового зелёного и у primary в tailwind.config. */
+  --primary: #dc2626;
+  --primary-dark: #2f6129;
+
+  /* Surfaces */
+  --surface: #ffffff;
+  --surface-hover: #f6faef;
+  --bg: #f5f8f1;
+  --accent: #16210f;
+
+  /* Glass */
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(220, 229, 212, 0.6);
+  --glass: rgba(255, 255, 255, 0.72);
+
+  /* Borders */
+  --border: #dce5d4;
+
+  /* Text */
+  --text: #ffffff;
+  --text-secondary: #5c6b53;
+  --text-muted: #7d8c73;
+
+  /* Status */
+  --danger: #dc2626;
+  --danger-light: #fef2f2;
+  --success: #15803d;
+  --success-light: #f0fdf4;
+  --warning: #b45309;
+  --info: #2563eb;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(29, 36, 23, 0.06);
+  --shadow: 0 4px 12px rgba(29, 36, 23, 0.08);
+  --shadow-lg: 0 8px 24px rgba(29, 36, 23, 0.12);
+
+  /* Border radius — уменьшено 08.08.2026 (Karis): было 8/12/16, слишком
+     "мультяшно" рядом с более сдержанным референсом (marsit.uz) */
+  --radius-sm: 5px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+
+  /* Sidebar */
+  --sidebar-hover: rgba(220, 38, 38, 0.08);
+
+  /* Scrollbar */
+  --scrollbar-thumb: rgba(220, 38, 38, 0.25);
+  --scrollbar-thumb-hover: rgba(220, 38, 38, 0.45);
+}
+
+/* Тень — из docs/FRONTEND-DESIGN-SYSTEM.md («карточки — чисто белые, с явной
+   тенью»). Стояло вчетверо слабее (0.04 против 0.14), поэтому белые карточки
+   почти сливались со светлым фоном и вся панель выглядела плоской. */
+.card {
+  border: 1px solid theme('colors.base-300');
+  box-shadow: 0 10px 28px rgba(29, 36, 23, 0.10), 0 2px 6px rgba(29, 36, 23, 0.06);
+}
+
+/* Всплывающие слои (меню в шапке, поповеры) — выше карточек, тень сильнее:
+   иначе панель, висящая над контентом, читается как его часть. */
+.popover-surface {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(29, 36, 23, 0.18), 0 4px 12px rgba(29, 36, 23, 0.10);
+}
+
+.table thead th {
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.table tbody tr {
+  transition: background-color 0.12s ease;
+}
+.table tbody tr:hover {
+  background: var(--surface-hover);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DAISYUI COMPONENT OVERRIDES — force theme-aware backgrounds
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Modal — ensure full-viewport overlay regardless of parent stacking context.
+   dialog по UA/DaisyUI-стилю получает margin: 24px 0 0 0 (центрирование для
+   нативного showModal()) — мы его не вызываем, поэтому margin остаётся мёртвым
+   грузом и сдвигает весь оверлей вниз, оставляя сверху непокрытую полосу с
+   видимой недожатой шапкой сайта. */
+.modal {
+  position: fixed !important;
+  inset: 0 !important;
+  margin: 0 !important;
+  z-index: 999 !important;
+}
+
+/* Modal box — always use our surface token */
+.modal-box {
+  background: var(--surface) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+/* Modal backdrop — softer overlay */
+.modal-backdrop {
+  background: rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: blur(4px);
+}
+
+/* Modal form elements — force theme-aware colors (fixes createPortal DaisyUI bleed) */
+.modal .input-bordered,
+.modal .select-bordered {
+  background: var(--bg) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+.modal .input-bordered:focus,
+.modal .select-bordered:focus {
+  border-color: var(--primary) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15) !important;
+}
+.modal .btn-ghost {
+  color: var(--text-secondary) !important;
+  background: transparent !important;
+}
+.modal .btn-ghost:hover {
+  background: var(--surface-hover) !important;
+}
+.modal .btn-primary {
+  --btn-color: var(--primary);
+  background: var(--primary) !important;
+  color: #fff !important;
+}
+.modal label {
+  color: var(--text-secondary) !important;
+}
+.modal input::placeholder,
+.modal select::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 1;
+}
+.modal .alert {
+  background: var(--surface-hover) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+.modal .alert-error {
+  background: var(--danger-light) !important;
+  border-color: var(--danger) !important;
+  color: var(--danger) !important;
+}
+
+/* Фон задаётся css-переменной — меняется автоматически при переключении темы */
+
+/* ═══════════════════════════════════════════════════════════════
+   GLASS MORPHISM
+   ═══════════════════════════════════════════════════════════════ */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+}
+.glass-strong {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   KEYFRAME ANIMATIONS
+   ═══════════════════════════════════════════════════════════════ */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes slide-right {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(8px) scale(0.99); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+  50%      { box-shadow: 0 0 12px 4px rgba(220, 38, 38, 0.18); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.35s ease-out both;
+}
+.animate-slide-up {
+  animation: slide-up 0.4s ease-out both;
+}
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+.animate-page-enter {
+  animation: page-enter 0.4s ease-out both;
+}
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out both;
+}
+.animate-slide-right {
+  animation: slide-right 0.35s ease-out both;
+}
+.animate-glow-pulse {
+  animation: glow-pulse 2.5s ease-in-out infinite;
+}
+
+/* Уважаем системную настройку «меньше движения» */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   STAGGER ENTRANCE — lists & card grids
+   ═══════════════════════════════════════════════════════════════ */
+.stagger-1  { animation-delay: 0.05s; }
+.stagger-2  { animation-delay: 0.10s; }
+.stagger-3  { animation-delay: 0.15s; }
+.stagger-4  { animation-delay: 0.20s; }
+.stagger-5  { animation-delay: 0.25s; }
+.stagger-6  { animation-delay: 0.30s; }
+.stagger-7  { animation-delay: 0.35s; }
+.stagger-8  { animation-delay: 0.40s; }
+.stagger-9  { animation-delay: 0.45s; }
+.stagger-10 { animation-delay: 0.50s; }
+.stagger-11 { animation-delay: 0.55s; }
+.stagger-12 { animation-delay: 0.60s; }
+
+/* ═══════════════════════════════════════════════════════════════
+   CARD HOVER PREMIUM — shared hover effect for stat cards
+   ═══════════════════════════════════════════════════════════════ */
+.card-hover-premium {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-hover-premium:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UTILITY CLASSES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Tabular nums for money & KPI numbers */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Skeleton shimmer gradient */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--surface) 25%,
+    var(--surface-hover) 50%,
+    var(--surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Skeleton pulse */
+.skeleton-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+
+/* Loading spinner — match sidebar primary accent */
+.loading-spinner {
+  color: var(--primary) !important;
+}
+
+/* Green glow ring for focused/active elements */
+.glow-ring {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.28);
+}
+
+/* Pulsing dot indicator (online status) */
+.pulse-dot {
+  position: relative;
+}
+.pulse-dot::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: glow-pulse 2s ease-in-out infinite;
+  z-index: -1;
+}
+
+/* Overflow scroll */
+.overflow-x-auto {
+  scrollbar-width: thin;
+}
+
+/* ── Scrollbar styling — changes with theme ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+html {
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+  scrollbar-width: thin;
+}
+/* scrollbar-width/-color не наследуются — без этого правила вложенные
+   overflow-контейнеры (модалки и т.п.) показывают системный толстый скроллбар,
+   даже если ::-webkit-scrollbar задан выше (эта сборка Chrome его игнорирует) */
+* {
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+  scrollbar-width: thin;
+}
+
+/* Клавиатурная доступность: видимый фокус на всех интерактивных элементах.
+   :focus-visible не срабатывает на клик мышью — визуального шума не добавляет. */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ─── Premium card hover ─── */
+.card-hover-premium {
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-hover-premium:hover {
+  transform: translateY(-4px) scale(1.008);
+  box-shadow: 0 12px 40px rgba(29, 36, 23, 0.12), 0 0 0 1px rgba(59, 130, 246, 0.20) inset;
+}
+
+/* ─── Scale in animation ─── */
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: none; }
+}
+.animate-scale-in {
+  animation: scale-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ─── Slide right ─── */
+@keyframes slide-right {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: none; }
+}
+.animate-slide-right {
+  animation: slide-right 0.35s ease-out both;
+}
+
+/* ─── Shimmer (loading) ─── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(59,130,246,0.06) 50%, transparent 100%);
+  background-size: 800px 100%;
+  animation: shimmer 1.8s infinite;
+}
+
+/* ─── Blue glow ring ─── */
+@keyframes glow-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0); }
+  50%      { box-shadow: 0 0 0 8px rgba(59,130,246,0.15); }
+}
+.glow-ring {
+  animation: glow-ring 2.5s ease-in-out infinite;
+}
+
+/* ─── Pulse dot ─── */
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.5); opacity: 0.5; }
+}
+.pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* ─── Breadcrumb separator ─── */
+.breadcrumb-sep::after {
+  content: '/';
+  margin: 0 8px;
+  color: var(--text-muted, #8FA283);
+  font-size: 12px;
+}
+
+/* ─── Score gradient bar ─── */
+.score-bar {
+  background: linear-gradient(90deg, #ef4444 0%, #f59e0b 45%, #3b82f6 75%, #60a5fa 100%);
+}
+
+/* ─── Question option highlight ─── */
+.option-correct {
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+/* ─── Modal entrance ─── */
+@keyframes modal-enter {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+.modal-enter {
+  animation: modal-enter 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ─── Additional stagger delays ─── */
+.stagger-7 { animation-delay: 0.35s; }
+.stagger-8 { animation-delay: 0.40s; }
+.stagger-9 { animation-delay: 0.45s; }
+.stagger-10 { animation-delay: 0.50s; }
+
+/* Затемнение модального окна должно накрывать ЭКРАН, а не область контента.
+   У DaisyUI `.modal` это `position: fixed; inset: 0; width: 100%; height: 100%`,
+   и проценты считаются от предка, если у того осталась трансформация — так и
+   выходило: сверху и справа оставались непокрытые полосы. Трансформации в
+   конечных кадрах анимаций убраны (см. @keyframes выше — теперь `transform: none`),
+   а здесь размеры заданы в единицах экрана, чтобы случай не повторился.
+   dvh, а не vh: на телефоне адресная строка съедает часть vh. */
+.modal {
+  width: 100vw;
+  max-width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   METHODIST — "Content Studio" Design System
+   Unique identity: lime brand (#dc2626) + forest-green accent (#dc2626),
+   editorial cards, notebook-style lists. Matches staff design tokens
+   (--primary/#dc2626, Manrope) with the task palette #ffffff/#dc2626/#F6FBEA.
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  --mt-accent: #dc2626;
+  --mt-accent-light: rgba(220, 38, 38, 0.08);
+  --mt-accent-hover: rgba(220, 38, 38, 0.12);
+  --mt-accent-border: rgba(220, 38, 38, 0.18);
+  --mt-brand: #dc2626;
+  --mt-brand-hover: #A3E635;
+  --mt-brand-ink: #16210f;
+  --mt-surface: #f6faef;
+  --mt-surface-warm: #F6FBEA;
+  --mt-border: #e2ead6;
+  --mt-text: #ffffff;
+  --mt-text-muted: #5c6b53;
+  --mt-success: #15803d;
+  --mt-warning: #b45309;
+  --mt-danger: #dc2626;
+}
+
+/* ─── Methodist accent buttons ─── */
+.mt-btn-primary {
+  background: var(--mt-brand);
+  color: var(--mt-brand-ink);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(163, 230, 53, 0.3);
+}
+.mt-btn-primary:hover {
+  background: var(--mt-brand-hover);
+  box-shadow: 0 6px 20px rgba(163, 230, 53, 0.4);
+  transform: translateY(-1px);
+}
+.mt-btn-primary:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.mt-btn-ghost {
+  background: var(--mt-surface-warm);
+  color: var(--mt-text-muted);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: 1px solid var(--mt-border);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.mt-btn-ghost:hover {
+  background: var(--mt-accent-light);
+  color: var(--mt-accent);
+  border-color: var(--mt-accent-border);
+}
+
+/* ─── Methodist content cards (left-border accent) ─── */
+.mt-card {
+  background: #fff;
+  border: 1px solid var(--mt-border);
+  border-left: 4px solid var(--mt-brand);
+  border-radius: 14px;
+  padding: 20px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mt-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(220, 38, 38, 0.1), 0 2px 8px rgba(0,0,0,0.04);
+  border-left-color: var(--mt-brand-hover);
+}
+
+.mt-card-flat {
+  background: #fff;
+  border: 1px solid var(--mt-border);
+  border-radius: 14px;
+  padding: 20px;
+  transition: all 0.25s ease;
+}
+.mt-card-flat:hover {
+  border-color: var(--mt-accent-border);
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.08);
+}
+
+/* ─── Methodist stat strip (horizontal KPI) ─── */
+.mt-stat-strip {
+  background: linear-gradient(135deg, #F6FBEA 0%, #EFF8DD 50%, #F6FBEA 100%);
+  border: 1px solid var(--mt-border);
+  border-radius: 16px;
+  padding: 20px 24px;
+}
+
+/* ─── Methodist notebook list item ─── */
+.mt-notebook-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid var(--mt-border);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+.mt-notebook-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  background: var(--mt-accent);
+  border-radius: 0 3px 3px 0;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.mt-notebook-item:hover {
+  background: var(--mt-surface);
+  border-color: var(--mt-accent-border);
+}
+.mt-notebook-item:hover::before {
+  opacity: 1;
+}
+
+/* ─── Methodist progress bar ─── */
+.mt-progress {
+  height: 8px;
+  background: var(--mt-surface-warm);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.mt-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--mt-brand), var(--mt-brand-hover));
+  transition: width 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─── Methodist section header ─── */
+.mt-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--mt-border);
+  margin-bottom: 20px;
+}
+
+/* ─── Methodist modal ─── */
+.mt-modal {
+  border-radius: 20px;
+  border: 1px solid var(--mt-border);
+  overflow: hidden;
+}
+.mt-modal-header {
+  background: linear-gradient(135deg, #F6FBEA, #EFF8DD);
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid var(--mt-border);
+}
+.mt-modal-body {
+  padding: 24px;
+}
+
+/* ─── Methodist input fields ─── */
+.mt-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  border: 1.5px solid var(--mt-border);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--mt-text);
+  background: #fff;
+  transition: all 0.2s ease;
+  outline: none;
+}
+.mt-input:focus {
+  border-color: var(--mt-accent);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+.mt-input::placeholder {
+  color: #9CA3AF;
+}
+
+.mt-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--mt-border);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--mt-text);
+  background: #fff;
+  transition: all 0.2s ease;
+  outline: none;
+  resize: vertical;
+}
+.mt-textarea:focus {
+  border-color: var(--mt-accent);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+.mt-select {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  border: 1.5px solid var(--mt-border);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--mt-text);
+  background: #fff;
+  transition: all 0.2s ease;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+.mt-select:focus {
+  border-color: var(--mt-accent);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+/* ─── Methodist badge / chip ─── */
+.mt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.mt-badge-test {
+  background: rgba(245, 158, 11, 0.1);
+  color: #B45309;
+}
+.mt-badge-practical {
+  background: rgba(5, 150, 105, 0.1);
+  color: #047857;
+}
+
+/* ─── Methodist empty state ─── */
+.mt-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  text-align: center;
+}
+
+/* ─── Methodist page bg (subtle gradient) ─── */
+.mt-page-bg {
+  min-height: 100%;
+  background: linear-gradient(180deg, var(--mt-surface) 0%, #fff 120px);
+}
+
+/* ─── Methodist question card (editor) ─── */
+.mt-question-card {
+  background: #fff;
+  border: 1px solid var(--mt-border);
+  border-radius: 14px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+.mt-question-card:hover {
+  border-color: var(--mt-accent-border);
+}
+.mt-question-card.editing {
+  border-color: var(--mt-accent);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
+}
+
+/* ─── Methodist option pill ─── */
+.mt-option-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.mt-option-correct {
+  background: rgba(5, 150, 105, 0.08);
+  border: 1.5px solid rgba(5, 150, 105, 0.2);
+  color: #065F46;
+}
+
+/* ─── Methodist stagger delays (extended) ─── */
+.mt-stagger-1 { animation-delay: 0.06s; }
+.mt-stagger-2 { animation-delay: 0.12s; }
+.mt-stagger-3 { animation-delay: 0.18s; }
+.mt-stagger-4 { animation-delay: 0.24s; }
+.mt-stagger-5 { animation-delay: 0.30s; }
+.mt-stagger-6 { animation-delay: 0.36s; }
+
+/* ─── Methodist slide-in (gentle) ─── */
+@keyframes mt-slide-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.mt-animate-in {
+  animation: mt-slide-in 0.4s ease-out both;
+}
+
+/* ─── Methodist fade-in ─── */
+@keyframes mt-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.mt-fade-in {
+  animation: mt-fade 0.3s ease-out both;
+}
+
+/* === DASHBOARD STRICT TOKENS (Admin + CEO shared) === */
+:root {
+  --border-hairline: rgba(29, 36, 23, 0.06);
+  --border-faint: rgba(29, 36, 23, 0.04);
+  --border-subtle: rgba(29, 36, 23, 0.08);
+  --surface-0: #ffffff;
+  --surface-1: #fafbf8;
+  --radius-tight: 4px;
+  --radius-card: 8px;
+  --radius-pill: 999px;
+  --shadow-card: 0 1px 3px rgba(29,36,23,.04), 0 1px 2px rgba(29,36,23,.03);
+  --shadow-card-hover: 0 4px 12px rgba(29,36,23,.06), 0 2px 4px rgba(29,36,23,.04);
+  --ease-snappy: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-smooth: cubic-bezier(0.77, 0, 0.175, 1);
+  --dur-instant: 80ms;
+  --dur-fast: 140ms;
+  --dur-normal: 200ms;
+  --dur-slow: 300ms;
+  --stagger-base: 40ms;
+  --bg-primary: rgba(220, 38, 38, 0.08);
+  --bg-success: rgba(21, 128, 61, 0.08);
+  --bg-warning: rgba(180, 83, 9, 0.08);
+  --bg-danger: rgba(220, 38, 38, 0.08);
+  --bg-info: rgba(37, 99, 235, 0.08);
+}
+
+/* Entrance animations */
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.animate-scale-in { animation: scale-in var(--dur-normal) var(--ease-snappy) both; }
+.animate-slide-up { animation: slide-up var(--dur-normal) var(--ease-snappy) both; }
+.animate-fade-in { animation: fade-in var(--dur-normal) var(--ease-snappy) both; }
+
+/* Stagger delays */
+.stagger-1 { animation-delay: calc(1 * var(--stagger-base)); }
+.stagger-2 { animation-delay: calc(2 * var(--stagger-base)); }
+.stagger-3 { animation-delay: calc(3 * var(--stagger-base)); }
+.stagger-4 { animation-delay: calc(4 * var(--stagger-base)); }
+.stagger-5 { animation-delay: calc(5 * var(--stagger-base)); }
+.stagger-6 { animation-delay: calc(6 * var(--stagger-base)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-scale-in, .animate-slide-up, .animate-fade-in,
+  .kpi-card, .branches-table tbody tr, .analytics-cta {
+    animation: none !important;
+    transition: none !important;
+  }
+  .kpi-card:active { transform: none !important; }
+}
