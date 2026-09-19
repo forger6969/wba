@@ -42,18 +42,28 @@ export async function POST(req: NextRequest) {
     return new NextResponse('ruxsat yo‘q', { status: 401 })
   }
   const update = (await req.json().catch(() => null)) as TgUpdate | null
+  const boshi = Date.now()
+  const turi = update?.message ? (update.message.contact ? 'kontakt' : (update.message.text ?? '').split(' ')[0] || 'xabar') : update?.callback_query ? `tugma ${update.callback_query.data?.split('|')[0]}` : 'boshqa'
   try {
     if (update?.message) await xabarniIshla(update.message)
     else if (update?.callback_query) await tugmaniIshla(update.callback_query)
   } catch (e) {
-    console.error('[telegram]', e)
+    console.error('[telegram] istisno', turi, e)
   }
+  console.log('[telegram]', turi, `${Date.now() - boshi}ms`)
   return NextResponse.json({ ok: true })
 }
 
 /* ------------------------------------------------------------------ */
 
 const db = () => createAdminClient()
+
+/** Baza xatosi jimgina "topilmadi" bo'lib ketmasin — jurnalga va odamga */
+const TEXNIK = 'Texnik xatolik yuz berdi. Birozdan keyin qayta urinib ko‘ring.'
+function bazaXato(joy: string, e: { message: string } | null) {
+  if (e) console.error('[telegram] baza', joy, e.message)
+  return Boolean(e)
+}
 const ism = (u?: TgUser) => [u?.first_name, u?.last_name].filter(Boolean).join(' ') || u?.username || 'Telegram'
 
 const KIM_NOMI: Record<TelegramKim, string> = {
@@ -64,11 +74,12 @@ const KIM_NOMI: Record<TelegramKim, string> = {
 }
 
 async function ulanishlar(chat: number): Promise<Ulanish[]> {
-  const { data } = await db()
+  const { data, error } = await db()
     .from('telegram_ulanish')
     .select('kim, student_id, teacher_id, profile_id, students(fish), teachers(ism), profiles(ism)')
     .eq('chat_id', chat)
     .eq('holat', 'faol')
+  bazaXato('ulanishlar', error)
   type Q = Omit<Ulanish, 'ism'> & { students: { fish: string } | null; teachers: { ism: string } | null; profiles: { ism: string } | null }
   return ((data ?? []) as unknown as Q[]).map((u) => ({
     kim: u.kim,
@@ -113,7 +124,11 @@ async function xabarniIshla(m: TgMessage) {
       await kontaktSorash(chat, 'Faqat <b>o‘zingizning</b> raqamingizni yuboring — pastdagi tugma orqali.')
       return
     }
-    const { data } = await db().rpc('telegram_ula_telefon', { p_tel: m.contact.phone_number, p_chat: chat, p_tg_ism: ism(m.from) })
+    const { data, error } = await db().rpc('telegram_ula_telefon', { p_tel: m.contact.phone_number, p_chat: chat, p_tg_ism: ism(m.from) })
+    if (bazaXato('ula_telefon', error)) {
+      await xabar(chat, TEXNIK)
+      return
+    }
     const topildi = data ?? []
     if (!topildi.length) {
       await tg('sendMessage', {
@@ -140,7 +155,11 @@ async function xabarniIshla(m: TgMessage) {
   // /start <token> — saytdagi "Telegramga ulash" tugmasidan
   const start = matn.match(/^\/start(?:\s+([a-f0-9]{32}))?$/)
   if (start?.[1]) {
-    const { data } = await db().rpc('telegram_ula_token', { p_token: start[1], p_chat: chat, p_tg_ism: ism(m.from) })
+    const { data, error } = await db().rpc('telegram_ula_token', { p_token: start[1], p_chat: chat, p_tg_ism: ism(m.from) })
+    if (bazaXato('ula_token', error)) {
+      await xabar(chat, TEXNIK)
+      return
+    }
     if (!data?.length) {
       await xabar(chat, 'Havola eskirgan yoki ishlatilgan. Saytda <b>Profil → Telegramga ulash</b> ni qayta bosing.')
       return
@@ -158,7 +177,8 @@ async function xabarniIshla(m: TgMessage) {
 
   // Ustozning Telegram ID'si bazada bo'lsa (eski botdan) — raqamsiz ulanadi
   if (m.from) {
-    const { data: ustoz } = await db().from('teachers').select('id').eq('telegram_id', m.from.id).eq('holat', 'faol')
+    const { data: ustoz, error } = await db().from('teachers').select('id').eq('telegram_id', m.from.id).eq('holat', 'faol')
+    bazaXato('ustoz telegram_id', error)
     if (ustoz?.length) {
       for (const u of ustoz) {
         await db().rpc('telegram_ula_qator', {
