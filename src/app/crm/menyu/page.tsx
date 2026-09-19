@@ -4,6 +4,7 @@ import { talabProfil, getUstoz, ROL_NOMI } from '@/lib/auth'
 import { menyular } from '@/lib/menyu'
 import { createClient } from '@/lib/supabase/server'
 import { Sarlavha } from '@/components/crm'
+import { TemaTugma } from '@/components/tema'
 import { IconLogout } from '@/components/icons'
 
 export const metadata = { title: 'Menyu' }
@@ -44,11 +45,14 @@ export default async function Menyu() {
         </section>
       ))}
 
-      <form action={chiqish}>
-        <button type="submit" className="flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] border border-line text-[13.5px] text-ink-3 hover:text-ink">
-          <IconLogout size={17} /> Chiqish
-        </button>
-      </form>
+      <div className="flex items-center gap-2">
+        <form action={chiqish} className="flex-1">
+          <button type="submit" className="flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] border border-line text-[13.5px] text-ink-3 hover:text-ink">
+            <IconLogout size={17} /> Chiqish
+          </button>
+        </form>
+        <TemaTugma />
+      </div>
     </div>
   )
 }

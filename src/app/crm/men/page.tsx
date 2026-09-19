@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { talabProfil } from '@/lib/auth'
+import { redirect } from 'next/navigation'
+import { talabProfil, panelYoli } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Card, CardHeader, Stat, Badge, Empty } from '@/components/ui'
@@ -43,6 +44,9 @@ export default async function MeningSahifam({
 }) {
   const xabar = await searchParams
   const profil = await talabProfil()
+  // Bu sahifa faqat o'quvchi uchun. Xodim/ustoz kirsa — o'z paneliga
+  // qaytaramiz (aks holda "o'quvchi yozuviga bog'lanmagan" ko'rinardi).
+  if (profil.rol !== 'oquvchi') redirect(panelYoli(profil.rol))
   if (!supabaseSozlanganmi()) return <Ulanmagan nom="Mening sahifam" />
 
   const supabase = await createClient()
