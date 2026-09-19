@@ -7,7 +7,7 @@ import { Card, CardHeader, Stat, Badge, Empty, Button } from '@/components/ui'
 import { Xabar } from '@/components/forma'
 import { Sarlavha, Ulanmagan } from '@/components/crm'
 import { IconArrowLeft } from '@/components/icons'
-import { pul, jadval, sana, davrNomi, joriyDavr } from '@/lib/format'
+import { pul, jadval, sana, davrNomi, joriyDavr, bosh } from '@/lib/format'
 import type { DayType } from '@/lib/types'
 
 export const metadata = { title: 'Guruh' }
@@ -182,12 +182,17 @@ export default async function GuruhProfil({
                     key={y.id}
                     href={pulKoradi ? `/crm/oquvchilar/${y.student_id}` : null}
                   >
-                    <span className="flex min-w-0 flex-col gap-0.5">
-                      <span className="truncate text-[13px] font-semibold">
-                        {y.students?.fish ?? y.student_id}
+                    <span className="flex min-w-0 items-center gap-3">
+                      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-brand-soft font-[family-name:var(--font-display)] text-[12px] font-bold text-brand">
+                        {bosh(y.students?.fish ?? y.student_id)}
                       </span>
-                      <span className="font-[family-name:var(--font-mono)] text-[10.5px] text-ink-3">
-                        {y.student_id} · {sana(y.boshlandi)} dan
+                      <span className="flex min-w-0 flex-col gap-0.5">
+                        <span className="truncate text-[13px] font-semibold">
+                          {y.students?.fish ?? y.student_id}
+                        </span>
+                        <span className="font-[family-name:var(--font-mono)] text-[10.5px] text-ink-3">
+                          {y.student_id} · {sana(y.boshlandi)} dan
+                        </span>
                       </span>
                     </span>
 
