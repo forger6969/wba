@@ -101,7 +101,7 @@ Qator o'chirilmaydi (`deleteRow` — formulalarni buzadi): faqat qo'lda yozilgan
 | Q8 | **Domen** `wba.uz` kimniki, ulaymizmi (I8) | — | W11 |
 
 **Javoblar (Jamshid, 19.09):**
-- **Q2 = a** — Sheets asosiy. Sayt har soatda Sheets'dan yangilanadi (W2); saytda Sheets'dan keladigan ma'lumotni kiritish vaqtincha yopiladi, faqat ko'rish.
+- **Q2 = b** (19.09 kech o'zgardi) — **SAYT ASOSIY**, Sheets faqat ko'rish uchun (baza → Sheets ko'zgu). Bot Sheets'ga emas, bazaga yozadi; Telegram bot to'liq integratsiya qilinadi (admin "Xabarlar": to'lov eslatmasi, oylik test, majlis, e'lonlar). W2 (Sheets→sayt soatlik) endi kerak emas — o'rniga baza→Sheets.
 - **Q3 = b** — "Terminal" alohida usul (`0018_usul_terminal.sql`, W1-4).
 - **Q4 = a** — "Dars o'tkazilmadi" davomat foiziga kirmaydi.
 - **Q5** — ustoz davomatni FAQAT o'sha kuni belgilaydi; kun o'tib ketsa faqat admin tuzatadi (W6).
