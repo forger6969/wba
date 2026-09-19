@@ -108,7 +108,9 @@ Qator o'chirilmaydi (`deleteRow` — formulalarni buzadi): faqat qo'lda yozilgan
 - **Q6** — woblar reytingi ikki xil: butun markaz va o'quvchining o'z fani (`groups.subject_id`) bo'yicha. Boshqa fanning reytingini o'quvchi ko'ra olmaydi (W7).
 - Q1, Q7, Q8 — hali ochiq.
 
-**Ish taqsimoti:** ustoz va o'quvchi panellari (W6, W7 va panellardagi davomat ko'rinishi) — Jamshid (Claude bilan). W1, W2, J11 (bulutdagi davomatni tozalash) va admin/direktor qismi — sxvs.
+**Ish taqsimoti:** ustoz va o'quvchi panellari (W6, W7 va panellardagi davomat ko'rinishi) — Jamshid (Claude bilan). W1, J11 (bulutdagi davomatni tozalash) va admin/direktor qismi — sxvs.
+
+**Bot va xabarlar (19.09 kech):** Telegram bot SAYT loyihasiga ko'chadi (`docs/BOT.md` A-yo'l: `/api/telegram` webhook, Postgres'dan o'qiydi, hozirgi bot tokeni). Admin "Xabarlar" (to'lov eslatmasi, oylik test, majlis, e'lonlar) → o'quvchi, ota-ona, ustoz, xodimga bot orqali. Ulanish: telefon (request_contact) + saytdagi "Telegramga ulash". Buni to'liq Jamshid (Claude bilan) qiladi, admin "Xabarlar" sahifasi ham. Ko'chish HOZIROQ: to'lov va davomat endi faqat saytda kiritiladi.
 
 ### J11 🟠 Bulutdagi davomatni tozalashga ruxsat (K1, K2)
 sxvs W1 ni tugatgach: kelajakdagi 95 dars va ularning 398 "kelmadi" belgisi, hamda belgilanmagan darslar bulutdan o'chiriladi va davomat qayta ko'chiriladi. Buyruqni sxvs tayyorlaydi, siz "ha" deysiz. Pul yozuvlariga tegilmaydi.
