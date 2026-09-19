@@ -21,7 +21,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
       </p>
       <button
         onClick={reset}
-        className="inline-flex min-h-12 items-center rounded-[10px] bg-brand px-6 text-[14.5px] font-bold transition hover:brightness-110"
+        className="inline-flex min-h-12 items-center rounded-[10px] bg-brand text-white px-6 text-[14.5px] font-bold transition hover:brightness-110"
       >
         Qaytadan urinib ko‘rish
       </button>

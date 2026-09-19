@@ -57,7 +57,7 @@ export default async function TolovQosh({ searchParams }: { searchParams: Promis
               className="min-w-0 flex-1 bg-transparent text-[13.5px] text-ink outline-none placeholder:text-ink-4"
             />
           </span>
-          <button type="submit" className="min-h-11 rounded-[9px] bg-brand px-5 text-[13.5px] font-semibold">
+          <button type="submit" className="min-h-11 rounded-[9px] bg-brand text-white px-5 text-[13.5px] font-semibold">
             Qidirish
           </button>
         </form>

@@ -212,7 +212,7 @@ export default async function Oquvchilar({
 
         <button
           type="submit"
-          className="min-h-11 rounded-[9px] bg-brand px-5 text-[13.5px] font-semibold transition hover:brightness-110"
+          className="min-h-11 rounded-[9px] bg-brand text-white px-5 text-[13.5px] font-semibold transition hover:brightness-110"
         >
           Qidirish
         </button>

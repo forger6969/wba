@@ -228,7 +228,7 @@ export default async function ArizaSahifasi({
 
         <button
           type="submit"
-          className="mt-1 min-h-13 rounded-[10px] bg-brand text-[15px] font-bold transition hover:brightness-110"
+          className="mt-1 min-h-13 rounded-[10px] bg-brand text-white text-[15px] font-bold transition hover:brightness-110"
         >
           Yuborish
         </button>

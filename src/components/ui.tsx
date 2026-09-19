@@ -133,9 +133,12 @@ export function Badge({
 /* ---------------- Tugma ---------------- */
 
 const TUGMA = {
-  asosiy: 'bg-brand text-ink hover:brightness-110',
-  ikkilamchi: 'border border-line bg-surface text-ink-2 hover:text-ink hover:border-ink-3',
-  ogohlantirish: 'bg-accent text-bg font-bold hover:brightness-110',
+  // Qizil fonda matn DOIM oq — yorug' temada text-ink qora bo'lib, qizilda o'qilmasdi.
+  asosiy:
+    'bg-brand text-white shadow-sm shadow-brand/25 hover:brightness-110 active:brightness-95',
+  ikkilamchi:
+    'border border-line bg-surface text-ink-2 hover:text-ink hover:border-ink-3 hover:bg-surface-2',
+  ogohlantirish: 'bg-accent text-bg font-bold hover:brightness-110 active:brightness-95',
 } as const
 
 type TugmaProps = {
@@ -158,7 +161,7 @@ export function Button({
   className = '',
   ...rest
 }: TugmaProps) {
-  const cls = `inline-flex min-h-11 items-center justify-center gap-2 rounded-[9px] px-5 text-[13.5px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${TUGMA[variant]} ${className}`
+  const cls = `inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] px-5 text-[13.5px] font-semibold transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${TUGMA[variant]} ${className}`
 
   if (href) {
     return (

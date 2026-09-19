@@ -35,7 +35,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
             </a>
             <Link
               href="/ariza"
-              className="inline-flex min-h-11 items-center rounded-[9px] bg-brand px-5 text-[14px] font-bold transition hover:brightness-110"
+              className="inline-flex min-h-11 items-center rounded-[9px] bg-brand text-white px-5 text-[14px] font-bold transition hover:brightness-110"
             >
               Bepul sinov darsi
             </Link>

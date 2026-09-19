@@ -208,7 +208,7 @@ export function DavomatForma({
           type="button"
           onClick={saqla}
           disabled={kutilmoqda || !saqlashKerak}
-          className="min-h-11 rounded-[9px] bg-brand px-6 text-[14px] font-bold transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+          className="min-h-11 rounded-[9px] bg-brand text-white px-6 text-[14px] font-bold transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {kutilmoqda ? 'Saqlanmoqda…' : 'Davomatni saqlash'}
         </button>

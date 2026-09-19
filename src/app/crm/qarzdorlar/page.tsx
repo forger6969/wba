@@ -93,7 +93,7 @@ export default async function Qarzdorlar({
                     )}
                     <Link
                       href={`/crm/tolovlar/yangi?oquvchi=${q.student_id}`}
-                      className="flex min-h-11 items-center rounded-[9px] bg-brand px-4 text-[13px] font-semibold hover:brightness-110"
+                      className="flex min-h-11 items-center rounded-[9px] bg-brand text-white px-4 text-[13px] font-semibold hover:brightness-110"
                     >
                       To‘lov
                     </Link>

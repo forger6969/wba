@@ -104,7 +104,7 @@ export default async function Kirish({
           <button
             type="submit"
             disabled={!ulangan}
-            className="mt-1 min-h-12 rounded-[9px] bg-brand text-[14.5px] font-bold transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-1 min-h-12 rounded-[9px] bg-brand text-white text-[14.5px] font-bold transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Kirish
           </button>

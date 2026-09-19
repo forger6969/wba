@@ -34,7 +34,7 @@ export default function Bosh() {
           <div className="flex flex-wrap items-center gap-3.5 pt-1">
             <Link
               href="/ariza"
-              className="inline-flex min-h-13 items-center rounded-[10px] bg-brand px-7 text-[15px] font-bold transition hover:brightness-110"
+              className="inline-flex min-h-13 items-center rounded-[10px] bg-brand text-white px-7 text-[15px] font-bold transition hover:brightness-110"
             >
               Bepul sinov darsiga yozilish
             </Link>
@@ -207,7 +207,7 @@ export default function Bosh() {
           <article className="flex flex-col gap-3.5 rounded-[14px] border border-brand bg-surface p-7">
             <p className="flex items-center justify-between gap-3">
               <span className="lbl text-brand">Uch oylik</span>
-              <span className="rounded-md bg-brand px-2.5 py-1 text-[11px] font-bold">
+              <span className="rounded-md bg-brand text-white px-2.5 py-1 text-[11px] font-bold">
                 {pul(NARX.uchOylikAsl - NARX.uchOylik)} tejaysiz
               </span>
             </p>
@@ -331,7 +331,7 @@ export default function Bosh() {
         </p>
         <Link
           href="/ariza"
-          className="inline-flex min-h-14 items-center rounded-[10px] bg-brand px-9 text-base font-bold transition hover:brightness-110"
+          className="inline-flex min-h-14 items-center rounded-[10px] bg-brand text-white px-9 text-base font-bold transition hover:brightness-110"
         >
           Bepul sinov darsiga yozilish
         </Link>
