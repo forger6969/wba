@@ -6,7 +6,7 @@
  * Hozircha 0001–0004 migratsiyalariga qo'lda mos yozilgan.
  */
 
-export type UserRole = 'admin' | 'direktor' | 'qabulxona' | 'ustoz' | 'oquvchi'
+export type UserRole = 'admin' | 'direktor' | 'qabulxona' | 'ustoz' | 'oquvchi' | 'ota_ona'
 export type AccountStatus = 'faol' | 'bloklangan'
 export type StudentStatus = 'faol' | 'tanaffus' | 'ketgan'
 export type GroupStatus = 'faol' | 'yopilgan'
@@ -29,6 +29,8 @@ export type Profile = {
   telefon: string | null
   /** Kirish uchun email — auth.users dan ko'chiriladi (0012) */
   email: string | null
+  /** Ota-ona hisobi bog'langan o'quvchi (faqat rol=ota_ona uchun, 0019) */
+  oquvchi_id: string | null
   holat: AccountStatus
   created_at: string
   updated_at: string

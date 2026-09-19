@@ -61,6 +61,7 @@ export async function talabProfil(): Promise<Profile> {
  */
 export function panelYoli(rol: UserRole): string {
   if (rol === 'oquvchi') return '/crm/men'
+  if (rol === 'ota_ona') return '/crm/farzand'
   if (rol === 'ustoz') return '/crm/davomat'
   return '/crm/dashboard'
 }
@@ -83,6 +84,7 @@ export const ROL_NOMI: Record<UserRole, string> = {
   qabulxona: 'Qabulxona',
   ustoz: 'O‘qituvchi',
   oquvchi: 'O‘quvchi',
+  ota_ona: 'Ota-ona',
 }
 
 /** Boshqaruv huquqi. Direktor bu yerda admin bilan teng. */

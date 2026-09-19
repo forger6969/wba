@@ -99,6 +99,11 @@ export default async function OquvchiProfil({
     ? await supabase.from('profiles').select('email').eq('id', oquvchi.profile_id).maybeSingle()
     : { data: null }
 
+  /* Ota-ona hisobi bormi — profiles.oquvchi_id bo'yicha (0019) */
+  const { data: otaOnaHisob } = pulKoradi
+    ? await supabase.from('profiles').select('email, ism').eq('oquvchi_id', oquvchi.id).eq('rol', 'ota_ona').maybeSingle()
+    : { data: null }
+
   type Yozilish = {
     id: string
     group_id: string
@@ -355,6 +360,16 @@ export default async function OquvchiProfil({
                 ism={oquvchi.fish}
                 bormi={Boolean(oquvchi.profile_id)}
                 email={hisob?.email ?? null}
+              />
+            )}
+
+            {pulKoradi && (
+              <HisobForma
+                turi="ota_ona"
+                nishon={oquvchi.id}
+                ism={oquvchi.fish}
+                bormi={Boolean(otaOnaHisob)}
+                email={otaOnaHisob?.email ?? null}
               />
             )}
           </div>

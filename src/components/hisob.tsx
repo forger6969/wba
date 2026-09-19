@@ -24,24 +24,36 @@ export function HisobForma({
   bormi,
   email,
 }: {
-  turi: 'oquvchi' | 'ustoz'
+  turi: 'oquvchi' | 'ustoz' | 'ota_ona'
   nishon: string
   ism: string
   bormi: boolean
   email?: string | null
 }) {
-  const taklif = turi === 'oquvchi' ? nishon.toLowerCase() : ''
+  const otaOna = turi === 'ota_ona'
+  const taklif = turi === 'oquvchi' ? nishon.toLowerCase() : otaOna ? `${nishon.toLowerCase()}-ota` : ''
+  const sarlavha = otaOna
+    ? bormi ? 'Ota-ona paroli' : 'Ota-ona hisobi ochish'
+    : bormi ? 'Parolni almashtirish' : 'Hisob ochish'
 
   return (
     <details className="rounded-[10px] border border-dashed border-line px-4 py-3">
       <summary className="flex cursor-pointer items-center gap-2 text-[13px] font-semibold text-ink-2">
-        {bormi ? 'Parolni almashtirish' : 'Hisob ochish'}
+        {sarlavha}
         {bormi && <Badge ton="ok">hisobi bor{email ? ` · ${loginNomi(email)}` : ''}</Badge>}
       </summary>
 
-      <form action={hisobOch} className="mt-3 grid gap-3 sm:grid-cols-[1.4fr_1.2fr_auto] sm:items-end">
+      <form action={hisobOch} className="mt-3 flex flex-col gap-3">
         <input type="hidden" name="turi" value={turi} />
         <input type="hidden" name="nishon" value={nishon} />
+
+        {otaOna && (
+          <Maydon nom="Ota-ona ismi">
+            <input name="ism" type="text" required minLength={3} placeholder="masalan: Dilnoza Karimova" className={kirishKlass} />
+          </Maydon>
+        )}
+
+        <div className="grid gap-3 sm:grid-cols-[1.4fr_1.2fr_auto] sm:items-end">
 
         <Maydon nom="Login" izoh="Oddiy so‘z yetadi. O‘quvchi keyin Profil bo‘limida o‘zi almashtiradi.">
           <input
@@ -60,14 +72,16 @@ export function HisobForma({
           <input name="parol" required minLength={8} defaultValue={tavsiyaParol()} className={kirishKlass} />
         </Maydon>
 
-        <Yuborish tur={bormi ? 'ikkilamchi' : 'asosiy'}>
-          {bormi ? 'Parolni saqlash' : 'Hisob ochish'}
-        </Yuborish>
+          <Yuborish tur={bormi ? 'ikkilamchi' : 'asosiy'}>
+            {bormi ? 'Parolni saqlash' : otaOna ? 'Ochish' : 'Hisob ochish'}
+          </Yuborish>
+        </div>
       </form>
 
       <p className="mt-2 text-[11.5px] leading-relaxed text-ink-3">
-        {ism} shu login va parol bilan kiradi va faqat{' '}
-        {turi === 'oquvchi' ? 'o‘z sahifasini' : 'o‘z guruhlari va davomatini'} ko‘radi.
+        {otaOna
+          ? `Ota-ona shu login va parol bilan kiradi va faqat ${ism} ning ma’lumotini (guruh, davomat, qarz, to‘lov) ko‘radi — o‘zgartira olmaydi.`
+          : `${ism} shu login va parol bilan kiradi va faqat ${turi === 'oquvchi' ? 'o‘z sahifasini' : 'o‘z guruhlari va davomatini'} ko‘radi.`}
       </p>
     </details>
   )

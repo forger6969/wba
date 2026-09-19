@@ -35,6 +35,8 @@ export async function hisobOch(fd: FormData) {
   const men = await talabRol('admin', 'direktor')
 
   const ustozmi = fd.get('turi') === 'ustoz'
+  const otaOnami = fd.get('turi') === 'ota_ona'
+  const rol: 'ustoz' | 'oquvchi' | 'ota_ona' = otaOnami ? 'ota_ona' : ustozmi ? 'ustoz' : 'oquvchi'
   const nishon = matn(fd.get('nishon'))
   const email = loginEmail(fd.get('email'))
   const parol = String(fd.get('parol') ?? '')
@@ -56,9 +58,15 @@ export async function hisobOch(fd: FormData) {
 
   if (!kim) redirect(xabarliYol(yol, { xato: `${nishon} topilmadi.` }))
 
-  const ism = ustozmi
-    ? (kim as { ism: string }).ism
-    : (kim as { fish: string }).fish
+  // Ota-ona ismini admin kiritadi (o'quvchining ismi emas)
+  const otaOnaIsm = matn(fd.get('ism'))
+  if (otaOnami && !otaOnaIsm) redirect(xabarliYol(yol, { xato: 'Ota-ona ismini kiriting.' }))
+
+  const ism = otaOnami
+    ? otaOnaIsm!
+    : ustozmi
+      ? (kim as { ism: string }).ism
+      : (kim as { fish: string }).fish
 
   /* ── Faqat shu qadam admin kaliti bilan ── */
   const admin = createAdminClient()
@@ -79,7 +87,7 @@ export async function hisobOch(fd: FormData) {
     const { error } = await admin.auth.admin.updateUserById(bor.id, {
       password: parol,
       user_metadata: { ism },
-      app_metadata: { rol: ustozmi ? 'ustoz' : 'oquvchi' },
+      app_metadata: { rol },
     })
     if (error) redirect(xabarliYol(yol, { xato: xatoMatni(error) }))
     userId = bor.id
@@ -89,7 +97,7 @@ export async function hisobOch(fd: FormData) {
       password: parol,
       email_confirm: true,
       user_metadata: { ism },
-      app_metadata: { rol: ustozmi ? 'ustoz' : 'oquvchi' },
+      app_metadata: { rol },
     })
     if (error || !data.user) redirect(xabarliYol(yol, { xato: xatoMatni(error) }))
     userId = data.user.id
@@ -101,15 +109,19 @@ export async function hisobOch(fd: FormData) {
   // KEYIN yozadi — o'sha payt trigger 'oquvchi' (default) qo'yib yuboradi.
   // Natijada ustoz 'oquvchi' bo'lib qolardi. Shuning uchun profiles.rol ni
   // biz o'zimiz ustun qilib yozamiz.
-  const rol = ustozmi ? 'ustoz' : 'oquvchi'
-  const { error: xatoProfil } = await supabase.from('profiles').update({ ism, rol }).eq('id', userId)
+  // Ota-ona: rol + farzandga bog'lanish (oquvchi_id). Boshqasi: rol.
+  const profilYangi = otaOnami ? { ism, rol, oquvchi_id: nishon } : { ism, rol }
+  const { error: xatoProfil } = await supabase.from('profiles').update(profilYangi).eq('id', userId)
   if (xatoProfil) redirect(xabarliYol(yol, { xato: xatoMatni(xatoProfil) }))
 
-  // Bitta hisob bitta odamga: eski bog'lanish uziladi
+  // Ota-ona hisobi o'quvchi/ustoz yozuvini EGALLAMAYDI (u faqat kuzatuvchi).
   const jadval = ustozmi ? 'teachers' : 'students'
-  await supabase.from(jadval).update({ profile_id: null }).eq('profile_id', userId)
-  const { error: xatoBog } = await supabase.from(jadval).update({ profile_id: userId }).eq('id', nishon!)
-  if (xatoBog) redirect(xabarliYol(yol, { xato: xatoMatni(xatoBog) }))
+  if (!otaOnami) {
+    // Bitta hisob bitta odamga: eski bog'lanish uziladi
+    await supabase.from(jadval).update({ profile_id: null }).eq('profile_id', userId)
+    const { error: xatoBog } = await supabase.from(jadval).update({ profile_id: userId }).eq('id', nishon!)
+    if (xatoBog) redirect(xabarliYol(yol, { xato: xatoMatni(xatoBog) }))
+  }
 
   // Iz: audit_log ga faqat server yozadi
   await admin.from('audit_log').insert({

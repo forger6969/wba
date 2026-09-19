@@ -105,6 +105,15 @@ export function menyular(rol: UserRole, ustozmi: boolean): MenyuBolim[] {
     })
   }
 
+  if (rol === 'ota_ona') {
+    bolimlar.push({
+      nom: 'Farzandim',
+      bandlar: [
+        { href: '/crm/farzand', nom: 'Farzandim', Icon: IconStudents, tayyor: true, mobil: true },
+      ],
+    })
+  }
+
   // Har bir panelda: o'z ismi, logini va paroli
   bolimlar.push({
     nom: 'Hisobim',
@@ -117,6 +126,7 @@ export function menyular(rol: UserRole, ustozmi: boolean): MenyuBolim[] {
 /** Kirgan odam qaysi sahifadan boshlaydi — botdagi "o'z ishi" tamoyili. */
 export function boshSahifa(rol: UserRole, ustozmi: boolean): string {
   if (rol === 'oquvchi') return '/crm/men'
+  if (rol === 'ota_ona') return '/crm/farzand'
   if (ustozmi && !staffmi(rol)) return '/crm/davomat'
   return '/crm/dashboard'
 }
