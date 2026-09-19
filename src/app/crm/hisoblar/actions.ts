@@ -96,7 +96,13 @@ export async function hisobOch(fd: FormData) {
   }
 
   /* ── Qolgani yana oddiy huquq bilan ── */
-  const { error: xatoProfil } = await supabase.from('profiles').update({ ism }).eq('id', userId)
+  // MUHIM: rolni SHU YERDA aniq yozamiz. handle_new_user triggeri app_metadata
+  // dan rol oladi, lekin auth.admin.createUser app_metadata'ni ba'zan qatordan
+  // KEYIN yozadi — o'sha payt trigger 'oquvchi' (default) qo'yib yuboradi.
+  // Natijada ustoz 'oquvchi' bo'lib qolardi. Shuning uchun profiles.rol ni
+  // biz o'zimiz ustun qilib yozamiz.
+  const rol = ustozmi ? 'ustoz' : 'oquvchi'
+  const { error: xatoProfil } = await supabase.from('profiles').update({ ism, rol }).eq('id', userId)
   if (xatoProfil) redirect(xabarliYol(yol, { xato: xatoMatni(xatoProfil) }))
 
   // Bitta hisob bitta odamga: eski bog'lanish uziladi
