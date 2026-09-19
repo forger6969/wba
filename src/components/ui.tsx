@@ -1,17 +1,25 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { pul } from '@/lib/format'
 
 /* ---------------- Logo ---------------- */
 
 export function Logo({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
-  const w = size === 'sm' ? 32 : size === 'lg' ? 48 : 40
+  const w = size === 'sm' ? 28 : size === 'lg' ? 44 : 34
   const nomi = size === 'sm' ? 'text-[15px]' : size === 'lg' ? 'text-xl' : 'text-[17px]'
 
   return (
-    <span className="flex items-center gap-3">
-      <svg width={w} height={w / 2} viewBox="0 0 40 20" aria-hidden="true" className="shrink-0">
-        <path d="M2 18C10 3 30 3 38 18" fill="none" stroke="var(--color-brand)" strokeWidth="2.4" />
-      </svg>
+    <span className="flex items-center gap-2.5">
+      {/* Haqiqiy logotip — qizil belgi ikkala temada ham ko'rinadi */}
+      <Image
+        src="/logo-qizil.png"
+        alt="World Bridge Academy"
+        width={w}
+        height={w}
+        style={{ width: w, height: w }}
+        className="shrink-0 object-contain"
+        priority
+      />
       <span className="flex flex-col leading-tight">
         <span className={`font-[family-name:var(--font-display)] font-extrabold tracking-[0.05em] ${nomi}`}>
           WBA
