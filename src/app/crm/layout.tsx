@@ -7,6 +7,7 @@ import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Logo } from '@/components/ui'
 import { bosh } from '@/lib/format'
 import { IconLogout, IconChevronDown } from '@/components/icons'
+import { TemaTugma } from '@/components/tema'
 
 async function chiqish() {
   'use server'
@@ -92,7 +93,7 @@ export default async function CrmLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-dvh">
-      <aside className="flex w-56 shrink-0 flex-col gap-6 border-r border-line bg-[#120e0d] px-3.5 py-5 max-lg:hidden">
+      <aside className="flex w-56 shrink-0 flex-col gap-6 border-r border-line bg-surface px-3.5 py-5 max-lg:hidden">
         <Link href="/crm" className="px-2">
           <Logo />
         </Link>
@@ -121,20 +122,23 @@ export default async function CrmLayout({ children }: { children: React.ReactNod
             </span>
           </div>
 
-          <form action={chiqish}>
-            <button
-              type="submit"
-              className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-[13px] text-ink-3 transition hover:bg-surface-2 hover:text-ink"
-            >
-              <IconLogout size={17} />
-              Chiqish
-            </button>
-          </form>
+          <div className="flex items-center gap-2">
+            <form action={chiqish} className="flex-1">
+              <button
+                type="submit"
+                className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-[13px] text-ink-3 transition hover:bg-surface-2 hover:text-ink"
+              >
+                <IconLogout size={17} />
+                Chiqish
+              </button>
+            </form>
+            <TemaTugma />
+          </div>
         </div>
       </aside>
 
       {/* Telefon: tepada logotip, pastda asosiy bandlar */}
-      <header className="fixed inset-x-0 top-0 z-20 flex items-center justify-between border-b border-line bg-[#120e0d] px-4 py-2.5 lg:hidden">
+      <header className="fixed inset-x-0 top-0 z-20 flex items-center justify-between border-b border-line bg-surface px-4 py-2.5 lg:hidden">
         <Link href="/crm">
           <Logo size="sm" />
         </Link>
@@ -145,7 +149,7 @@ export default async function CrmLayout({ children }: { children: React.ReactNod
 
       <nav
         aria-label="Asosiy menyu"
-        className="fixed inset-x-0 bottom-0 z-20 flex border-t border-line bg-[#120e0d] pb-[env(safe-area-inset-bottom,0px)] lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-20 flex border-t border-line bg-surface pb-[env(safe-area-inset-bottom,0px)] lg:hidden"
       >
         {mobilBandlar.map((band) => (
           <Link

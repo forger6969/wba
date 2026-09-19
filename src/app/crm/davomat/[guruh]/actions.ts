@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { getProfile } from '@/lib/auth'
 import type { AttendanceStatus, DavomatNatija } from '@/lib/types'
 
 export type SaqlashNatijasi =
@@ -21,6 +22,15 @@ export async function davomatniSaqla(
   belgilar: Record<string, AttendanceStatus>,
   ballar: Record<string, number>,
 ): Promise<SaqlashNatijasi> {
+  /* Kirmagan odam bu amalni bajara olmaydi. Asosiy tekshiruv bazadagi
+     davomat_saqla() da (o'z guruhi yoki admin), lekin kodda ham to'sib
+     qo'yamiz: hech kim bo'sh sessiya bilan RPC'ni bezovta qilmasin. */
+  const profil = await getProfile()
+  if (!profil) return { ok: false, xato: 'Avval tizimga kiring.' }
+  if (!['admin', 'direktor', 'qabulxona', 'ustoz'].includes(profil.rol)) {
+    return { ok: false, xato: 'Davomat qo‘yish huquqingiz yo‘q.' }
+  }
+
   const supabase = await createClient()
 
   const { data, error } = await supabase.rpc('davomat_saqla', {

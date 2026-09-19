@@ -154,3 +154,23 @@ export const IconPin = (p: P) => (
     <circle cx="9" cy="7" r="2" />
   </Svg>
 )
+
+export const IconSun = (p: P) => (
+  <Svg {...p}>
+    <circle cx="9" cy="9" r="3.4" />
+    <path d="M9 1.5v2M9 14.5v2M1.5 9h2M14.5 9h2M3.8 3.8l1.4 1.4M12.8 12.8l1.4 1.4M14.2 3.8l-1.4 1.4M5.2 12.8l-1.4 1.4" />
+  </Svg>
+)
+
+export const IconMoon = (p: P) => (
+  <Svg {...p}>
+    <path d="M15 10.5A6 6 0 1 1 7.5 3a4.6 4.6 0 0 0 7.5 7.5z" />
+  </Svg>
+)
+
+export const IconGlobe = (p: P) => (
+  <Svg {...p}>
+    <circle cx="9" cy="9" r="7" />
+    <path d="M2 9h14M9 2c2 2.4 2 11.6 0 14M9 2c-2 2.4-2 11.6 0 14" />
+  </Svg>
+)

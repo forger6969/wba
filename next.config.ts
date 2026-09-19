@@ -1,6 +1,12 @@
 import type { NextConfig } from 'next'
+import { fileURLToPath } from 'node:url'
 
 const nextConfig: NextConfig = {
+  // Ildizni shu papkaga qotiramiz. Aks holda Next yuqoridagi begona
+  // package-lock.json ni ko'rib workspace ildizini noto'g'ri tanlaydi
+  // (build ogohlantirishi + build traces xatosi).
+  outputFileTracingRoot: fileURLToPath(new URL('.', import.meta.url)),
+
   experimental: {
     // Server action'lar faqat shu domenlardan chaqirilsin
     serverActions: {

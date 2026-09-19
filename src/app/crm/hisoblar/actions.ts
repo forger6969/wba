@@ -62,10 +62,17 @@ export async function hisobOch(fd: FormData) {
 
   /* ── Faqat shu qadam admin kaliti bilan ── */
   const admin = createAdminClient()
-  const { data: royxat, error: xatoRoyxat } = await admin.auth.admin.listUsers({ perPage: 1000 })
-  if (xatoRoyxat) redirect(xabarliYol(yol, { xato: xatoMatni(xatoRoyxat) }))
 
-  const bor = royxat.users.find((u) => u.email?.toLowerCase() === email)
+  // Shu login bilan hisob bormi. listUsers sahifalab beradi (bir sahifa
+  // 1000 gacha), shuning uchun topilmaguncha yoki tugamaguncha aylanamiz —
+  // aks holda 1000-chi foydalanuvchidan keyin "yo'q" deb aldardi.
+  let bor: { id: string } | undefined
+  for (let sahifa = 1; !bor; sahifa++) {
+    const { data, error } = await admin.auth.admin.listUsers({ page: sahifa, perPage: 1000 })
+    if (error) redirect(xabarliYol(yol, { xato: xatoMatni(error) }))
+    bor = data.users.find((u) => u.email?.toLowerCase() === email)
+    if (data.users.length < 1000) break
+  }
   let userId: string
 
   if (bor) {

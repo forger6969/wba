@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Archivo, Manrope, IBM_Plex_Mono } from 'next/font/google'
+import { saytManzil } from '@/lib/markaz'
 import './globals.css'
 
 const archivo = Archivo({
@@ -24,7 +25,7 @@ const plexMono = IBM_Plex_Mono({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://wba.uz'),
+  metadataBase: new URL(saytManzil()),
   title: {
     default: 'World Bridge Academy — Toshkentda o‘quv markazi',
     template: '%s · World Bridge Academy',
@@ -46,9 +47,20 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 }
 
+/**
+ * Tema (yorug'/qorong'i) sahifa chizilishidan OLDIN o'rnatilsin —
+ * aks holda qorong'i fon ko'rinib, keyin yorug'ga sakraydi (FOUC).
+ * localStorage'dagi tanlov <html data-theme> ga qo'yiladi; tanlov
+ * bo'lmasa hech narsa qo'yilmaydi va CSS tizim sozlamasiga tayanadi.
+ */
+const TEMA_SKRIPT = `(function(){try{var t=localStorage.getItem('wba-tema');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}})()`
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="uz" className={`${archivo.variable} ${manrope.variable} ${plexMono.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: TEMA_SKRIPT }} />
+      </head>
       <body>{children}</body>
     </html>
   )

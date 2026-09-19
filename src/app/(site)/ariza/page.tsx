@@ -1,9 +1,25 @@
+import { createHash } from 'node:crypto'
 import Link from 'next/link'
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { telefonNormal } from '@/lib/format'
 import { MARKAZ, YONALISHLAR } from '@/lib/markaz'
+
+// Bir IP soatiga shuncha arizadan ortiq yubora olmaydi (spam to'sish).
+const ARIZA_LIMIT = 5
+const ARIZA_OYNA_SEK = 3600
+
+/** So'rovchining IP xeshi. Xom IP saqlanmaydi — faqat rate-limit kaliti. */
+async function ipKaliti(): Promise<string> {
+  const h = await headers()
+  const ip =
+    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    h.get('x-real-ip') ||
+    'nomalum'
+  return createHash('sha256').update(ip).digest('hex').slice(0, 32)
+}
 
 export const metadata = {
   title: 'Bepul sinov darsiga yozilish',
@@ -36,8 +52,28 @@ async function yubor(formData: FormData) {
   const tel = telefonNormal(natija.data.telefon)
   if (!tel) redirect('/ariza?holat=telefon')
 
+  const supabase = createAdminClient()
+
+  // Spam to'sish: bir IP soatiga ARIZA_LIMIT martadan ko'p yuborolmaydi.
+  // rate_limit_hit false qaytarsa — chegara oshgan. Baza yo'q bo'lsa
+  // (rpc xatosi) o'tkazib yuboramiz — ariza yo'qolmasin. redirect() bu
+  // yerda try'dan TASHQARIDA: Next uni istisno bilan uzatadi, catch uni
+  // yutib yubormasligi kerak.
+  let chegaraOshdi = false
   try {
-    const supabase = createAdminClient()
+    const { data: ruxsat, error: limitXato } = await supabase.rpc('rate_limit_hit', {
+      p_bucket: 'ariza',
+      p_kalit: await ipKaliti(),
+      p_limit: ARIZA_LIMIT,
+      p_oyna_sek: ARIZA_OYNA_SEK,
+    })
+    chegaraOshdi = !limitXato && ruxsat === false
+  } catch {
+    chegaraOshdi = false
+  }
+  if (chegaraOshdi) redirect('/ariza?holat=kop')
+
+  try {
     const { error } = await supabase.from('leads').insert({
       ism: natija.data.ism,
       telefon: tel,
@@ -90,9 +126,11 @@ export default async function ArizaSahifasi({
       ? 'Telefon raqamni tekshiring — masalan, 99 009 90 05.'
       : holat === 'nosozlik'
         ? `Texnik nosozlik: ariza saqlanmadi. Iltimos, ${MARKAZ.telefon} raqamiga qo‘ng‘iroq qiling.`
-        : holat === 'xato'
-          ? 'Ism va telefon raqamni to‘liq kiriting.'
-          : null
+        : holat === 'kop'
+          ? `Juda ko‘p ariza yuborildi. Biroz kuting yoki ${MARKAZ.telefon} raqamiga qo‘ng‘iroq qiling.`
+          : holat === 'xato'
+            ? 'Ism va telefon raqamni to‘liq kiriting.'
+            : null
 
   return (
     <main className="mx-auto grid max-w-[1060px] gap-10 px-5 py-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-14 lg:px-8 lg:py-20">

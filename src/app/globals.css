@@ -3,10 +3,15 @@
 /* ============================================================
    World Bridge Academy — dizayn tizimi
    Palitra logotipdan: qizil #FF0000, ko'prik motivi
+
+   Mavzu (tema): qorong'i — asosiy (brend shunday). Yorug' —
+   tizim sozlamasi bo'yicha yoki qo'lda tanlanganda.
+   Ranglar `--color-*` tokenlarida: qiymatni almashtirsak, butun
+   sayt almashadi (utility klasslar shularga bog'langan).
    ============================================================ */
 
 @theme {
-  /* Yuzalar */
+  /* Yuzalar — QORONG'I (asosiy) */
   --color-bg: #0d0a09;
   --color-surface: #171110;
   --color-surface-2: #1f1614;
@@ -42,7 +47,82 @@
   --radius-card: 12px;
 }
 
+/* ------------------------------------------------------------
+   YORUG' mavzu ranglari — bir joyda, ikki holatda ishlatiladi:
+   1) tizim yorug'ni so'raganda VA odam qorong'ini majburlamagan
+   2) odam yorug'ni tanlaganda ([data-theme="light"])
+   ------------------------------------------------------------ */
 @layer base {
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      color-scheme: light;
+      --color-bg: #fbf9f8;
+      --color-surface: #ffffff;
+      --color-surface-2: #f3efed;
+      --color-line: #e6ddd9;
+      --color-line-soft: #f0e9e6;
+      --color-ink: #1a1210;
+      --color-ink-2: #5c514d;
+      --color-ink-3: #8a7d78;
+      --color-ink-4: #a89b96;
+      --color-brand-soft: #ffe9e6;
+      --color-brand-line: #f3c6c0;
+      --color-accent: #b9791a;
+      --color-accent-soft: #fdf3d9;
+      --color-accent-line: #ecd9a0;
+      --color-ok: #2f9e68;
+      --color-ok-soft: #dff2e6;
+      --color-warn: #b9791a;
+      --color-crit: #d92c1c;
+    }
+  }
+
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --color-bg: #fbf9f8;
+    --color-surface: #ffffff;
+    --color-surface-2: #f3efed;
+    --color-line: #e6ddd9;
+    --color-line-soft: #f0e9e6;
+    --color-ink: #1a1210;
+    --color-ink-2: #5c514d;
+    --color-ink-3: #8a7d78;
+    --color-ink-4: #a89b96;
+    --color-brand-soft: #ffe9e6;
+    --color-brand-line: #f3c6c0;
+    --color-accent: #b9791a;
+    --color-accent-soft: #fdf3d9;
+    --color-accent-line: #ecd9a0;
+    --color-ok: #2f9e68;
+    --color-ok-soft: #dff2e6;
+    --color-warn: #b9791a;
+    --color-crit: #d92c1c;
+  }
+
+  /* Odam qorong'ini majburlaganda — tizim yorug' bo'lsa ham qorong'i.
+     Qiymatlar @theme dagi bilan bir xil (asosiy holatga qaytarish). */
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --color-bg: #0d0a09;
+    --color-surface: #171110;
+    --color-surface-2: #1f1614;
+    --color-line: #2c211e;
+    --color-line-soft: #1a1312;
+    --color-ink: #f8f4f2;
+    --color-ink-2: #b9aca7;
+    --color-ink-3: #7d716d;
+    --color-ink-4: #6e625e;
+    --color-brand-soft: #33100d;
+    --color-brand-line: #4a2a2a;
+    --color-accent: #f2b33d;
+    --color-accent-soft: #33280f;
+    --color-accent-line: #5a4a22;
+    --color-ok: #5fbf8b;
+    --color-ok-soft: #14301f;
+    --color-warn: #f2b33d;
+    --color-crit: #ff4d3d;
+  }
+
   * {
     box-sizing: border-box;
   }
@@ -60,7 +140,7 @@
 
   ::selection {
     background: var(--color-brand);
-    color: var(--color-ink);
+    color: #fff;
   }
 
   /* Fokus — klaviatura bilan yuradiganlar uchun ko'rinib tursin */

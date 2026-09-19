@@ -440,6 +440,10 @@ export type Database = {
       probniy_doimiy: { Args: { p_lead: string; p_boshlandi?: string | null }; Returns: string }
       tushum_hisobot: { Args: { p_dan: string; p_gacha: string }; Returns: Hisobot }
       chegirma_ozgartir: { Args: { p_enrollment: string; p: Record<string, unknown> }; Returns: number }
+      rate_limit_hit: {
+        Args: { p_bucket: string; p_kalit: string; p_limit: number; p_oyna_sek: number }
+        Returns: boolean
+      }
     }
     Enums: {
       user_role: UserRole

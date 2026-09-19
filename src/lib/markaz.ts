@@ -6,6 +6,23 @@
  * Baza ulangach — `settings` ustunroq turadi.
  */
 
+/**
+ * Saytning bazaviy manzili. NEXT_PUBLIC_SITE_URL noto'g'ri bo'lsa ham
+ * (masalan bo'sh yoki buzuq qiymat) qurilish yiqilmasin: `new URL()`
+ * xato tashlaydi, shuning uchun tekshirib, kerak bo'lsa zaxiraga tushamiz.
+ */
+export function saytManzil(): string {
+  const xom = process.env.NEXT_PUBLIC_SITE_URL
+  if (xom) {
+    try {
+      return new URL(xom).origin
+    } catch {
+      // noto'g'ri qiymat — zaxiraga o'tamiz
+    }
+  }
+  return 'https://wba.uz'
+}
+
 export const MARKAZ = {
   nom: 'World Bridge Academy',
   qisqa: 'WBA',
