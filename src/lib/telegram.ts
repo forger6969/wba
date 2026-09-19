@@ -15,16 +15,23 @@ type TgJavob<T> = { ok: true; result: T } | { ok: false; error_code: number; des
 export async function tg<T = unknown>(metod: string, body: Record<string, unknown>): Promise<TgJavob<T>> {
   const token = process.env.TELEGRAM_BOT_TOKEN
   if (!token) return { ok: false, error_code: 0, description: 'TELEGRAM_BOT_TOKEN sozlanmagan' }
+  const boshi = Date.now()
   try {
     const r = await fetch(`https://api.telegram.org/bot${token}/${metod}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
       cache: 'no-store',
+      // Telegram javob bermasa webhook osilib qolmasin
+      signal: AbortSignal.timeout(8000),
     })
-    return (await r.json()) as TgJavob<T>
+    const j = (await r.json()) as TgJavob<T>
+    if (!j.ok) console.error('[telegram]', metod, j.error_code, j.description, `${Date.now() - boshi}ms`)
+    return j
   } catch (e) {
-    return { ok: false, error_code: -1, description: e instanceof Error ? e.message : String(e) }
+    const matn = e instanceof Error ? e.message : String(e)
+    console.error('[telegram]', metod, 'ulanmadi:', matn, `${Date.now() - boshi}ms`)
+    return { ok: false, error_code: -1, description: matn }
   }
 }
 
