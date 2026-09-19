@@ -19,6 +19,7 @@ Tartib muhim: 🔴 avval, keyin 🟠. Bir vazifa boshqasiga bog'liq bo'lsa, "Kut
 4. Kalitlar (`.env.local`, `.secrets/`, Script Properties) hech qachon git'ga, chatga, PR ga yozilmaydi.
 5. Sinov yozuvlari — ismi `SINOV` bilan boshlanadi va sinovdan keyin o'chiriladi. Haqiqiy o'quvchi/to'lov bilan sinalmaydi.
 6. Bulutdagi bazaga qo'lda SQL yozilmaydi — faqat migratsiya yoki ko'chirish skripti orqali, Jamshidning roziligi bilan.
+   Migratsiya bulutga FAQAT `npx supabase db push` bilan qo'llanadi (SQL editor'da emas): aks holda tarixga yozilmaydi va keyingi push uni qayta yurgizishga urinadi (0016–0019 shunday bo'lgan, 19.09 da tuzatildi). Yangi fayldan oldin `git pull` va `supabase/migrations` dagi oxirgi raqamni tekshiring — ikki kishi bir raqamni olmasin.
 7. Bot: kod o'zgarsa `clasp push` **va** `clasp deploy -i AKfycbzCUCC…` (manzil o'zgarmasin). Deploy qilinmasa eski versiya ishlaydi. Dars paytida (08:00–21:00) `SINOV_*`, `BOT_TEKSHIR`, `JURNAL` bosilmaydi — ular haqiqiy varaqqa yozadi.
 8. Har o'zgarishdan keyin: `npm test`, `npm run typecheck`, `npx eslint src scripts`, baza o'zgarsa `npm run db:test`.
 
@@ -211,7 +212,7 @@ Lokal bazada Jamshidning test yozuvlari bor (S001–S003, G01–G04) — **`db r
 1. `jurnallarniOqi`: `sana > bugun (Toshkent)` bo'lgan darslar olinmaydi.
 2. Blokdagi hamma katak `false` bo'lgan o'tgan dars — **belgilanmagan**: dars ham, belgi ham yozilmaydi. S6 tayyor bo'lsa — belgilangan belgisi bo'yicha. Istisno: `_Bot_log` da shu guruh+sana uchun `DAVOMAT` yozuvi bo'lsa — haqiqiy.
 3. Izohda `dars o'tkazilmadi MM-DD` bo'lsa → `lessons.otkazildi = false`, attendance yozilmaydi.
-4. "Terminal": Q3 = a bo'lsa `USUL_MAP.terminal = 'karta'`; b bo'lsa `0018_usul_terminal.sql` (`alter type payment_method add value 'terminal'`, alohida fayl) + `src/lib/types.ts` + to'lov formasi.
+4. "Terminal": Q3 = a bo'lsa `USUL_MAP.terminal = 'karta'`; b bo'lsa `0021_usul_terminal.sql` (0018–0019 ota-ona, 0020 panel davomati va reyting — band) (`alter type payment_method add value 'terminal'`, alohida fayl) + `src/lib/types.ts` + to'lov formasi.
 5. Testlar: `scripts/lib/parse.test.ts` / yangi `jurnal.test.ts` — kelajak sanasi, hammasi false, "dars o'tkazilmadi", Terminal.
 6. Bulutni tozalash skripti `scripts/davomat-tozala.ts` (`--dry-run` standart): kelajakdagi va belgilanmagan darslar va ularning attendance'ini o'chiradi, sonini chiqaradi. **J11 roziligisiz yurgizilmaydi.** Keyin `npm run migrate -- --davomat`.
 
@@ -236,7 +237,7 @@ Qaror (`CLAUDE.md`): Sheets'da o'zgarsa bazaga, saytda o'zgarsa Sheets'ga. Bot h
 
 ### W4 🟠 Oylik hisob qoidasi (S2) — Kutadi: J10-Q1
 - Q1 = a (kalendar): Sheets formulalari (`U_Qatnashuv.js`, `F_Aniq.js`) kalendarga o'tadi → S-vazifa botda; baza o'zgarmaydi.
-- Q1 = b (kelgan kuni): `0019_hisob_oyma_oy.sql`: `create_monthly_invoices` o'rniga har kuni "bugun oy-yubileyi kelgan" yozilishlarga navbatdagi oy hisobini yozadigan funksiya; `oy_raqami` DATEDIF mantig'ida. `_test_logic.sql` ga: 16.09 boshlangan — 15.10 da 1 hisob, 16.10 da 2.
+- Q1 = b (kelgan kuni): `0022_hisob_oyma_oy.sql`: `create_monthly_invoices` o'rniga har kuni "bugun oy-yubileyi kelgan" yozilishlarga navbatdagi oy hisobini yozadigan funksiya; `oy_raqami` DATEDIF mantig'ida. `_test_logic.sql` ga: 16.09 boshlangan — 15.10 da 1 hisob, 16.10 da 2.
 
 **Tayyor, qachonki:** har kuni ko'chirish solishtiruvida "to'lashi kerak" sayt = Sheets.
 

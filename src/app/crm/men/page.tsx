@@ -6,8 +6,8 @@ import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Card, CardHeader, Stat, Badge, Empty } from '@/components/ui'
 import { Sarlavha, Ulanmagan } from '@/components/crm'
 import { Xabar } from '@/components/forma'
-import { pul, sana, jadval, davrNomi, joriyDavr, bugunToshkent } from '@/lib/format'
-import type { DayType, PaymentMethod, AttendanceStatus } from '@/lib/types'
+import { pul, sana, jadval, davrNomi, joriyDavr, bugunToshkent, vaqt } from '@/lib/format'
+import type { DayType, PaymentMethod, AttendanceStatus, KeyingiDars } from '@/lib/types'
 
 export const metadata = { title: 'Mening sahifam' }
 export const dynamic = 'force-dynamic'
@@ -121,19 +121,38 @@ export default async function MeningSahifam({
   const yList = (yozilishlar ?? []) as unknown as Yozilish[]
   const guruhNomi = new Map(yList.map((y) => [y.group_id, y.groups?.nom ?? y.group_id]))
 
-  /* Keyingi darslar — faqat o'zi o'qiydigan guruhlarning darslari
-     ko'rinadi (lessons_student_read). */
-  const { data: darslar } = yList.length
-    ? await supabase
-        .from('lessons')
-        .select('id, group_id, sana, mavzu')
-        .gte('sana', bugun)
-        .order('sana')
-        .limit(8)
-    : { data: [] }
+  /* Keyingi darslar — guruh JADVALIDAN (kun turi + vaqt), bazada
+     hisoblanadi (0020: keyingi_darslar). Avval lessons jadvalidan
+     olinardi: u yerda faqat o'tgan va ko'chirilgan darslar bor edi. */
+  /* Shu oyning hisobi — chegirma bilan (Sheets "Qatnashuv" dagi 1- va
+     2-bosqich chegirmasi bazada invoices.chegirma ga yozilgan). */
+  const [{ data: darslar }, { data: hisoblar }] = await Promise.all([
+    yList.length
+      ? supabase.rpc('keyingi_darslar', { p_student: oquvchi.id, p_soni: 8 })
+      : Promise.resolve({ data: [] }),
+    yList.length
+      ? supabase
+          .from('invoices')
+          .select('enrollment_id, summa, chegirma')
+          .eq('davr', davr)
+          .neq('holat', 'bekor')
+          .in('enrollment_id', yList.map((y) => y.id))
+      : Promise.resolve({ data: [] }),
+  ])
+  const hisobMap = new Map(
+    ((hisoblar ?? []) as { enrollment_id: string; summa: number; chegirma: number }[]).map((h) => [
+      h.enrollment_id,
+      { summa: Number(h.summa) || 0, chegirma: Number(h.chegirma) || 0 },
+    ]),
+  )
 
-  const jamiQarz = ((balans ?? []) as { qarz: number }[]).reduce((a, b) => a + (Number(b.qarz) || 0), 0)
+  /* Manfiy qarz — oldindan to'langan (masalan, 4 oyga birdan). Uni "qarz"
+     deb ko'rsatib bo'lmaydi: bola "−1 350 000 qarzim bor" deb o'qiydi.
+     Qarz va oldindan to'lov alohida yig'iladi — bir guruhdagi ortiqcha
+     boshqa guruhdagi qarzni yashirmasin. */
   const qarzMap = new Map(((balans ?? []) as { enrollment_id: string; qarz: number }[]).map((b) => [b.enrollment_id, Number(b.qarz) || 0]))
+  const jamiQarz = [...qarzMap.values()].reduce((a, q) => a + Math.max(q, 0), 0)
+  const oldindan = [...qarzMap.values()].reduce((a, q) => a + Math.max(-q, 0), 0)
   const w = (woblr ?? null) as { jami_ball: number; sarflangan: number; balans: number } | null
 
   type Davomat = { davr: string; group_id: string; darslar: number; kelgan: number; foiz: number }
@@ -146,8 +165,7 @@ export default async function MeningSahifam({
   type Tolov = { id: number; sana: string; davr: string; summa: number; usul: PaymentMethod | null; tasdiqlangan: boolean; bekor: boolean }
   const tList = (tolovlar ?? []) as unknown as Tolov[]
 
-  type Dars = { id: string; group_id: string; sana: string; mavzu: string | null }
-  const darsList = (darslar ?? []) as unknown as Dars[]
+  const darsList = (darslar ?? []) as KeyingiDars[]
 
   return (
     <div className="flex flex-col gap-4 px-5 py-5 lg:px-7">
@@ -160,13 +178,17 @@ export default async function MeningSahifam({
       <Xabar ok={xabar.ok} xato={xabar.xato === 'huquq' ? 'Bu bo‘lim sizga ochiq emas.' : xabar.xato} />
 
       <div className="grid grid-cols-2 gap-3.5 xl:grid-cols-4">
-        <Stat
-          label="Qarzim"
-          value={jamiQarz}
-          sub="so‘m"
-          ton={jamiQarz > 0 ? 'brand' : 'ok'}
-          border={jamiQarz > 0 ? 'brand' : undefined}
-        />
+        {jamiQarz === 0 && oldindan > 0 ? (
+          <Stat label="Oldindan to‘langan" value={oldindan} sub="keyingi oylar uchun · so‘m" ton="ok" />
+        ) : (
+          <Stat
+            label="Qarzim"
+            value={jamiQarz}
+            sub={oldindan > 0 ? `yana ${pul(oldindan)} oldindan to‘langan` : 'so‘m'}
+            ton={jamiQarz > 0 ? 'brand' : 'ok'}
+            border={jamiQarz > 0 ? 'brand' : undefined}
+          />
+        )}
         <Stat
           label="Woblarim"
           value={w ? Number(w.balans) : 0}
@@ -189,28 +211,35 @@ export default async function MeningSahifam({
             {yList.length === 0 ? (
               <Empty>Hali guruhga biriktirilmagansiz.</Empty>
             ) : (
-              yList.map((y) => (
-                <div key={y.id} className="flex flex-wrap items-start justify-between gap-3 rounded-[10px] border border-line px-4 py-3">
-                  <span className="flex min-w-0 flex-col gap-1">
-                    <span className="text-[13.5px] font-semibold">{y.groups?.nom ?? '—'}</span>
-                    <span className="text-[12px] text-ink-3">
-                      {y.groups?.teachers?.ism ?? '[ANIQLANMAGAN]'} ·{' '}
-                      {jadval(y.groups?.boshlanish ?? null, y.groups?.tugash ?? null, y.groups?.kun_turi ?? null)}
+              yList.map((y) => {
+                const q = qarzMap.get(y.id) ?? 0
+                const h = hisobMap.get(y.id)
+                return (
+                  <div key={y.id} className="flex flex-wrap items-start justify-between gap-3 rounded-[10px] border border-line px-4 py-3">
+                    <span className="flex min-w-0 flex-col gap-1">
+                      <span className="text-[13.5px] font-semibold">{y.groups?.nom ?? '—'}</span>
+                      <span className="text-[12px] text-ink-3">
+                        {y.groups?.teachers?.ism ?? '[ANIQLANMAGAN]'} ·{' '}
+                        {jadval(y.groups?.boshlanish ?? null, y.groups?.tugash ?? null, y.groups?.kun_turi ?? null)}
+                      </span>
+                      <span className="text-[12px] text-ink-3">{sana(y.boshlandi)} dan o‘qiyapman</span>
                     </span>
-                    <span className="text-[12px] text-ink-3">{sana(y.boshlandi)} dan o‘qiyapman</span>
-                  </span>
-                  <span className="flex flex-col items-end gap-0.5">
-                    <span className="lbl">oyiga {pul(y.groups?.oylik_narx ?? 0)}</span>
-                    <span
-                      className={`tnum font-[family-name:var(--font-mono)] text-[13px] ${
-                        (qarzMap.get(y.id) ?? 0) > 0 ? 'text-brand' : 'text-ok'
-                      }`}
-                    >
-                      {(qarzMap.get(y.id) ?? 0) > 0 ? `qarz ${pul(qarzMap.get(y.id))}` : 'qarzi yo‘q'}
+                    <span className="flex flex-col items-end gap-0.5">
+                      <span className="lbl">oyiga {pul(y.groups?.oylik_narx ?? 0)}</span>
+                      {h && h.chegirma > 0 && (
+                        <span className="text-[11.5px] text-ok">
+                          chegirma −{pul(h.chegirma)} · {davrNomi(davr).toLowerCase()}: {pul(h.summa)}
+                        </span>
+                      )}
+                      <span
+                        className={`tnum font-[family-name:var(--font-mono)] text-[13px] ${q > 0 ? 'text-brand' : 'text-ok'}`}
+                      >
+                        {q > 0 ? `qarz ${pul(q)}` : q < 0 ? `oldindan ${pul(-q)}` : 'qarzi yo‘q'}
+                      </span>
                     </span>
-                  </span>
-                </div>
-              ))
+                  </div>
+                )
+              })
             )}
           </div>
         </Card>
@@ -219,15 +248,15 @@ export default async function MeningSahifam({
           <CardHeader title="Keyingi darslarim" meta="8 tagacha" />
           <div className="flex flex-col px-5 pb-4">
             {darsList.length === 0 ? (
-              <Empty>Jadvalga dars qo‘yilmagan. Ustoz davomat belgilaganda darslar shu yerda ko‘rinadi.</Empty>
+              <Empty>Yaqin kunlarda dars yo‘q. Guruhga biriktirilgach, jadval bo‘yicha darslar shu yerda ko‘rinadi.</Empty>
             ) : (
               darsList.map((d) => (
-                <div key={d.id} className="flex items-center justify-between gap-3 border-b border-line-soft py-2.5 last:border-0">
+                <div key={`${d.group_id}-${d.sana}`} className="flex items-center justify-between gap-3 border-b border-line-soft py-2.5 last:border-0">
                   <span className="flex min-w-0 flex-col gap-0.5">
-                    <span className="truncate text-[12.5px]">{guruhNomi.get(d.group_id) ?? d.group_id}</span>
-                    {d.mavzu && <span className="truncate text-[11.5px] text-ink-3">{d.mavzu}</span>}
+                    <span className="truncate text-[12.5px]">{guruhNomi.get(d.group_id) ?? d.nom}</span>
+                    <span className="text-[11.5px] text-ink-3">{vaqt(d.boshlanish)}–{vaqt(d.tugash)}</span>
                   </span>
-                  <span className={`font-[family-name:var(--font-mono)] text-[12px] ${d.sana === bugun ? 'text-brand' : 'text-ink-3'}`}>
+                  <span className={`shrink-0 font-[family-name:var(--font-mono)] text-[12px] ${d.sana === bugun ? 'text-brand' : 'text-ink-3'}`}>
                     {d.sana === bugun ? 'bugun' : sana(d.sana)}
                   </span>
                 </div>
