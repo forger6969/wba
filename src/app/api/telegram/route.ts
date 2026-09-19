@@ -3,7 +3,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { tg, html, xabar, type Tugma } from '@/lib/telegram'
 import { pul, sana, vaqt, davrNomi, bugunToshkent } from '@/lib/format'
 import { saytManzil } from '@/lib/markaz'
-import type { TelegramKim, Hisobot } from '@/lib/types'
+import { kunlikHisobotMatn } from '@/lib/kunlik-hisobot'
+import type { TelegramKim } from '@/lib/types'
 
 /**
  * @WBAlcBot webhook'i. Telegram → shu manzil → baza (Sheets emas).
@@ -297,21 +298,8 @@ async function ustozBugun(chat: number, ustozlar: string[]) {
 }
 
 async function hisobot(chat: number) {
-  const bugun = bugunToshkent()
-  const { data } = await db().rpc('tushum_hisobot', { p_dan: bugun, p_gacha: bugun })
-  const h = data as Hisobot | null
-  if (!h) return xabar(chat, 'Hisobotni olib bo‘lmadi.', orqaga)
-  const foiz = h.davomat.belgilar ? Math.round((h.davomat.kelgan * 100) / h.davomat.belgilar) : null
-  await xabar(
-    chat,
-    [
-      `<b>Bugun</b> · ${sana(bugun)}`,
-      `Tushum: <b>${pul(h.tushum)} so‘m</b> (${h.soni} ta to‘lov)`,
-      `Darslar: ${h.darslar.kutilgan} ta, davomat qo‘yilmagan: <b>${h.darslar.qilinmagan}</b>`,
-      `Davomat: ${foiz === null ? '—' : `${foiz}%`} (${h.davomat.kelgan} keldi, ${h.davomat.kelmadi} kelmadi)`,
-    ].join('\n'),
-    orqaga,
-  )
+  // Guruhga 19:40 da ketadigan hisobotning o'zi (src/lib/kunlik-hisobot.ts)
+  await xabar(chat, await kunlikHisobotMatn(), orqaga)
 }
 
 async function qarzdorlar(chat: number) {
