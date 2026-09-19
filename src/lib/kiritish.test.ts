@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { summaOqi, telefonOqi, sanaOqi, davrOqi, sonOqi, xabarliYol, xatoMatni } from './kiritish'
+import { summaOqi, telefonOqi, sanaOqi, davrOqi, sonOqi, xabarliYol, xatoMatni, ichkiYol } from './kiritish'
 
 test('summaOqi — botdagi qoida: 3000 dan kichik raqam minglarda', () => {
   assert.equal(summaOqi('550'), 550_000)
@@ -42,4 +42,15 @@ test('xabarliYol — eski xabar almashtiriladi, boshqa parametrlar qoladi', () =
 test('xatoMatni — bazadagi o‘zbekcha xabar o‘zgarmaydi, texnik kod tarjima qilinadi', () => {
   assert.equal(xatoMatni({ message: 'Guruh tanlanmagan — avval guruhni belgilang.' }), 'Guruh tanlanmagan — avval guruhni belgilang.')
   assert.equal(xatoMatni({ code: '42501', message: 'new row violates row-level security policy' }), 'Bu amal uchun huquqingiz yo‘q.')
+})
+
+test('ichkiYol — faqat ichki yo‘l, ochiq yo‘naltirish rad etiladi', () => {
+  assert.equal(ichkiYol('/crm'), '/crm')
+  assert.equal(ichkiYol('/crm/tolovlar?filtr=x'), '/crm/tolovlar?filtr=x')
+  assert.equal(ichkiYol('//evil.com'), '/crm')
+  assert.equal(ichkiYol('/\\evil.com'), '/crm')
+  assert.equal(ichkiYol('https://evil.com'), '/crm')
+  assert.equal(ichkiYol('/%2F%2Fevil.com'), '/crm')
+  assert.equal(ichkiYol(''), '/crm')
+  assert.equal(ichkiYol(null), '/crm')
 })

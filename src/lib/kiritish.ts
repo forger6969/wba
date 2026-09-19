@@ -79,6 +79,33 @@ export function xabarliYol(yol: string, xabar: { ok?: string; xato?: string }): 
 }
 
 /**
+ * Kirgandan keyingi qaytish yo'li — FAQAT shu saytning ichki yo'li.
+ *
+ * `?keyin=https://evil.com` yoki `//evil.com` yozib qo'yilsa, login
+ * sahifasi bizniki bo'lgani uchun odam ishonib bosadi va begona saytga
+ * tushadi (ochiq yo'naltirish). Shuning uchun:
+ *   · '/' bilan boshlanmasa — rad (mutlaq yoki tashqi manzil)
+ *   · '//' yoki '/\' — protokolsiz tashqi manzil, rad
+ *   · teskari slash yoki kodlangan slash (%2f/%5c) — rad
+ *   · oxirida URL bilan tekshiramiz: origin o'zgarmasin
+ * Rad etilsa — xavfsiz zaxira '/crm'.
+ */
+export function ichkiYol(xom: FormDataEntryValue | string | null | undefined): string {
+  const y = String(xom ?? '').trim()
+  if (!y.startsWith('/')) return '/crm'
+  if (y.startsWith('//') || y.startsWith('/\\')) return '/crm'
+  if (/\\/.test(y)) return '/crm'
+  if (/%2f|%5c/i.test(y)) return '/crm'
+  try {
+    const u = new URL(y, 'http://x')
+    if (u.origin !== 'http://x' || !u.pathname.startsWith('/')) return '/crm'
+  } catch {
+    return '/crm'
+  }
+  return y
+}
+
+/**
  * Bazadan kelgan xatoni odam tushunadigan qilib beradi.
  * Bizning funksiyalar o'zbekcha xabar tashlaydi — shuni o'zgarishsiz
  * qoldiramiz; texnik xatolarni esa umumiy tilga o'giramiz.

@@ -4,17 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi, SUPABASE_YOQ } from '@/lib/supabase/env'
 import { Logo } from '@/components/ui'
 import { loginEmail } from '@/lib/login'
-
-/**
- * Kirgandan keyin qayerga. FAQAT shu saytning ichki yo'li bo'lsin:
- * `?keyin=https://...` yozib qo'yilsa odam begona saytga tushib
- * qolardi (login sahifasi bizniki bo'lgani uchun ishonib bosadi).
- * `//evil.com` ham manzil — shuning uchun ikkinchi "/" ham rad etiladi.
- */
-function keyinYol(xom: FormDataEntryValue | null): string {
-  const y = String(xom ?? '')
-  return y.startsWith('/') && !y.startsWith('//') ? y : '/crm'
-}
+import { ichkiYol } from '@/lib/kiritish'
 
 export const metadata = { title: 'Tizimga kirish' }
 
@@ -35,7 +25,7 @@ async function kirish(formData: FormData) {
   // /crm rolga qarab yo'naltiradi: xodim boshqaruvga, ustoz davomatga,
   // o'quvchi o'z sahifasiga. Hammani dashboardga yuborish "ochiq emas"
   // degan keraksiz xabar chiqarardi.
-  const keyin = keyinYol(formData.get('keyin'))
+  const keyin = ichkiYol(formData.get('keyin'))
 
   if (!email || !parol) redirect('/kirish?xato=bosh')
   if (!supabaseSozlanganmi()) redirect('/kirish?xato=ulanmagan')
