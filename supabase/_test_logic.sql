@@ -675,5 +675,107 @@ set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';   -- admin
 select davomat_saqla('N01', bugun_toshkent() - 1, jsonb_build_object('S001', 'kechikdi')) -> 'davomat' as admin_otgan_kun;
 
 reset role;
+
+-- ============================================================
+--  14. TELEGRAM (0021): ulanish, token, huquq, auditoriya
+-- ============================================================
+
+reset request.jwt.claim.sub;
+
+\echo '--- tel9: har xil yozilgan raqam bir xil bo''ladi ---'
+select tel9('+998-90-111-22-33') = '901112233' and tel9('90 111 22 33') = '901112233'
+   and tel9('998901112233') = '901112233' and tel9('12345') is null as tel9_togri;
+
+update students set ota_tel = '+998-90-111-22-33' where id = 'S001';
+update students set shaxsiy_tel = '93 000 00 02', ota_tel = '+998 93 000 00 02' where id = 'S002';
+update teachers set telefon = '(90) 777-88-99' where id = 'U01';
+
+\echo '--- telefon: ota-ona, o''quvchi (o''z raqami ota-ona bo''lib qo''shilmaydi), ustoz ---'
+do $$
+declare v text;
+begin
+  select string_agg(kim || ':' || ism, ', ' order by kim) into v from telegram_ula_telefon('+998901112233', 1001, 'Ota');
+  if v is distinct from 'ota_ona:Anvarbekov Amirxan' then raise exception 'XATO: ota-ona ulanmadi: %', v; end if;
+
+  select string_agg(kim, ',' order by kim) into v from telegram_ula_telefon('998930000002', 1002, 'Muslima');
+  if v is distinct from 'oquvchi' then raise exception 'XATO: o''quvchi o''z raqami bilan: %', v; end if;
+
+  select string_agg(kim, ',') into v from telegram_ula_telefon('907778899', 1003, 'Diana');
+  if v is distinct from 'ustoz' then raise exception 'XATO: ustoz ulanmadi: %', v; end if;
+
+  select count(*)::text into v from telegram_ula_telefon('+998 99 999 99 99', 1004, 'Begona');
+  if v <> '0' then raise exception 'XATO: begona raqam ulandi'; end if;
+
+  -- qayta ulash ikkilantirmaydi
+  perform telegram_ula_telefon('+998901112233', 1001, 'Ota');
+  if (select count(*) from telegram_ulanish where chat_id = 1001) <> 1 then raise exception 'XATO: ulanish ikkilandi'; end if;
+  raise notice 'OK: telefon bilan ulash to''g''ri';
+end $$;
+
+set role authenticated;
+
+\echo '--- token: o''quvchi saytda oladi, bot bir marta ishlatadi ---'
+set request.jwt.claim.sub = '44444444-4444-4444-4444-444444444444';   -- o'quvchi S001
+create temp table _tok as select telegram_token_ol() as t;
+
+\echo '--- oddiy foydalanuvchi ulash funksiyasini chaqira olmaydi ---'
+do $$
+begin
+  perform telegram_ula_telefon('+998901112233', 5555, 'buzg''unchi');
+  raise exception 'XATO: authenticated telefon bilan ulay oldi!';
+exception when insufficient_privilege then raise notice 'OK: ulash faqat serverga';
+end $$;
+
+\echo '--- o''quvchi faqat o''z ulanishlarini ko''radi ---'
+select count(*) = 0 as begona_korinmaydi from telegram_ulanish where student_id <> 'S001';
+
+reset role;
+do $$
+declare v text; t text := (select t from _tok);
+begin
+  select string_agg(kim || ':' || ism, ',') into v from telegram_ula_token(t, 2002, 'Amirxan');
+  if v not like '%oquvchi:Anvarbekov Amirxan%' then raise exception 'XATO: token bilan ulanmadi: %', v; end if;
+  select count(*)::text into v from telegram_ula_token(t, 2003, 'Ikkinchi');
+  if v <> '0' then raise exception 'XATO: token ikki marta ishladi'; end if;
+  raise notice 'OK: token bir martalik';
+end $$;
+
+set role authenticated;
+
+\echo '--- auditoriya: admin ko''radi, ustoz yo''q ---'
+set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';   -- admin
+select kim, nishon, chat_id is not null as ulangan
+from elon_oluvchilar(array['ota_ona'], '{"guruh":"N01"}') order by nishon, chat_id;
+
+do $$
+begin
+  if not exists (select 1 from elon_oluvchilar(array['ota_ona'], '{}') where nishon = 'S001' and chat_id = 1001) then
+    raise exception 'XATO: ulangan ota-ona auditoriyada yo''q';
+  end if;
+  if exists (select 1 from elon_oluvchilar(array['ustoz'], '{"qarzdor":true}')) then
+    raise exception 'XATO: qarzdor filtri ustozni qo''shdi';
+  end if;
+  raise notice 'OK: auditoriya to''g''ri';
+end $$;
+
+insert into elonlar (turi, matn, kimga) values ('majlis', 'Sinov', array['ustoz']) returning id, yaratdi is not null as yaratdi_bor;
+
+set request.jwt.claim.sub = '33333333-3333-3333-3333-333333333333';   -- ustoz
+do $$
+begin
+  perform * from elon_oluvchilar(array['oquvchi'], '{}');
+  raise exception 'XATO: ustoz auditoriyani ko''rdi!';
+exception when others then
+  if sqlerrm like '%huquqingiz yo%' then raise notice 'OK: auditoriya faqat adminga';
+  else raise; end if;
+end $$;
+do $$
+begin
+  insert into elonlar (matn, kimga) values ('ustozdan', array['oquvchi']);
+  raise exception 'XATO: ustoz e''lon yozdi!';
+exception when insufficient_privilege or check_violation then raise notice 'OK: e''lonni faqat admin yozadi';
+end $$;
+
+reset role;
 \echo ''
 \echo '=== TEST TUGADI ==='

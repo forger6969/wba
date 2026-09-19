@@ -8,6 +8,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { talabProfil } from '@/lib/auth'
 import { matn, xabarliYol, xatoMatni } from '@/lib/kiritish'
 import { loginEmail, loginNomi, LOGIN_QOIDASI } from '@/lib/login'
+import { BOT_NOMI } from '@/lib/telegram'
 
 const YOL = '/crm/profil'
 
@@ -109,4 +110,17 @@ export async function parolOzgartir(fd: FormData) {
 
   await iz(men.id, 'PAROL_OZGARDI', {})
   redirect(xabarliYol(YOL, { ok: 'Parol o‘zgardi. Keyingi safar yangi parol bilan kirasiz.' }))
+}
+
+/**
+ * "Telegramga ulash": 15 daqiqalik bir martalik token (telegram_token_ol,
+ * 0021) va to'g'ridan-to'g'ri botga — t.me/<bot>?start=<token>. Bot tokenni
+ * ko'rib, shu hisobni (o'quvchi / ota-ona / ustoz / xodim) ulaydi.
+ */
+export async function telegramUlash() {
+  await talabProfil()
+  const supabase = await createClient()
+  const { data: token, error } = await supabase.rpc('telegram_token_ol')
+  if (error || !token) redirect(xabarliYol(YOL, { xato: xatoMatni(error ?? { message: 'Havola yaratilmadi.' }) }))
+  redirect(`https://t.me/${BOT_NOMI}?start=${token}`)
 }

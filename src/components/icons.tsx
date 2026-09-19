@@ -122,6 +122,14 @@ export const IconAlert = (p: P) => (
   </Svg>
 )
 
+/** Xabar yuborish (Telegram e'lonlari) — qog'oz samolyot */
+export const IconSend = (p: P) => (
+  <Svg {...p}>
+    <path d="M16 2 8 10" />
+    <path d="M16 2 11 16l-3-6-6-3 14-5Z" />
+  </Svg>
+)
+
 export const IconArrowLeft = (p: P) => (
   <Svg {...p}>
     <path d="M11 3.5L5.5 9l5.5 5.5" />

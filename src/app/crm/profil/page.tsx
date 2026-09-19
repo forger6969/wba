@@ -1,4 +1,5 @@
-import { talabProfil, getUstoz, ROL_NOMI } from '@/lib/auth'
+import { talabProfil, getUstoz, ROL_NOMI, staffmi } from '@/lib/auth'
+import { BOT_NOMI } from '@/lib/telegram'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Card, CardHeader, Badge } from '@/components/ui'
@@ -6,7 +7,7 @@ import { Sarlavha, Ulanmagan } from '@/components/crm'
 import { Maydon, Xabar, kirishKlass } from '@/components/forma'
 import { Yuborish } from '@/components/yuborish'
 import { loginNomi, LOGIN_QOIDASI } from '@/lib/login'
-import { ismOzgartir, loginOzgartir, parolOzgartir } from './actions'
+import { ismOzgartir, loginOzgartir, parolOzgartir, telegramUlash } from './actions'
 
 export const metadata = { title: 'Profil' }
 export const dynamic = 'force-dynamic'
@@ -33,6 +34,12 @@ export default async function Profil({
     men.rol === 'oquvchi'
       ? await supabase.from('students').select('id, fish').eq('profile_id', men.id).maybeSingle()
       : { data: null }
+
+  /* Telegramga ulanganmi. Xodimga RLS hammaning ulanishini beradi —
+     shuning uchun unga faqat o'ziniki (profil yoki ustoz yozuvi) filtrlanadi. */
+  let tgSorov = supabase.from('telegram_ulanish').select('id', { count: 'exact', head: true }).eq('holat', 'faol')
+  if (staffmi(men.rol)) tgSorov = tgSorov.or(`profile_id.eq.${men.id}${ustoz ? `,teacher_id.eq.${ustoz.id}` : ''}`)
+  const { count: tgSoni } = await tgSorov
 
   return (
     <div className="flex max-w-2xl flex-col gap-4 px-5 py-5 lg:px-7">
@@ -91,6 +98,25 @@ export default async function Profil({
           </div>
           <Yuborish>Parolni almashtirish</Yuborish>
         </form>
+      </Card>
+
+      <Card className="flex flex-col">
+        <CardHeader
+          title="Telegram bot"
+          meta={tgSoni ? <Badge ton="ok">ulangan · {tgSoni}</Badge> : <Badge>ulanmagan</Badge>}
+        />
+        <div className="flex flex-col gap-3 px-5 pb-5">
+          <p className="text-[13px] leading-relaxed text-ink-2">
+            @{BOT_NOMI} orqali qarz, keyingi darslar, davomat va markaz e’lonlarini Telegramda olasiz.
+            Tugmani bosing — bot ochiladi, <b>Start</b> ni bosing va tayyor.
+          </p>
+          <form action={telegramUlash}>
+            <Yuborish tur={tgSoni ? 'ikkilamchi' : 'asosiy'} kutish="Ochilmoqda…">
+              {tgSoni ? 'Boshqa qurilmani ulash' : 'Telegramga ulash'}
+            </Yuborish>
+          </form>
+          <p className="lbl">Yoki botda /start bosib, telefon raqamingizni yuboring.</p>
+        </div>
       </Card>
 
       <p className="text-[12px] leading-relaxed text-ink-3">

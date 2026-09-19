@@ -19,7 +19,7 @@ import type { UserRole } from '@/lib/types'
 import { adminmi, staffmi, tasdiqlaydimi } from '@/lib/auth'
 import {
   IconDashboard, IconStudents, IconGroups, IconTeacher, IconAttendance,
-  IconWoblr, IconPayments, IconDebt, IconLeads, IconReports, IconSettings,
+  IconWoblr, IconPayments, IconDebt, IconLeads, IconReports, IconSettings, IconSend,
 } from '@/components/icons'
 
 type IconKomponent = (p: { size?: number; className?: string }) => React.ReactElement
@@ -72,6 +72,7 @@ export function menyular(rol: UserRole, ustozmi: boolean): MenyuBolim[] {
         { href: '/crm/hisobotlar', nom: 'Hisobotlar', Icon: IconReports, tayyor: true },
         ...(adminmi(rol)
           ? [
+              { href: '/crm/xabarlar', nom: 'Xabarlar', Icon: IconSend, tayyor: true },
               { href: '/crm/ustozlar', nom: 'Ustozlar', Icon: IconTeacher, tayyor: true },
               { href: '/crm/sozlamalar', nom: 'Sozlamalar', Icon: IconSettings, tayyor: true },
             ]
