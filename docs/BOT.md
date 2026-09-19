@@ -44,6 +44,8 @@ so'rov o'sha ID bilan cheklanadi. `callback_data` ga ishonilmaydi.
 ```
 TELEGRAM_BOT_TOKEN        BotFather tokeni (secret)
 TELEGRAM_WEBHOOK_SECRET   setWebhook secret_token — Telegram sarlavhada yuboradi
+TELEGRAM_GROUP_ID         "WBA Hisobot" guruhi (kunlik hisobot)
+CRON_SIR                  /api/cron/kunlik ni qo'lda sinash uchun (Bearer)
 ```
 
 ## Webhook'ni o'rnatish / qaytarish
@@ -54,8 +56,14 @@ setWebhook url=https://<sayt>/api/telegram secret_token=<TELEGRAM_WEBHOOK_SECRET
 Eski (Apps Script + Cloudflare Worker) manzili `.secrets/eski-webhook.json` da —
 kerak bo'lsa shunga qaytariladi.
 
+## Kunlik hisobot (19:40)
+`src/lib/kunlik-hisobot.ts` — eski hisobotMatn bo'limlari, bazadan. Supabase pg_cron (0022)
+har kuni 14:40 UTC da `/api/cron/kunlik` ni chaqiradi; sayt kuniga bir marta va faqat
+19:35–20:30 da guruhga yuboradi (`settings.kunlik_hisobot.oxirgi`). Xodimning botdagi
+"Bugungi hisobot" tugmasi ham shu matn.
+
 ## Keyingi bosqichlar
 - Avtomatik eslatmalar: har oy to'lov eslatmasi (pg_cron → yuborish).
-- Kunlik 19:40 hisobot guruhga — bazadan (eski Apps Script triggeri o'chiriladi).
+
 - Ustoz davomatini botning o'zida belgilash, to'lov kiritish, probniy, tasdiq.
 - 5 til (eski botdagi uz/ru/en/tr/ar).
