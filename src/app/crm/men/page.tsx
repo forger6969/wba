@@ -122,7 +122,7 @@ export default async function MeningSahifam({
   const guruhNomi = new Map(yList.map((y) => [y.group_id, y.groups?.nom ?? y.group_id]))
 
   /* Keyingi darslar — guruh JADVALIDAN (kun turi + vaqt), bazada
-     hisoblanadi (0018: keyingi_darslar). Avval lessons jadvalidan
+     hisoblanadi (0020: keyingi_darslar). Avval lessons jadvalidan
      olinardi: u yerda faqat o'tgan va ko'chirilgan darslar bor edi. */
   /* Shu oyning hisobi — chegirma bilan (Sheets "Qatnashuv" dagi 1- va
      2-bosqich chegirmasi bazada invoices.chegirma ga yozilgan). */

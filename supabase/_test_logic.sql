@@ -553,7 +553,7 @@ end $$;
 reset role;
 
 -- ============================================================
---  13. PANELLAR (0018): foiz, keyingi darslar, reyting, Q5
+--  13. PANELLAR (0020): foiz, keyingi darslar, reyting, Q5
 -- ============================================================
 
 reset request.jwt.claim.sub;

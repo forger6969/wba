@@ -329,7 +329,7 @@ export type LeaderboardRow = {
   ball: number
 }
 
-/** keyingi_darslar() — guruh jadvalidan hisoblangan keyingi dars (0018). */
+/** keyingi_darslar() — guruh jadvalidan hisoblangan keyingi dars (0020). */
 export type KeyingiDars = {
   group_id: string
   nom: string

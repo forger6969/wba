@@ -1,6 +1,6 @@
 -- ============================================================
 --  World Bridge Academy
---  0018_panel_davomat_reyting.sql · ustoz va o'quvchi panellari
+--  0020_panel_davomat_reyting.sql · ustoz va o'quvchi panellari
 --
 --  1. DAVOMAT FOIZI KELAJAKDAGI DARSLARNI SANAMASIN.
 --     Bulutga Sheets jurnalidan kelajakdagi darslar ham "kelmadi"

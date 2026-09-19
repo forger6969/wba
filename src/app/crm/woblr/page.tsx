@@ -19,7 +19,7 @@ export const dynamic = 'force-dynamic'
  * (/crm/davomat). Reyting funksiya orqali olinadi: faqat ism va ball —
  * telefon, qarz, davomat chiqmaydi.
  *
- * Kim nimani ko'radi (Q6, bazada ham tekshiriladi — 0018):
+ * Kim nimani ko'radi (Q6, bazada ham tekshiriladi — 0020):
  *   o'quvchi — butun markaz va o'zi o'qiydigan fan(lar); boshqa fan yo'q
  *   ustoz    — butun markaz, o'z fanlari va o'z guruhlari
  *   xodim    — hammasi
