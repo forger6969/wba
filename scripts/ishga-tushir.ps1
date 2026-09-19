@@ -31,18 +31,25 @@ function Ok($matn)    { Write-Host "  + $matn" -ForegroundColor Green }
 Qadam 'Docker'
 $docker = "$env:LOCALAPPDATA\Programs\DockerDesktop\resources\bin\docker.exe"
 if (-not (Test-Path $docker)) { $docker = 'docker' }
-& $docker version --format '{{.Server.Version}}' 2>$null | Out-Null
-if ($LASTEXITCODE -ne 0) {
+
+# PowerShell 5.1 da 'Stop' rejimida native dasturning stderr'i (2>$null
+# bilan ham) to'xtatuvchi xatoga aylanadi. Docker o'chiq bo'lsa aynan
+# stderr'ga yozadi — skript Docker'ni ko'tarish o'rniga yiqilardi.
+# Shuning uchun docker chaqiruvlari cmd orqali, stderr cmd ichida yutiladi.
+function DockerTirikmi {
+  cmd /c "`"$docker`" version --format {{.Server.Version}} >nul 2>nul"
+  return ($LASTEXITCODE -eq 0)
+}
+if (-not (DockerTirikmi)) {
   Write-Host "  Docker to'xtagan - ko'tarilmoqda (1-3 daqiqa)..."
-  & $docker desktop start --timeout 300 | Out-Null
-  & $docker version --format '{{.Server.Version}}' 2>$null | Out-Null
-  if ($LASTEXITCODE -ne 0) { throw "Docker ko'tarilmadi. Docker Desktop oynasini ochib tekshiring." }
+  cmd /c "`"$docker`" desktop start --timeout 300 >nul 2>nul"
+  if (-not (DockerTirikmi)) { throw "Docker ko'tarilmadi. Docker Desktop oynasini ochib tekshiring." }
 }
 Ok 'Docker ishlayapti'
 
 # 2. Supabase ----------------------------------------------------
 Qadam 'Baza (Supabase)'
-$ishlayapti = (& $docker ps --format '{{.Names}}' 2>$null | Select-String 'supabase_db_wba').Count -gt 0
+$ishlayapti = ((cmd /c "`"$docker`" ps --format {{.Names}} 2>nul") | Select-String 'supabase_db_wba').Count -gt 0
 if (-not $ishlayapti) {
   npx --yes supabase@latest start -x realtime,storage-api,imgproxy,edge-runtime,logflare,vector,supavisor,mailpit | Out-Null
   if ($LASTEXITCODE -ne 0) { throw "Supabase ko'tarilmadi: npx supabase start ni qo'lda yuriting." }
