@@ -102,6 +102,13 @@ Qatnashuvning `To'lashi kerak` / `To'langan` / `Qarz` ustunlari bilan solishtiri
 
    Login — oddiy so'z (`aziza`), tizim `@wba.uz` ni o'zi qo'shadi (`src/lib/login.ts`).
 
+   Uchinchi istisno — **Telegram bot webhook'i** (`src/app/api/telegram/route.ts`, 0021):
+   Telegram so'rovida sayt sessiyasi yo'q. Huquq o'sha faylda tekshiriladi: chat
+   `telegram_ulanish` da kimga ulangan bo'lsa, so'rov faqat o'sha o'quvchi/ustoz/xodim
+   ID'si bilan cheklanadi; tugma ma'lumotiga (callback_data) ishonilmaydi. Ulash
+   funksiyalari (`telegram_ula_*`) faqat `service_role` ga ochiq. E'lon yuborish
+   (`/crm/xabarlar`) esa admin nomidan, RLS bilan — service_role'siz.
+
 ---
 
 ## Buyruqlar

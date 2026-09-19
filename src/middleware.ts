@@ -11,7 +11,8 @@ export const config = {
      * Statik fayllar va rasmlardan tashqari hamma so'rov.
      * Ommaviy sayt ham o'tadi — sessiya bor-yo'qligini bilish uchun
      * (masalan, header'da "Tizimga kirish" yoki "Dashboard" ko'rsatish).
+     * /api/telegram — bot webhook'i: sessiya yo'q, tezlik uchun o'tkazib yuboriladi.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/telegram|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }

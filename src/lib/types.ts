@@ -329,6 +329,64 @@ export type LeaderboardRow = {
   ball: number
 }
 
+/* ---------- Telegram bot va e'lonlar (0021) ---------- */
+
+export type TelegramKim = 'oquvchi' | 'ota_ona' | 'ustoz' | 'xodim'
+
+export type TelegramUlanish = {
+  id: number
+  chat_id: number
+  kim: TelegramKim
+  student_id: string | null
+  teacher_id: string | null
+  profile_id: string | null
+  telefon: string | null
+  tg_ism: string | null
+  holat: 'faol' | 'bloklagan'
+  created_at: string
+  updated_at: string
+}
+
+export type ElonTuri = 'umumiy' | 'tolov' | 'test' | 'majlis'
+export type ElonFiltr = { guruh?: string; fan?: string; qarzdor?: boolean }
+
+export type Elon = {
+  id: number
+  turi: ElonTuri
+  matn: string
+  kimga: TelegramKim[]
+  filtr: ElonFiltr
+  yaratdi: string | null
+  created_at: string
+  yuborildi_at: string | null
+  jami: number
+  yetkazildi: number
+  xato: number
+}
+
+export type ElonYetkazish = {
+  id: number
+  elon_id: number
+  chat_id: number
+  kim: TelegramKim
+  student_id: string | null
+  holat: 'navbatda' | 'yetkazildi' | 'xato' | 'bloklagan'
+  xato_matn: string | null
+  yuborildi_at: string | null
+}
+
+/** elon_oluvchilar() — chat_id bo'sh bo'lsa, odam botga ulanmagan */
+export type ElonOluvchi = {
+  kim: TelegramKim
+  nishon: string
+  ism: string
+  chat_id: number | null
+  student_id: string | null
+  qarz: number | null
+}
+
+export type UlanishNatija = { kim: TelegramKim; ism: string }
+
 /** keyingi_darslar() — guruh jadvalidan hisoblangan keyingi dars (0020). */
 export type KeyingiDars = {
   group_id: string
@@ -391,6 +449,9 @@ export type Database = {
   public: {
     Tables: {
       profiles: Table<Profile>
+      telegram_ulanish: Table<TelegramUlanish>
+      elonlar: Table<Elon>
+      elon_yetkazish: Table<ElonYetkazish>
       subjects: Table<Subject>
       levels: Table<Level>
       teachers: Table<Teacher>
@@ -455,6 +516,18 @@ export type Database = {
       probniy_doimiy: { Args: { p_lead: string; p_boshlandi?: string | null }; Returns: string }
       tushum_hisobot: { Args: { p_dan: string; p_gacha: string }; Returns: Hisobot }
       chegirma_ozgartir: { Args: { p_enrollment: string; p: Record<string, unknown> }; Returns: number }
+      telegram_token_ol: { Args: Record<string, never>; Returns: string }
+      telegram_ula_token: { Args: { p_token: string; p_chat: number; p_tg_ism: string }; Returns: UlanishNatija[] }
+      telegram_ula_telefon: { Args: { p_tel: string; p_chat: number; p_tg_ism: string }; Returns: UlanishNatija[] }
+      telegram_ula_qator: {
+        Args: {
+          p_chat: number; p_kim: TelegramKim; p_student: string | null; p_teacher: string | null
+          p_profile: string | null; p_tel: string | null; p_tg_ism: string
+        }
+        Returns: undefined
+      }
+      telegram_bloklagan: { Args: { p_chat: number }; Returns: undefined }
+      elon_oluvchilar: { Args: { p_kimga: TelegramKim[]; p_filtr?: ElonFiltr }; Returns: ElonOluvchi[] }
       rate_limit_hit: {
         Args: { p_bucket: string; p_kalit: string; p_limit: number; p_oyna_sek: number }
         Returns: boolean
