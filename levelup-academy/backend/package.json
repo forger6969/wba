@@ -15,7 +15,8 @@
     "migrate:create": "node-pg-migrate -j js -m src/db/migrations create",
     "seed": "node src/db/seeds/seed.js",
     "docs:md": "node scripts/generate-api-docs.js",
-    "test": "node tests/run-all.js"
+    "test": "node tests/run-all.js",
+    "build": "PGSSLMODE=require DATABASE_URL=\"$DATABASE_URL\" node-pg-migrate -j js -m src/db/migrations up || echo 'migrate skipped/failed — server still starts'"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.700.0",
