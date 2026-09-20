@@ -517,15 +517,15 @@ function Sidebar({
         to="/"
         className="flex items-center gap-3 px-4 h-16 shrink-0 transition-opacity hover:opacity-85"
         style={{ borderBottom: '1px solid rgba(220, 38, 38, 0.15)' }}
-        aria-label="LevelUp Academy — bosh sahifa"
+        aria-label="World Bridge Academy — bosh sahifa"
       >
         {collapsed ? (
-          <img src="/logo-mark.svg" alt="" className="w-9 h-9 shrink-0" />
+          <img src="/wba-logo-white.png" alt="" className="w-9 h-9 shrink-0 object-contain" />
         ) : (
           <img
-            src="/logo-white.svg"
-            alt="LevelUp Academy"
-            className="h-7 w-auto animate-fade-in"
+            src="/wba-logo-white.png"
+            alt="World Bridge Academy"
+            className="h-10 w-auto animate-fade-in object-contain"
           />
         )}
       </Link>

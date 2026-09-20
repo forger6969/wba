@@ -164,7 +164,7 @@ export default function SuperBranchDetail() {
   const branchName = branch?.name;
 
   useEffect(() => {
-    if (branchName) document.title = `${branchName} | ${t('super.branchDetail.breadcrumbBranches')} | LevelUp Academy`;
+    if (branchName) document.title = `${branchName} | ${t('super.branchDetail.breadcrumbBranches')} | World Bridge Academy`;
   }, [branchName, t]);
 
   const setTab = (key) => {

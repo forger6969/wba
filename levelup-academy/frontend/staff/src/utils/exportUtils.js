@@ -85,10 +85,10 @@ export function getOrgName() {
     const org = JSON.parse(localStorage.getItem('mock_organization'));
     if (org?.name) return org.name;
   } catch { /* corrupted/absent value — fall through */ }
-  return 'LevelUp Academy';
+  return 'World Bridge Academy';
 }
 
-/** Filename-safe slug from the org name, e.g. "LevelUp Academy" → "levelup-academy" */
+/** Filename-safe slug from the org name, e.g. "World Bridge Academy" → "levelup-academy" */
 export function orgSlug() {
   return getOrgName().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'export';
 }

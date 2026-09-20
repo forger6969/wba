@@ -1893,7 +1893,7 @@ const uz = {
   'super.features.noRequestsYet': 'Hozircha so\'rovlar yo\'q',
 
   /* ─── super/Branches.jsx ─── */
-  'super.branches.docTitle': 'Filiallar | LevelUp Academy',
+  'super.branches.docTitle': 'Filiallar | World Bridge Academy',
   'super.branches.title': 'Filiallar',
   'super.branches.subtitle': 'Tashkilot filiallarini boshqarish',
   'super.branches.newBranch': 'Yangi filial',
@@ -1935,7 +1935,7 @@ const uz = {
   'super.settings.createdLabel': 'Yaratilgan:',
   'super.settings.mainSettingsTitle': 'Asosiy sozlamalar',
   'super.settings.orgNameLabel': 'Tashkilot nomi *',
-  'super.settings.orgNamePlaceholder': 'LevelUp Academy',
+  'super.settings.orgNamePlaceholder': 'World Bridge Academy',
   'super.settings.domainLabel': 'Shaxsiy domen',
   'super.settings.domainHint': 'O\'quvchi va o\'qituvchi kabinetlarini brendlash uchun domen.',
   'super.settings.lessonDurationLabel': 'Dars davomiyligi (daqiqa)',
@@ -2702,8 +2702,8 @@ const uz = {
   /* ─── pages/Login.jsx ─── */
   'login.hidePassword': 'Parolni yashirish',
   'login.showPassword': 'Parolni ko\'rsatish',
-  'login.enterEmailPassword': 'Email va parolni kiriting',
-  'login.invalidCredentials': 'Email yoki parol noto\'g\'ri',
+  'login.enterEmailPassword': 'Login va parolni kiriting',
+  'login.invalidCredentials': 'Login yoki parol noto\'g\'ri',
   'login.tooManyAttempts': 'Juda ko\'p urinish — keyinroq qayta urinib ko\'ring',
   'login.couldNotLogin': 'Kirib bo\'lmadi',
   'login.googleNotConfigured': 'Google orqali kirish hali sozlanmagan',
@@ -2711,7 +2711,8 @@ const uz = {
   'login.couldNotLoginGoogle': 'Google orqali kirib bo\'lmadi',
   'login.title': 'Panelga kirish',
   'login.rolesSubtitle': 'CEO · Administrator · Branch Manager · Mentor · Metodist',
-  'login.emailLabel': 'Email',
+  'login.emailLabel': 'Login',
+  'login.loginPlaceholder': 'login yoki email',
   'login.passwordLabel': 'Parol',
   'login.signIn': 'Kirish',
   'login.or': 'yoki',

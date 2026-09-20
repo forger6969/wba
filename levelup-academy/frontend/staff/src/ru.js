@@ -1893,7 +1893,7 @@ const ru = {
   'super.features.noRequestsYet': 'Заявок пока нет',
 
   /* ─── super/Branches.jsx ─── */
-  'super.branches.docTitle': 'Филиалы | LevelUp Academy',
+  'super.branches.docTitle': 'Филиалы | World Bridge Academy',
   'super.branches.title': 'Филиалы',
   'super.branches.subtitle': 'Управление филиалами организации',
   'super.branches.newBranch': 'Новый филиал',
@@ -1935,7 +1935,7 @@ const ru = {
   'super.settings.createdLabel': 'Создана:',
   'super.settings.mainSettingsTitle': 'Основные настройки',
   'super.settings.orgNameLabel': 'Название организации *',
-  'super.settings.orgNamePlaceholder': 'LevelUp Academy',
+  'super.settings.orgNamePlaceholder': 'World Bridge Academy',
   'super.settings.domainLabel': 'Собственный домен',
   'super.settings.domainHint': 'Домен для брендирования кабинетов студентов и преподавателей.',
   'super.settings.lessonDurationLabel': 'Длительность урока (мин)',
@@ -2702,8 +2702,8 @@ const ru = {
   /* ─── pages/Login.jsx ─── */
   'login.hidePassword': 'Скрыть пароль',
   'login.showPassword': 'Показать пароль',
-  'login.enterEmailPassword': 'Введите email и пароль',
-  'login.invalidCredentials': 'Неверный email или пароль',
+  'login.enterEmailPassword': 'Введите логин и пароль',
+  'login.invalidCredentials': 'Неверный логин или пароль',
   'login.tooManyAttempts': 'Слишком много попыток — попробуйте позже',
   'login.couldNotLogin': 'Не удалось войти',
   'login.googleNotConfigured': 'Google-вход пока не настроен',
@@ -2711,7 +2711,8 @@ const ru = {
   'login.couldNotLoginGoogle': 'Не удалось войти через Google',
   'login.title': 'Вход в панель',
   'login.rolesSubtitle': 'CEO · Администратор · Branch Manager · Ментор · Методист',
-  'login.emailLabel': 'Email',
+  'login.emailLabel': 'Логин',
+  'login.loginPlaceholder': 'логин или email',
   'login.passwordLabel': 'Пароль',
   'login.signIn': 'Войти',
   'login.or': 'или',

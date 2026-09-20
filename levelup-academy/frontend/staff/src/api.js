@@ -638,7 +638,7 @@ async function rawRequest(path, { method = 'GET', body, token } = {}) {
       if (!org) {
         org = {
           id: 'org-uuid-001',
-          name: 'LevelUp Academy',
+          name: 'World Bridge Academy',
           domain: 'levelup.uz',
           status: 'active',
           createdAt: '2026-01-10T08:00:00.000Z',
@@ -804,7 +804,7 @@ async function rawRequest(path, { method = 'GET', body, token } = {}) {
     if (path === '/super/organization') {
       let org = JSON.parse(localStorage.getItem('mock_org') || 'null');
       if (!org) {
-        org = { id: 'org-uuid-0001', name: 'LevelUp Academy', domain: 'levelup.uz', status: 'active', createdAt: '2026-01-01T00:00:00.000Z', plan: { branchLimit: 10, diskSpace: '500 ГБ' } };
+        org = { id: 'org-uuid-0001', name: 'World Bridge Academy', domain: 'levelup.uz', status: 'active', createdAt: '2026-01-01T00:00:00.000Z', plan: { branchLimit: 10, diskSpace: '500 ГБ' } };
         localStorage.setItem('mock_org', JSON.stringify(org));
       }
       if (method === 'PATCH') { org = { ...org, ...body }; localStorage.setItem('mock_org', JSON.stringify(org)); return { organization: org }; }
@@ -2709,7 +2709,7 @@ export const api = {
   branchImproveAnnouncement: (token, body) => request('/admin/announcements/improve', { method: 'POST', token, body }),
   branchAnnouncementImageUploadUrl: (token, filename, contentType) => request(`/admin/announcements/image-upload-url?filename=${encodeURIComponent(filename)}&contentType=${encodeURIComponent(contentType)}`, { token }),
 
-  // -------- SUPER ADMIN: анонсы от LevelUp Academy (Main Admin), read-only --------
+  // -------- SUPER ADMIN: анонсы от World Bridge Academy (Main Admin), read-only --------
   superPlatformAnnouncements: (token) => request('/super/platform-announcements', { token }),
 
   // -------- SUPER ADMIN: каталог платных фич + свои заявки на подключение/отключение --------

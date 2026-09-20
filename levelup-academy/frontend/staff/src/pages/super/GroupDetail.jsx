@@ -30,7 +30,7 @@ export default function SuperGroupDetail() {
   const group = data?.group;
 
   useEffect(() => {
-    if (group?.name) document.title = `${group.name} | ${t('super.groupDetail.breadcrumbGroups')} | LevelUp Academy`;
+    if (group?.name) document.title = `${group.name} | ${t('super.groupDetail.breadcrumbGroups')} | World Bridge Academy`;
   }, [group?.name, t]);
 
   if (error && error.status !== 401) {

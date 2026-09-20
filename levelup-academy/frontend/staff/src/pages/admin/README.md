@@ -1,4 +1,4 @@
-# Admin Panel — LevelUp Academy
+# Admin Panel — World Bridge Academy
 
 > ⚠️ **Texnik hujjat, vazifa ro'yxati EMAS (belgi qo'yildi 2026-07-26).**
 > Admin panelining ochiq vazifalari va holati — korneviy `TASK.md`,

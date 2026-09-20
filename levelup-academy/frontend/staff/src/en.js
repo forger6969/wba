@@ -1893,7 +1893,7 @@ const en = {
   'super.features.noRequestsYet': 'No requests yet',
 
   /* ─── super/Branches.jsx ─── */
-  'super.branches.docTitle': 'Branches | LevelUp Academy',
+  'super.branches.docTitle': 'Branches | World Bridge Academy',
   'super.branches.title': 'Branches',
   'super.branches.subtitle': "Manage the organization's branches",
   'super.branches.newBranch': 'New branch',
@@ -1935,7 +1935,7 @@ const en = {
   'super.settings.createdLabel': 'Created:',
   'super.settings.mainSettingsTitle': 'Main settings',
   'super.settings.orgNameLabel': 'Organization name *',
-  'super.settings.orgNamePlaceholder': 'LevelUp Academy',
+  'super.settings.orgNamePlaceholder': 'World Bridge Academy',
   'super.settings.domainLabel': 'Custom domain',
   'super.settings.domainHint': 'Domain for branding student and teacher portals.',
   'super.settings.lessonDurationLabel': 'Lesson duration (min)',
@@ -2702,8 +2702,8 @@ const en = {
   /* ─── pages/Login.jsx ─── */
   'login.hidePassword': 'Hide password',
   'login.showPassword': 'Show password',
-  'login.enterEmailPassword': 'Enter email and password',
-  'login.invalidCredentials': 'Incorrect email or password',
+  'login.enterEmailPassword': 'Enter login and password',
+  'login.invalidCredentials': 'Incorrect login or password',
   'login.tooManyAttempts': 'Too many attempts — try again later',
   'login.couldNotLogin': 'Could not sign in',
   'login.googleNotConfigured': 'Google sign-in is not configured yet',
@@ -2711,7 +2711,8 @@ const en = {
   'login.couldNotLoginGoogle': 'Could not sign in with Google',
   'login.title': 'Sign in',
   'login.rolesSubtitle': 'CEO · Admin · Branch Manager · Mentor · Methodist',
-  'login.emailLabel': 'Email',
+  'login.emailLabel': 'Login',
+  'login.loginPlaceholder': 'login or email',
   'login.passwordLabel': 'Password',
   'login.signIn': 'Sign in',
   'login.or': 'or',

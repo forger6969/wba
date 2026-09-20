@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../auth.jsx';
 import { api, USING_MOCKS } from '../api.js';
+import LanguageSwitcher from '../components/LanguageSwitcher.jsx';
 
 function GoogleIcon() {
   return (
@@ -42,17 +43,17 @@ function MailIcon() {
 }
 
 // Email-поле с иконкой конверта слева.
-function EmailField({ value, onChange, placeholder, autoFocus }) {
+function EmailField({ value, onChange, placeholder, autoFocus, type = 'email', autoComplete = 'username' }) {
   return (
     <div className="relative">
       <span className="absolute inset-y-0 left-0 grid w-11 place-items-center text-base-content/40 pointer-events-none">
         <MailIcon />
       </span>
       <input
-        type="email"
+        type={type}
         required
         autoFocus={autoFocus}
-        autoComplete="username"
+        autoComplete={autoComplete}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
@@ -153,7 +154,7 @@ function LoginForm({ onForgot }) {
       <form onSubmit={onSubmit} className="space-y-4" noValidate>
         <label className="form-control w-full animate-slide-up stagger-2">
           <span className="label-text mb-1 font-medium">{t('login.emailLabel')}</span>
-          <EmailField autoFocus value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@gmail.com" />
+          <EmailField type="text" autoFocus value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('login.loginPlaceholder')} />
         </label>
         <label className="form-control w-full animate-slide-up stagger-3">
           <span className="label-text mb-1 font-medium">{t('login.passwordLabel')}</span>
@@ -171,13 +172,8 @@ function LoginForm({ onForgot }) {
         </button>
       </form>
 
-      <div className="divider text-xs opacity-40 animate-slide-up stagger-4">{t('login.or')}</div>
-
-      <button type="button"
-        className="btn btn-outline w-full gap-2 border-base-300 text-base-content transition-transform duration-150 hover:-translate-y-0.5 hover:border-base-content/30 hover:bg-base-200 hover:text-base-content active:translate-y-0 animate-slide-up stagger-5"
-        onClick={onGoogle} disabled={busy || googleBusy}>
-        {googleBusy ? <span className="loading loading-spinner loading-sm" /> : <><GoogleIcon /> {t('login.signInWithGoogle')}</>}
-      </button>
+      {/* Google (Gmail) kirish — Firebase authorized-domain sozlangach yoqiladi.
+          Hozircha wba domenlari Firebase'da ro'yxatdan o'tmagan → xatoni ko'rsatmaslik uchun yashirilgan. */}
 
       <div className="text-center pt-4 animate-slide-up stagger-6">
         <button type="button"
@@ -234,7 +230,7 @@ function ForgotForm({ onBack }) {
       {stage === 'request' && (
         <form onSubmit={sendCode} className="space-y-4 mt-4 animate-fade-in" noValidate>
           <p className="text-sm opacity-60">{t('login.specifyEmailHint')}</p>
-          <EmailField autoFocus value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@gmail.com" />
+          <EmailField type="text" autoFocus value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('login.loginPlaceholder')} />
           <button className="btn btn-primary w-full transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0" disabled={busy}>
             {busy ? <span className="loading loading-spinner loading-sm" /> : t('login.sendCode')}
           </button>
@@ -280,12 +276,13 @@ export default function Login() {
   const FEATURES = [t('login.feature1'), t('login.feature2'), t('login.feature3')];
   const [mode, setMode] = useState('login');
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-base-200">
+    <div className="relative min-h-screen grid lg:grid-cols-2 bg-base-200">
+      <div className="absolute top-4 right-4 z-30"><LanguageSwitcher /></div>
       {/* Левая панель — бренд */}
       <div className="relative hidden lg:flex flex-col justify-between overflow-hidden bg-sidebar text-neutral-content p-12">
         <div className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-limebrand/20 blur-3xl animate-float" />
         <div className="pointer-events-none absolute -bottom-24 -left-16 h-80 w-80 rounded-full bg-limebrand/10 blur-3xl animate-float" style={{ animationDelay: '1.2s' }} />
-        <img src="/logo-white.svg" alt="LevelUp Academy" className="relative h-10 w-auto self-start animate-slide-up" />
+        <img src="/wba-logo-white.png" alt="World Bridge Academy" className="relative h-14 w-auto self-start animate-slide-up" />
         <div className="relative">
           <h2 className="text-3xl font-bold leading-tight animate-slide-up">{t('login.dashboardTitle')}</h2>
           <p className="opacity-60 mt-2 max-w-sm animate-slide-up stagger-1">{t('login.dashboardSubtitle')}</p>
@@ -302,13 +299,13 @@ export default function Login() {
             ))}
           </ul>
         </div>
-        <div className="relative text-xs opacity-40">LevelUp Academy · SaaS</div>
+        <div className="relative text-xs opacity-40">World Bridge Academy · Toshkent</div>
       </div>
 
       {/* Правая панель — форма */}
       <div className="grid place-items-center p-6">
         <div className="w-full max-w-md">
-          <img src="/logo-primary.svg" alt="LevelUp Academy" className="h-8 w-auto mb-6 lg:hidden" />
+          <img src="/wba-logo.png" alt="World Bridge Academy" className="h-14 w-auto mb-6 lg:hidden" />
           <div className="rounded-2xl border border-base-300 bg-base-100 p-8 shadow-[0_1px_2px_rgba(29,36,23,0.04),0_18px_50px_-12px_rgba(29,36,23,0.14)] transition-shadow duration-300 hover:shadow-[0_1px_2px_rgba(29,36,23,0.05),0_24px_60px_-12px_rgba(29,36,23,0.18)] sm:p-10 animate-slide-up">
             {mode === 'login'
               ? <LoginForm onForgot={() => setMode('forgot')} />
@@ -327,7 +324,7 @@ export default function Login() {
               </div>
             )}
           </div>
-          <p className="text-center text-xs opacity-40 mt-6">© LevelUp Academy</p>
+          <p className="text-center text-xs opacity-40 mt-6">© World Bridge Academy</p>
         </div>
       </div>
     </div>

@@ -25,7 +25,7 @@ export default function SuperStudentDetail() {
   const fullName = s ? `${s.firstName} ${s.lastName}` : '';
 
   useEffect(() => {
-    if (fullName) document.title = `${fullName} | ${t('super.studentDetail.breadcrumbStudents')} | LevelUp Academy`;
+    if (fullName) document.title = `${fullName} | ${t('super.studentDetail.breadcrumbStudents')} | World Bridge Academy`;
   }, [fullName, t]);
 
   if (error && error.status !== 401) {
