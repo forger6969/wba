@@ -36,7 +36,7 @@ export default function QrLogin() {
   return (
     <div className="min-h-screen grid place-items-center bg-base-200 p-6">
       <div className="w-full max-w-sm rounded-2xl border border-base-300 bg-base-100 p-8 text-center shadow-[0_1px_2px_rgba(29,36,23,0.04),0_18px_50px_-12px_rgba(29,36,23,0.14)]">
-        <img src="/logo-primary.svg" alt="LevelUp Academy" className="h-8 w-auto mx-auto mb-6" />
+        <img src="/wba-logo.png" alt="World Bridge Academy" className="h-8 w-auto mx-auto mb-6" />
         {status === 'loading' ? (
           <>
             <span className="loading loading-spinner loading-lg text-primary" />

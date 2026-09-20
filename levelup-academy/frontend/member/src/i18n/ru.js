@@ -449,7 +449,7 @@ export default {
     brandTitle: 'Личный кабинет',
     brandDesc: 'Тесты, домашние задания, коины и рейтинг — всё в личном кабинете ученика и родителя.',
     features: ['Тесты и домашние задания', 'Коины, магазин и рейтинг', 'Прогресс и посещаемость'],
-    footer: 'LevelUp Academy · Ученик / Родитель',
+    footer: 'World Bridge Academy · Ученик / Родитель',
     title: 'Вход',
     subtitle: 'Ученик / Родитель',
     loginCode: 'Логин-код',
@@ -475,7 +475,7 @@ export default {
     },
     note: 'Логин-код и пароль выдаёт администратор вашего учебного центра.',
     noteTg: ' Вход через Telegram работает только у тех, кто уже привязал бота в кабинете.',
-    copyright: '© LevelUp Academy',
+    copyright: '© World Bridge Academy',
   },
 
   qr: {

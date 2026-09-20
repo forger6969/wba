@@ -153,7 +153,7 @@ export default function OnboardModal({ lead, onClose, onDone }) {
                     required
                     value={form.organizationName}
                     onChange={set('organizationName')}
-                    placeholder="LevelUp Academy"
+                    placeholder="World Bridge Academy"
                     autoFocus
                   />
                 </label>

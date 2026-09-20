@@ -449,7 +449,7 @@ export default {
     brandTitle: 'Student cabinet',
     brandDesc: 'Tests, homework, coins and rating — all in the personal cabinet of a student and parent.',
     features: ['Tests and homework', 'Coins, shop and rating', 'Progress and attendance'],
-    footer: 'LevelUp Academy · Student / Parent',
+    footer: 'World Bridge Academy · Student / Parent',
     title: 'Sign in',
     subtitle: 'Student / Parent',
     loginCode: 'Login code',
@@ -475,7 +475,7 @@ export default {
     },
     note: 'The login code and password are issued by the administrator of your learning centre.',
     noteTg: ' Telegram sign-in works only for those who linked the bot in the cabinet.',
-    copyright: '© LevelUp Academy',
+    copyright: '© World Bridge Academy',
   },
 
   qr: {

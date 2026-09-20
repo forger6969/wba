@@ -69,11 +69,7 @@ function LoginForm({ onForgot }) {
         </button>
       </form>
 
-      <div className="divider text-xs opacity-40">или</div>
-
-      <button type="button" className="btn btn-outline w-full gap-2" onClick={onGoogle}>
-        <GoogleIcon /> Войти через Google
-      </button>
+      {/* Google (Firebase) kirish yashirildi — domen authorized emas */}
 
       <div className="text-center pt-3">
         <button type="button"
@@ -215,17 +211,17 @@ export default function Login() {
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-base-200">
       <div className="hidden lg:flex flex-col justify-between bg-sidebar text-neutral-content p-12">
-        <img src="/logo-white.svg" alt="LevelUp Academy" className="h-10 w-auto self-start" />
+        <img src="/wba-logo-white.png" alt="World Bridge Academy" className="h-14 w-auto self-start object-contain" />
         <div>
           <h2 className="text-2xl font-bold">Панель владельца платформы</h2>
           <p className="opacity-60 mt-2 max-w-sm">Партнёры, заявки с лендинга, доход и тарифы — в одном месте.</p>
         </div>
-        <div className="text-xs opacity-40">SaaS · Main Admin</div>
+        <div className="text-xs opacity-40">World Bridge Academy · Egasi</div>
       </div>
 
       <div className="grid place-items-center p-6">
         <div className="w-full max-w-sm">
-          <img src="/logo-primary.svg" alt="LevelUp Academy" className="h-8 w-auto mb-5 lg:hidden" />
+          <img src="/wba-logo.png" alt="World Bridge Academy" className="h-14 w-auto mb-5 lg:hidden object-contain" />
           {mode === 'login'
             ? <LoginForm onForgot={() => setMode('forgot')} />
             : <ForgotForm onBack={() => setMode('login')} />}

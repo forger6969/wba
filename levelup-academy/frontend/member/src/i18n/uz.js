@@ -449,7 +449,7 @@ export default {
     brandTitle: 'Shaxsiy kabinet',
     brandDesc: "Testlar, uy vazifalari, tangalar va reyting — o'quvchi va ota-onaning shaxsiy kabinetida bir joyda.",
     features: ['Testlar va uy vazifalari', "Tangalar, do'kon va reyting", 'Progress va davomat'],
-    footer: "LevelUp Academy · O'quvchi / Ota-ona",
+    footer: "World Bridge Academy · O'quvchi / Ota-ona",
     title: 'Kirish',
     subtitle: "O'quvchi / Ota-ona",
     loginCode: 'Login-kod',
@@ -475,7 +475,7 @@ export default {
     },
     note: "Login-kod va parolni o'quv markazingiz administratori beradi.",
     noteTg: ' Telegram orqali kirish faqat kabinetda botni ulaganlar uchun ishlaydi.',
-    copyright: '© LevelUp Academy',
+    copyright: '© World Bridge Academy',
   },
 
   qr: {

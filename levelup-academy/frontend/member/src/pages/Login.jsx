@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth.jsx';
 import { api } from '../api.js';
 import { useI18n } from '../i18n/index.jsx';
+import LanguageSwitcher from '../components/LanguageSwitcher.jsx';
 
 function EyeIcon({ off }) {
   return off ? (
@@ -128,12 +129,13 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-base-200">
+    <div className="relative min-h-screen grid lg:grid-cols-2 bg-base-200">
+      <div className="absolute top-4 right-4 z-30"><LanguageSwitcher /></div>
       {/* Левая панель — бренд */}
       <div className="relative hidden lg:flex flex-col justify-between overflow-hidden bg-sidebar text-neutral-content p-12">
         <div className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full" style={{ background: 'rgba(220, 38, 38, 0.12)', filter: 'blur(80px)' }} />
         <div className="pointer-events-none absolute -bottom-24 -left-16 h-80 w-80 rounded-full" style={{ background: 'rgba(220, 38, 38, 0.07)', filter: 'blur(80px)' }} />
-        <img src="/logo-white.svg" alt="LevelUp Academy" className="relative h-10 w-auto self-start" />
+        <img src="/wba-logo-white.png" alt="World Bridge Academy" className="relative h-14 w-auto self-start object-contain" />
         <div className="relative">
           <h2 className="text-3xl font-bold leading-tight">{t.login.brandTitle}</h2>
           <p className="opacity-60 mt-2 max-w-sm">
@@ -158,7 +160,7 @@ export default function Login() {
       {/* Правая панель — форма */}
       <div className="grid place-items-center p-6">
         <div className="w-full max-w-md">
-          <img src="/logo-primary.svg" alt="LevelUp Academy" className="h-8 w-auto mb-6 lg:hidden" />
+          <img src="/wba-logo.png" alt="World Bridge Academy" className="h-14 w-auto mb-6 lg:hidden object-contain" />
           <div className="rounded-2xl border border-base-300 bg-base-100 p-8 shadow-[0_1px_2px_rgba(29,36,23,0.04),0_18px_50px_-12px_rgba(29,36,23,0.14)] sm:p-10">
             <h1 className="text-2xl font-bold tracking-tight">{t.login.title}</h1>
             <p className="text-sm opacity-60 mb-6">{t.login.subtitle}</p>

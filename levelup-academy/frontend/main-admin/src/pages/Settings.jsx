@@ -239,7 +239,7 @@ export default function Settings() {
           <div className="card-body">
             <CardHead Icon={Info} title="Платформа" />
             <div className="grid grid-cols-2 gap-y-4">
-              <Spec label="Название" value="LevelUp Academy" />
+              <Spec label="Название" value="World Bridge Academy" />
               <Spec label="Версия" value={<span className="badge badge-sm badge-outline">v1.0</span>} />
               <Spec label="Среда" value={<span className="badge badge-sm badge-success badge-outline">Production</span>} />
               <Spec label="Валюта" value={cur} />

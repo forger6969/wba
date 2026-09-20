@@ -219,7 +219,7 @@ function SidebarContent({ user, logout, onNavigate, collapsed, onToggleCollapse 
           <div className="grid h-8 w-8 place-items-center rounded-md bg-primary text-[10px] font-black text-primary-content">LU</div>
         ) : (
           <div className="min-w-0">
-            <img src="/logo-white.svg" alt="LevelUp Academy" className="h-6 w-auto max-w-[170px] object-contain object-left" />
+            <img src="/wba-logo-white.png" alt="World Bridge Academy" className="h-6 w-auto max-w-[170px] object-contain object-left" />
             <p className="mt-1.5 text-[9px] font-bold uppercase tracking-[0.16em] text-neutral-content/35">Platforma boshqaruvi</p>
           </div>
         )}
