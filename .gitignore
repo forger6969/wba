@@ -50,3 +50,6 @@ supabase/_test_*.sql.out
 *.xlsx
 
 !.env.example
+
+# LevelUp seed — PII, не коммитим
+levelup-academy/backend/scripts/wba-data.json
