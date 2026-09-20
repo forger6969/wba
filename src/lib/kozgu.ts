@@ -9,9 +9,11 @@ import { createAdminClient } from '@/lib/supabase/admin'
  * "to'liq ma'lumotni yuklab olish" uchun. Shuning uchun yo'nalish
  * BITTA: bazadan jadvalga. Jadvalga yozilgan narsa bazaga qaytmaydi.
  *
- * Har varaq to'liq qayta yoziladi (avval tozalanadi) — jadvalda
- * formula yo'q, faqat qiymat. Eski `Students_wba` ga TEGILMAYDI:
- * ko'zgu alohida jadvalda (KOZGU_SHEETS_ID).
+ * Ko'zgu Students_wba ning O'ZIDA, lekin ESKI VARAQLARGA TEGMAYDI:
+ * faqat `BAZA_` bilan boshlanadigan varaqlar yoziladi (yo'q bo'lsa
+ * ochiladi, bori har safar tozalanib qayta to'ldiriladi). Ularda
+ * formula yo'q — faqat qiymat, yuklab olishga qulay.
+ * Jadval ID: KOZGU_SHEETS_ID (Students_wba).
  */
 
 type Varaq = { nom: string; qatorlar: (string | number)[][] }
@@ -45,7 +47,7 @@ export async function kozguVaraqlari(): Promise<Varaq[]> {
 
   return [
     {
-      nom: 'Ma’lumot',
+      nom: 'BAZA_Malumot',
       qatorlar: [
         ['WBA — bazadan ko‘zgu'],
         ['Oxirgi yangilanish', vaqt],
@@ -63,28 +65,28 @@ export async function kozguVaraqlari(): Promise<Varaq[]> {
       ],
     },
     {
-      nom: 'O‘quvchilar',
+      nom: 'BAZA_Oquvchilar',
       qatorlar: [
         ['ID', 'F.I.Sh', 'Tug‘ilgan sana', 'Ota tel', 'Ona tel', 'Shaxsiy tel', 'Qo‘shilgan', 'Holat', 'Izoh'],
         ...(oquvchilar.data ?? []).map((o) => [o.id, o.fish, matn(o.tugilgan_sana), matn(o.ota_tel), matn(o.ona_tel), matn(o.shaxsiy_tel), matn(o.qoshilgan_sana), o.holat, matn(o.izoh)]),
       ],
     },
     {
-      nom: 'Guruhlar',
+      nom: 'BAZA_Guruhlar',
       qatorlar: [
         ['ID', 'Nom', 'Fan', 'Ustoz', 'Boshlanish', 'Tugash', 'Kun turi', 'Oylik narx', 'Sig‘im', 'Holat'],
         ...(guruhlar.data ?? []).map((g) => [g.id, g.nom, matn(g.subject_id), uNomi.get(g.teacher_id ?? '') ?? '', matn(g.boshlanish), matn(g.tugash), g.kun_turi, som(g.oylik_narx), g.sigim, g.holat]),
       ],
     },
     {
-      nom: 'Ustozlar',
+      nom: 'BAZA_Ustozlar',
       qatorlar: [
         ['ID', 'Ism', 'Telefon', 'Telegram ID', 'Holat'],
         ...(ustozlar.data ?? []).map((u) => [u.id, u.ism, matn(u.telefon), matn(u.telegram_id), u.holat]),
       ],
     },
     {
-      nom: 'Qatnashuv',
+      nom: 'BAZA_Qatnashuv',
       qatorlar: [
         ['Sheets ID', 'O‘quvchi ID', 'O‘quvchi', 'Guruh', 'Boshlandi', 'Tugadi', '1-chegirma', '1-necha oy', '2-chegirma', '2-necha oy', 'Sabab', 'Holat', 'Hisoblangan', 'To‘langan', 'Qarz'],
         ...(yozilishlar.data ?? []).map((y) => {
@@ -94,7 +96,7 @@ export async function kozguVaraqlari(): Promise<Varaq[]> {
       ],
     },
     {
-      nom: 'To‘lovlar',
+      nom: 'BAZA_Tolovlar',
       qatorlar: [
         ['ID', 'Sheets ID', 'Sana', 'O‘quvchi ID', 'O‘quvchi', 'Guruh', 'Davr', 'Summa', 'Usul', 'Tasdiqlangan', 'Bekor', 'Manba', 'Izoh'],
         ...(tolovlar.data ?? []).map((t) => {
@@ -104,7 +106,7 @@ export async function kozguVaraqlari(): Promise<Varaq[]> {
       ],
     },
     {
-      nom: 'Hisoblar',
+      nom: 'BAZA_Hisoblar',
       qatorlar: [
         ['Davr', 'O‘quvchi', 'Guruh', 'Summa', 'Chegirma', 'Holat'],
         ...(hisoblar.data ?? []).map((h) => {
@@ -114,7 +116,7 @@ export async function kozguVaraqlari(): Promise<Varaq[]> {
       ],
     },
     {
-      nom: 'Davomat',
+      nom: 'BAZA_Davomat',
       qatorlar: [
         ['Sana', 'Guruh', 'O‘quvchi ID', 'O‘quvchi', 'Holat'],
         ...((davomat.data ?? []) as unknown as { student_id: string; holat: string; lessons: { sana: string; group_id: string } | null }[])
@@ -123,7 +125,7 @@ export async function kozguVaraqlari(): Promise<Varaq[]> {
       ],
     },
     {
-      nom: 'Qarzdorlar',
+      nom: 'BAZA_Qarzdorlar',
       qatorlar: [
         ['O‘quvchi ID', 'F.I.Sh', 'Qarz', 'Ota tel', 'Ona tel', 'Shaxsiy tel', 'Guruhlar'],
         ...(qarzdorlar.data ?? []).map((q) => [q.student_id, q.fish, som(q.qarz), matn(q.ota_tel), matn(q.ona_tel), matn(q.shaxsiy_tel), matn(q.guruhlar)]),
