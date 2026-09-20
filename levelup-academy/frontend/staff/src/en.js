@@ -2712,7 +2712,7 @@ const en = {
   'login.title': 'Sign in',
   'login.rolesSubtitle': 'Super Admin · Admin · Teacher',
   'login.emailLabel': 'Login',
-  'login.loginPlaceholder': 'login or email',
+  'login.loginPlaceholder': 'name (e.g. diana)',
   'login.passwordLabel': 'Password',
   'login.signIn': 'Sign in',
   'login.or': 'or',

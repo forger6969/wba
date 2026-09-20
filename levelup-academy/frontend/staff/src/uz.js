@@ -2712,7 +2712,7 @@ const uz = {
   'login.title': 'Panelga kirish',
   'login.rolesSubtitle': "Superadmin · Administrator · O'qituvchi",
   'login.emailLabel': 'Login',
-  'login.loginPlaceholder': 'login yoki email',
+  'login.loginPlaceholder': 'ism (masalan diana)',
   'login.passwordLabel': 'Parol',
   'login.signIn': 'Kirish',
   'login.or': 'yoki',

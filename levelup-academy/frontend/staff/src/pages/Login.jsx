@@ -122,7 +122,10 @@ function LoginForm({ onForgot }) {
     if (!email.trim() || !password) { setError(t('login.enterEmailPassword')); return; }
     setBusy(true);
     try {
-      await login(email, password);
+      // WBA: foydalanuvchi faqat ismini kiritsa ('diana', 'jamshid') — tizim
+      // '@wba.uz' ni o'zi qo'shadi. '@' bo'lsa (email) — o'zgartirmaymiz.
+      const loginId = email.trim().includes('@') ? email.trim() : `${email.trim()}@wba.uz`;
+      await login(loginId, password);
       navigate(from, { replace: true });
     } catch (err) {
       if (err.status === 401) setError(t('login.invalidCredentials'));

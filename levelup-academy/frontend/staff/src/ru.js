@@ -2712,7 +2712,7 @@ const ru = {
   'login.title': 'Вход в панель',
   'login.rolesSubtitle': 'Суперадмин · Администратор · Учитель',
   'login.emailLabel': 'Логин',
-  'login.loginPlaceholder': 'логин или email',
+  'login.loginPlaceholder': 'имя (напр. diana)',
   'login.passwordLabel': 'Пароль',
   'login.signIn': 'Войти',
   'login.or': 'или',

@@ -1,6 +1,15 @@
 import { z } from 'zod';
 
 const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected date in YYYY-MM-DD format');
+
+// Toshkent (UTC+5, DST yo'q) bo'yicha bugungi sana. Kelajakdagi darsga
+// davomat qo'yish taqiqlanadi (WBA: o'qituvchi hali kelmagan kunga belgi qo'ymaydi).
+function todayTashkent() {
+  return new Date(Date.now() + 5 * 3600 * 1000).toISOString().slice(0, 10);
+}
+const notFutureDate = dateSchema.refine((d) => d <= todayTashkent(), {
+  message: 'Kelajakdagi sanaga davomat qo'yib bo'lmaydi',
+});
 const attendanceStatusEnum = z.enum(['present', 'absent', 'late', 'excused']);
 
 export const groupIdParamSchema = z.object({
@@ -8,7 +17,7 @@ export const groupIdParamSchema = z.object({
 });
 
 export const markAttendanceBodySchema = z.object({
-  lessonDate: dateSchema,
+  lessonDate: notFutureDate,
   records: z
     .array(
       z.object({
