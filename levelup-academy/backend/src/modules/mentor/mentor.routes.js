@@ -19,7 +19,7 @@ import studentsRoutes from './students/students.routes.js';
  */
 const router = Router();
 
-router.use(authenticate, orgAccessGate, authorize('mentor', 'admin'));
+router.use(authenticate, orgAccessGate, authorize('mentor', 'admin', 'ceo'));
 
 router.use('/attendance', attendanceRoutes);
 router.use('/homework', homeworkRoutes);

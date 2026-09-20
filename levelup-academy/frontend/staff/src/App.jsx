@@ -144,7 +144,7 @@ export default function App() {
             чужие роли (уводит на «/»), поэтому доступ админа не расширился.
             branch_manager получил тот же admin-компонент 07.08.2026 — скоуп
             по филиалу у обеих ролей уже одинаковый (authorize.js). */}
-        <Route path="/groups/:id" element={<SW><RoleView views={{ admin: AdminGroupDetail, branch_manager: AdminGroupDetail, mentor: MentorGroupWorkspace }} /></SW>} />
+        <Route path="/groups/:id" element={<SW><RoleView views={{ ceo: MentorGroupWorkspace, admin: AdminGroupDetail, branch_manager: AdminGroupDetail, mentor: MentorGroupWorkspace }} /></SW>} />
         <Route path="/reports" element={<SW><RoleView views={{ ceo: SuperReportsRedirect, admin: AdminReports, branch_manager: BranchManagerReports }} /></SW>} />
         {/* admin: AdminSettings убран — файл page/admin/Settings.jsx удалён (Abduloh),
             импорта не было (мёртвая ссылка), в adminNav такого пункта тоже нет. */}

@@ -57,6 +57,8 @@ function useMediaQuery(query) {
 const superNav = [
   { to: '/',           label: 'Дашборд',    labelKey: 'nav.dashboard', Icon: HiOutlineSquares2X2, end: true },
   { to: '/people',     label: 'Люди и клиенты', labelKey: 'nav.people', Icon: HiOutlineUserGroup },
+  // WBA: egasi/superadmin o'z guruhini yuritadi (2-akkauntsiz). mentor_id=o'zi.
+  { type: 'mentor-groups' },
   // WBA: bitta filial — 'Filiallar' bo'limi olib tashlandi
   { to: '/admins',     label: 'Сотрудники', labelKey: 'nav.admins', Icon: HiOutlineUsers },
   // Финансы владельца центра — вся организация (доход/расход/зарплаты/отчёты)
