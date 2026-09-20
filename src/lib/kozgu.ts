@@ -21,27 +21,45 @@ type Varaq = { nom: string; qatorlar: (string | number)[][] }
 const som = (n: unknown) => Number(n ?? 0)
 const matn = (v: unknown) => (v == null ? '' : String(v))
 
+/**
+ * Supabase bir so'rovda 1000 qatordan ko'p bermaydi — shuning uchun
+ * sahifalab olinadi (davomat allaqachon mingdan oshgan).
+ */
+const SAHIFA = 1000
+async function hammasi<T>(
+  soro: (dan: number, gacha: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
+): Promise<T[]> {
+  const chiq: T[] = []
+  for (let dan = 0; ; dan += SAHIFA) {
+    const { data, error } = await soro(dan, dan + SAHIFA - 1)
+    if (error) throw new Error(error.message)
+    const bolak = data ?? []
+    chiq.push(...bolak)
+    if (bolak.length < SAHIFA) return chiq
+  }
+}
+
 /** Bazadan hamma bo'limni o'qiydi va varaqlarga aylantiradi. */
 export async function kozguVaraqlari(): Promise<Varaq[]> {
   const db = createAdminClient()
 
   const [oquvchilar, guruhlar, ustozlar, yozilishlar, tolovlar, hisoblar, davomat, qarzdorlar, balans] = await Promise.all([
-    db.from('students').select('id, fish, tugilgan_sana, ota_tel, ona_tel, shaxsiy_tel, qoshilgan_sana, holat, izoh').order('id'),
-    db.from('groups').select('id, nom, subject_id, teacher_id, boshlanish, tugash, kun_turi, oylik_narx, sigim, holat').order('id'),
-    db.from('teachers').select('id, ism, telefon, telegram_id, holat').order('id'),
-    db.from('enrollments').select('id, sheets_id, student_id, group_id, boshlandi, tugadi, chegirma_summa, chegirma_oy, chegirma2_summa, chegirma2_oy, chegirma_sabab, holat').order('sheets_id'),
-    db.from('payments').select('id, sheets_id, sana, student_id, enrollment_id, davr, summa, usul, tasdiqlangan, bekor, izoh, manba').order('sana'),
-    db.from('invoices').select('enrollment_id, davr, summa, chegirma, holat').order('davr'),
-    db.from('attendance').select('student_id, holat, lessons(sana, group_id)').order('created_at'),
-    db.from('v_qarzdorlar').select('student_id, fish, qarz, ota_tel, ona_tel, shaxsiy_tel, guruhlar').order('qarz', { ascending: false }),
-    db.from('v_enrollment_balance').select('enrollment_id, hisoblangan, chegirma, tolangan, qarz'),
+    hammasi((a, b) => db.from('students').select('id, fish, tugilgan_sana, ota_tel, ona_tel, shaxsiy_tel, qoshilgan_sana, holat, izoh').order('id').range(a, b)),
+    hammasi((a, b) => db.from('groups').select('id, nom, subject_id, teacher_id, boshlanish, tugash, kun_turi, oylik_narx, sigim, holat').order('id').range(a, b)),
+    hammasi((a, b) => db.from('teachers').select('id, ism, telefon, telegram_id, holat').order('id').range(a, b)),
+    hammasi((a, b) => db.from('enrollments').select('id, sheets_id, student_id, group_id, boshlandi, tugadi, chegirma_summa, chegirma_oy, chegirma2_summa, chegirma2_oy, chegirma_sabab, holat').order('sheets_id').range(a, b)),
+    hammasi((a, b) => db.from('payments').select('id, sheets_id, sana, student_id, enrollment_id, davr, summa, usul, tasdiqlangan, bekor, izoh, manba').order('sana').range(a, b)),
+    hammasi((a, b) => db.from('invoices').select('enrollment_id, davr, summa, chegirma, holat').order('davr').range(a, b)),
+    hammasi((a, b) => db.from('attendance').select('student_id, holat, lessons(sana, group_id)').order('created_at').range(a, b)),
+    hammasi((a, b) => db.from('v_qarzdorlar').select('student_id, fish, qarz, ota_tel, ona_tel, shaxsiy_tel, guruhlar').order('qarz', { ascending: false }).range(a, b)),
+    hammasi((a, b) => db.from('v_enrollment_balance').select('enrollment_id, hisoblangan, chegirma, tolangan, qarz').range(a, b)),
   ])
 
-  const gNomi = new Map((guruhlar.data ?? []).map((g) => [g.id, g.nom]))
-  const oNomi = new Map((oquvchilar.data ?? []).map((o) => [o.id, o.fish]))
-  const uNomi = new Map((ustozlar.data ?? []).map((u) => [u.id, u.ism]))
-  const bal = new Map((balans.data ?? []).map((b) => [b.enrollment_id, b]))
-  const yozilish = new Map((yozilishlar.data ?? []).map((y) => [y.id, y]))
+  const gNomi = new Map(guruhlar.map((g) => [g.id, g.nom]))
+  const oNomi = new Map(oquvchilar.map((o) => [o.id, o.fish]))
+  const uNomi = new Map(ustozlar.map((u) => [u.id, u.ism]))
+  const bal = new Map(balans.map((b) => [b.enrollment_id, b]))
+  const yozilish = new Map(yozilishlar.map((y) => [y.id, y]))
 
   const vaqt = new Date().toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' })
 
@@ -56,40 +74,40 @@ export async function kozguVaraqlari(): Promise<Varaq[]> {
         ['Bu yerga yozilgan narsa bazaga QAYTMAYDI — ish sayt orqali qilinadi.'],
         ['Har varaq har safar to‘liq qayta yoziladi.'],
         [''],
-        ['O‘quvchilar', (oquvchilar.data ?? []).length],
-        ['Guruhlar', (guruhlar.data ?? []).length],
-        ['Ustozlar', (ustozlar.data ?? []).length],
-        ['Qatnashuv', (yozilishlar.data ?? []).length],
-        ['To‘lovlar', (tolovlar.data ?? []).length],
-        ['Davomat belgilari', (davomat.data ?? []).length],
+        ['O‘quvchilar', oquvchilar.length],
+        ['Guruhlar', guruhlar.length],
+        ['Ustozlar', ustozlar.length],
+        ['Qatnashuv', yozilishlar.length],
+        ['To‘lovlar', tolovlar.length],
+        ['Davomat belgilari', davomat.length],
       ],
     },
     {
       nom: 'BAZA_Oquvchilar',
       qatorlar: [
         ['ID', 'F.I.Sh', 'Tug‘ilgan sana', 'Ota tel', 'Ona tel', 'Shaxsiy tel', 'Qo‘shilgan', 'Holat', 'Izoh'],
-        ...(oquvchilar.data ?? []).map((o) => [o.id, o.fish, matn(o.tugilgan_sana), matn(o.ota_tel), matn(o.ona_tel), matn(o.shaxsiy_tel), matn(o.qoshilgan_sana), o.holat, matn(o.izoh)]),
+        ...oquvchilar.map((o) => [o.id, o.fish, matn(o.tugilgan_sana), matn(o.ota_tel), matn(o.ona_tel), matn(o.shaxsiy_tel), matn(o.qoshilgan_sana), o.holat, matn(o.izoh)]),
       ],
     },
     {
       nom: 'BAZA_Guruhlar',
       qatorlar: [
         ['ID', 'Nom', 'Fan', 'Ustoz', 'Boshlanish', 'Tugash', 'Kun turi', 'Oylik narx', 'Sig‘im', 'Holat'],
-        ...(guruhlar.data ?? []).map((g) => [g.id, g.nom, matn(g.subject_id), uNomi.get(g.teacher_id ?? '') ?? '', matn(g.boshlanish), matn(g.tugash), g.kun_turi, som(g.oylik_narx), g.sigim, g.holat]),
+        ...guruhlar.map((g) => [g.id, g.nom, matn(g.subject_id), uNomi.get(g.teacher_id ?? '') ?? '', matn(g.boshlanish), matn(g.tugash), g.kun_turi, som(g.oylik_narx), g.sigim, g.holat]),
       ],
     },
     {
       nom: 'BAZA_Ustozlar',
       qatorlar: [
         ['ID', 'Ism', 'Telefon', 'Telegram ID', 'Holat'],
-        ...(ustozlar.data ?? []).map((u) => [u.id, u.ism, matn(u.telefon), matn(u.telegram_id), u.holat]),
+        ...ustozlar.map((u) => [u.id, u.ism, matn(u.telefon), matn(u.telegram_id), u.holat]),
       ],
     },
     {
       nom: 'BAZA_Qatnashuv',
       qatorlar: [
         ['Sheets ID', 'O‘quvchi ID', 'O‘quvchi', 'Guruh', 'Boshlandi', 'Tugadi', '1-chegirma', '1-necha oy', '2-chegirma', '2-necha oy', 'Sabab', 'Holat', 'Hisoblangan', 'To‘langan', 'Qarz'],
-        ...(yozilishlar.data ?? []).map((y) => {
+        ...yozilishlar.map((y) => {
           const b = bal.get(y.id)
           return [matn(y.sheets_id), y.student_id, oNomi.get(y.student_id) ?? '', gNomi.get(y.group_id) ?? y.group_id, matn(y.boshlandi), matn(y.tugadi), som(y.chegirma_summa), matn(y.chegirma_oy), som(y.chegirma2_summa), matn(y.chegirma2_oy), matn(y.chegirma_sabab), y.holat, som(b?.hisoblangan), som(b?.tolangan), som(b?.qarz)]
         }),
@@ -99,7 +117,7 @@ export async function kozguVaraqlari(): Promise<Varaq[]> {
       nom: 'BAZA_Tolovlar',
       qatorlar: [
         ['ID', 'Sheets ID', 'Sana', 'O‘quvchi ID', 'O‘quvchi', 'Guruh', 'Davr', 'Summa', 'Usul', 'Tasdiqlangan', 'Bekor', 'Manba', 'Izoh'],
-        ...(tolovlar.data ?? []).map((t) => {
+        ...tolovlar.map((t) => {
           const y = t.enrollment_id ? yozilish.get(t.enrollment_id) : null
           return [t.id, matn(t.sheets_id), matn(t.sana), t.student_id, oNomi.get(t.student_id) ?? '', y ? (gNomi.get(y.group_id) ?? y.group_id) : '', t.davr, som(t.summa), matn(t.usul), t.tasdiqlangan ? 'ha' : '', t.bekor ? 'ha' : '', matn(t.manba), matn(t.izoh)]
         }),
@@ -109,7 +127,7 @@ export async function kozguVaraqlari(): Promise<Varaq[]> {
       nom: 'BAZA_Hisoblar',
       qatorlar: [
         ['Davr', 'O‘quvchi', 'Guruh', 'Summa', 'Chegirma', 'Holat'],
-        ...(hisoblar.data ?? []).map((h) => {
+        ...hisoblar.map((h) => {
           const y = yozilish.get(h.enrollment_id)
           return [h.davr, y ? (oNomi.get(y.student_id) ?? y.student_id) : '', y ? (gNomi.get(y.group_id) ?? y.group_id) : '', som(h.summa), som(h.chegirma), h.holat]
         }),
@@ -119,7 +137,7 @@ export async function kozguVaraqlari(): Promise<Varaq[]> {
       nom: 'BAZA_Davomat',
       qatorlar: [
         ['Sana', 'Guruh', 'O‘quvchi ID', 'O‘quvchi', 'Holat'],
-        ...((davomat.data ?? []) as unknown as { student_id: string; holat: string; lessons: { sana: string; group_id: string } | null }[])
+        ...(davomat as unknown as { student_id: string; holat: string; lessons: { sana: string; group_id: string } | null }[])
           .map((a) => [matn(a.lessons?.sana), gNomi.get(a.lessons?.group_id ?? '') ?? matn(a.lessons?.group_id), a.student_id, oNomi.get(a.student_id) ?? '', a.holat])
           .sort((x, y) => String(x[0]).localeCompare(String(y[0]))),
       ],
@@ -128,7 +146,7 @@ export async function kozguVaraqlari(): Promise<Varaq[]> {
       nom: 'BAZA_Qarzdorlar',
       qatorlar: [
         ['O‘quvchi ID', 'F.I.Sh', 'Qarz', 'Ota tel', 'Ona tel', 'Shaxsiy tel', 'Guruhlar'],
-        ...(qarzdorlar.data ?? []).map((q) => [q.student_id, q.fish, som(q.qarz), matn(q.ota_tel), matn(q.ona_tel), matn(q.shaxsiy_tel), matn(q.guruhlar)]),
+        ...qarzdorlar.map((q) => [q.student_id, q.fish, som(q.qarz), matn(q.ota_tel), matn(q.ona_tel), matn(q.shaxsiy_tel), matn(q.guruhlar)]),
       ],
     },
   ]
