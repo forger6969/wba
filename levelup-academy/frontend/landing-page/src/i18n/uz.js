@@ -57,11 +57,11 @@ export default {
   },
 
   home: {
-    badge: "O'quv markazi uchun CRM",
-    h1: "O'quv markazi — to'liq nazorat ostida",
-    lead: "To'lovlar, davomat, imtihonlar, motivatsiya va chatlar — bitta tizimda. Olti rol, onlayn hisoblagich va Telegram bildirishnomalari darhol ishlaydi.",
-    ctaPrimary: 'Ariza qoldirish',
-    ctaSecondary: "Imkoniyatlarni ko'rish",
+    badge: 'Toshkentdagi til markazi',
+    h1: 'World Bridge Academy — ishonchli ingliz tili va IELTS',
+    lead: "2018 yildan beri Toshkentdagi til markazi. Bolalar va kattalar uchun ingliz tili, IELTS'ga tayyorgarlik, tajribali o'qituvchilar va qulay jadval.",
+    ctaPrimary: 'Probniy darsga yozilish',
+    ctaSecondary: "Biz bilan bog'lanish",
 
     dash: {
       title: 'Administrator paneli',

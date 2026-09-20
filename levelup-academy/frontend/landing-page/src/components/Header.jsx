@@ -47,12 +47,11 @@ export default function Header() {
     };
   }, [open]);
 
+  // WBA: bu bitta til markazi, SaaS sotuvchi emas — LevelUp'ning platforma
+  // sahifalari (tariflar, raqobatchilar bilan taqqoslash, jamoa) menyudan
+  // olib tashlandi. Faqat Kontaktlar (probniy darsga yozilish) qoldi.
   const links = [
-    { to: lp('/landing/features'), label: t.nav.features },
-    { to: lp('/landing/roles'), label: t.nav.roles },
-    { to: lp('/landing/finance'), label: t.nav.finance },
-    { to: lp('/landing/pricing'), label: t.nav.pricing },
-    { to: lp('/landing/gamification'), label: t.nav.gamification },
+    { to: lp('/landing/contacts'), label: t.nav.contacts },
   ];
 
   // Переключатель ведёт на ЭТУ ЖЕ страницу на другом языке, а не на главную:
@@ -85,7 +84,7 @@ export default function Header() {
             <span className="header__logo-mark">
               <img src="/logo-mark.svg" alt="" width="30" height="30" />
             </span>
-            <span className="header__brand"><strong>LevelUp</strong><small>Academy</small></span>
+            <span className="header__brand"><strong>World&nbsp;Bridge</strong><small>Academy</small></span>
           </Link>
 
           {/* Десктоп-навигация */}
@@ -130,7 +129,7 @@ export default function Header() {
       />
       <aside className={`drawer${open ? ' drawer--open' : ''}`}>
         <div className="drawer__head">
-          <span className="drawer__brand"><img src="/logo-mark.svg" alt="" width="28" height="28" /><span>LevelUp Academy</span></span>
+          <span className="drawer__brand"><img src="/logo-mark.svg" alt="" width="28" height="28" /><span>World Bridge Academy</span></span>
           <button type="button" className="drawer__close" onClick={close} aria-label={t.nav.menu}>×</button>
         </div>
         <nav className="drawer__nav" aria-label={t.nav.mobileLabel}>

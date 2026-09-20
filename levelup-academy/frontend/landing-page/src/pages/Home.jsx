@@ -63,7 +63,7 @@ export default function Home() {
               <Link to={lp('/landing/contacts')} className="btn btn--accent btn--lg">
                 {h.ctaPrimary}
               </Link>
-              <Link to={lp('/landing/features')} className="btn btn--outline btn--lg">
+              <Link to={lp('/landing/contacts')} className="btn btn--outline btn--lg">
                 {h.ctaSecondary}
               </Link>
             </div>

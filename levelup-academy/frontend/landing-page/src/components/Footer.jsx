@@ -12,7 +12,7 @@ export default function Footer() {
           <div className="footer__brand">
             <Link to={lp('/landing')} className="footer__brand-lockup">
               <img src="/logo-mark.svg" alt="" width="30" height="30" />
-              <strong>LevelUp</strong><span>Academy</span>
+              <strong>World Bridge</strong><span>Academy</span>
             </Link>
             <p>{t.footer.tagline}</p>
           </div>
@@ -45,7 +45,7 @@ export default function Footer() {
             <a href="https://t.me/levelupacademycrm" target="_blank" rel="noreferrer">Telegram</a>
           </div>
         </div>
-        <div className="footer__wordmark" aria-hidden="true">LevelUp<span>Academy</span></div>
+        <div className="footer__wordmark" aria-hidden="true">World Bridge<span>Academy</span></div>
         <div className="footer__bottom">
           <span>{t.footer.rights}</span>
           <span>{t.footer.madeIn}</span>

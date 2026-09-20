@@ -60,11 +60,11 @@ export default {
   },
 
   home: {
-    badge: 'School management software',
-    h1: 'Your learning center, fully under control',
-    lead: 'Payments, attendance, exams, gamification and chats — in one system. Six roles, a live online counter and Telegram notifications out of the box.',
-    ctaPrimary: 'Request a demo',
-    ctaSecondary: 'See the features',
+    badge: 'Language center in Tashkent',
+    h1: 'World Bridge Academy — confident English & IELTS',
+    lead: 'A language center in Tashkent since 2018. English for kids and adults, IELTS preparation, experienced teachers and a convenient schedule near you.',
+    ctaPrimary: 'Book a trial lesson',
+    ctaSecondary: 'Contact us',
 
     dash: {
       title: 'Administrator dashboard',
