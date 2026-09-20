@@ -27,10 +27,14 @@ const schema = z.object({
 
   JWT_ACCESS_SECRET: z.string().min(32),
 
-  S3_ENDPOINT: z.string().url(),
+  // S3/Storj — ixtiyoriy (WBA: hozircha bepul, fayl-saqlash keyin sotib olinadi).
+  // Bo'sh bo'lsa server ko'tariladi, faqat fayl yuklash (avatar, chek, video)
+  // runtime'da xato beradi — s3.js buni tekshiradi. Ilgari bu uchtasi majburiy
+  // edi va S3 kalitisiz server umuman ishga tushmasdi.
+  S3_ENDPOINT: z.string().url().optional().or(z.literal('')),
   S3_REGION: z.string().default('us-east-1'),
-  S3_ACCESS_KEY: z.string().min(1),
-  S3_SECRET_KEY: z.string().min(1),
+  S3_ACCESS_KEY: z.string().optional().or(z.literal('')),
+  S3_SECRET_KEY: z.string().optional().or(z.literal('')),
   S3_BUCKET: z.string().default('levelup'),
 
   SMTP_HOST: z.string().default('localhost'),

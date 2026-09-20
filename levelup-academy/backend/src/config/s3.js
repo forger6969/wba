@@ -9,12 +9,17 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomUUID } from 'node:crypto';
 import { env } from './env.js';
 
+// S3 sozlanganmi (WBA: hozircha bepul, S3 keyin ulanadi). Bo'sh bo'lsa
+// klient baribir quriladi, lekin bo'sh endpoint konstruktorda xato bermasin
+// uchun undefined uzatamiz — real xato faqat fayl yuklashda chiqadi.
+export const s3Configured = Boolean(env.S3_ENDPOINT && env.S3_ACCESS_KEY && env.S3_SECRET_KEY);
+
 export const s3 = new S3Client({
-  endpoint: env.S3_ENDPOINT,
+  endpoint: env.S3_ENDPOINT || undefined,
   region: env.S3_REGION,
   credentials: {
-    accessKeyId: env.S3_ACCESS_KEY,
-    secretAccessKey: env.S3_SECRET_KEY,
+    accessKeyId: env.S3_ACCESS_KEY || 'unset',
+    secretAccessKey: env.S3_SECRET_KEY || 'unset',
   },
   forcePathStyle: true, // required for MinIO
 });
