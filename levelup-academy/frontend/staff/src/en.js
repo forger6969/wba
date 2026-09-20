@@ -31,7 +31,7 @@ const en = {
   'nav.settings': 'Settings',
   'nav.students': 'Students',
   'nav.groups': 'Groups',
-  'nav.mentors': 'Mentors',
+  'nav.mentors': 'Teachers',
   'nav.chat': 'Chat',
   'nav.payments': 'Payments',
   'nav.branch': 'Branch',
@@ -408,11 +408,11 @@ const en = {
   'status.rejected': 'Rejected',
 
   // roles
-  'role.ceo': 'CEO (Head)',
+  'role.ceo': 'Super Admin',
   'role.admin': 'Administrator',
   'role.branch_manager': 'Branch Manager',
   'role.finance_manager': 'Finance Manager',
-  'role.mentor': 'Mentor',
+  'role.mentor': 'Teacher',
   'role.methodist': 'Methodist',
   'role.student': 'Student',
   'role.parent': 'Parent',
@@ -2710,7 +2710,7 @@ const en = {
   'login.googleAccountNotLinked': 'This Google account is not linked',
   'login.couldNotLoginGoogle': 'Could not sign in with Google',
   'login.title': 'Sign in',
-  'login.rolesSubtitle': 'CEO · Admin · Branch Manager · Mentor · Methodist',
+  'login.rolesSubtitle': 'Super Admin · Admin · Teacher',
   'login.emailLabel': 'Login',
   'login.loginPlaceholder': 'login or email',
   'login.passwordLabel': 'Password',
@@ -2740,7 +2740,7 @@ const en = {
   'login.feature2': 'Finances, payments, and reports',
   'login.feature3': 'Tests, homework, and attendance',
   'login.dashboardTitle': 'Dashboard',
-  'login.dashboardSubtitle': 'CEO, Admin, Branch Manager, Mentor, and Methodist — manage your organization from a single panel.',
+  'login.dashboardSubtitle': 'Super Admin, Admin and Teacher — manage your center from one panel.',
   'login.demoAccessTitle': 'Demo access (no backend)',
 
   /* ─── App.jsx ─── */

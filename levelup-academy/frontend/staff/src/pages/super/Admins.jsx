@@ -235,10 +235,9 @@ function AddStaffButton({ onPick, disabled }) {
     >
       {(close) => (
         <>
+          {/* WBA: faqat admin va o'qituvchi (mentor). methodist/branch_manager/employee
+              WBA rol modelida yo'q — yashirilgan (Faza 1). */}
           <DropdownItem onClick={() => { onPick('admin'); close(); }}>{t('super.admins.pickAdmin')}</DropdownItem>
-          <DropdownItem onClick={() => { onPick('methodist'); close(); }}>{t('super.admins.pickMethodist')}</DropdownItem>
-          <DropdownItem onClick={() => { onPick('branch_manager'); close(); }}>{t('super.admins.pickBranchManager')}</DropdownItem>
-          <DropdownItem onClick={() => { onPick('employee'); close(); }}>{t('super.admins.pickEmployee')}</DropdownItem>
           <DropdownItem onClick={() => { onPick('mentor'); close(); }}>{t('super.admins.pickMentor')}</DropdownItem>
         </>
       )}

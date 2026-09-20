@@ -31,7 +31,7 @@ const ru = {
   'nav.settings': 'Настройки',
   'nav.students': 'Студенты',
   'nav.groups': 'Группы',
-  'nav.mentors': 'Менторы',
+  'nav.mentors': 'Учителя',
   'nav.chat': 'Чат',
   'nav.payments': 'Платежи',
   'nav.branch': 'Филиал',
@@ -408,11 +408,11 @@ const ru = {
   'status.rejected': 'Отклонена',
 
   // roles
-  'role.ceo': 'CEO (Руководитель)',
+  'role.ceo': 'Суперадмин',
   'role.admin': 'Администратор',
   'role.branch_manager': 'Управляющий филиалом',
   'role.finance_manager': 'Финансовый менеджер',
-  'role.mentor': 'Преподаватель',
+  'role.mentor': 'Учитель',
   'role.methodist': 'Методист',
   'role.student': 'Ученик',
   'role.parent': 'Родитель',
@@ -2710,7 +2710,7 @@ const ru = {
   'login.googleAccountNotLinked': 'Этот Google-аккаунт не привязан',
   'login.couldNotLoginGoogle': 'Не удалось войти через Google',
   'login.title': 'Вход в панель',
-  'login.rolesSubtitle': 'CEO · Администратор · Branch Manager · Ментор · Методист',
+  'login.rolesSubtitle': 'Суперадмин · Администратор · Учитель',
   'login.emailLabel': 'Логин',
   'login.loginPlaceholder': 'логин или email',
   'login.passwordLabel': 'Пароль',
@@ -2740,7 +2740,7 @@ const ru = {
   'login.feature2': 'Финансы, платежи и отчёты',
   'login.feature3': 'Тесты, домашние задания и посещаемость',
   'login.dashboardTitle': 'Панель управления',
-  'login.dashboardSubtitle': 'CEO, Администратор, Branch Manager, Ментор и Методист — управляйте своей организацией из одной панели.',
+  'login.dashboardSubtitle': 'Суперадмин, администратор и учитель — управляйте центром из одной панели.',
   'login.demoAccessTitle': 'Демо-доступ (без бэкенда)',
 
   /* ─── App.jsx ─── */

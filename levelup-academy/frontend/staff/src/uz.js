@@ -31,7 +31,7 @@ const uz = {
   'nav.settings': 'Sozlamalar',
   'nav.students': "O'quvchilar",
   'nav.groups': 'Guruhlar',
-  'nav.mentors': 'Mentorlar',
+  'nav.mentors': 'O'qituvchilar',
   'nav.chat': 'Chat',
   'nav.payments': "To'lovlar",
   'nav.branch': 'Filial',
@@ -408,11 +408,11 @@ const uz = {
   'status.rejected': 'Rad etilgan',
 
   // roles
-  'role.ceo': 'CEO (Rahbar)',
+  'role.ceo': 'Superadmin',
   'role.admin': 'Administrator',
   'role.branch_manager': 'Filial Boshqaruvchisi',
   'role.finance_manager': 'Moliya Menejeri',
-  'role.mentor': 'Mentor',
+  'role.mentor': 'O'qituvchi',
   'role.methodist': 'Metodist',
   'role.student': "O'quvchi",
   'role.parent': 'Ota-ona',
@@ -2710,7 +2710,7 @@ const uz = {
   'login.googleAccountNotLinked': 'Bu Google akkaunt ulanmagan',
   'login.couldNotLoginGoogle': 'Google orqali kirib bo\'lmadi',
   'login.title': 'Panelga kirish',
-  'login.rolesSubtitle': 'CEO · Administrator · Branch Manager · Mentor · Metodist',
+  'login.rolesSubtitle': 'Superadmin · Administrator · O'qituvchi',
   'login.emailLabel': 'Login',
   'login.loginPlaceholder': 'login yoki email',
   'login.passwordLabel': 'Parol',
@@ -2740,7 +2740,7 @@ const uz = {
   'login.feature2': 'Moliya, to\'lovlar va hisobotlar',
   'login.feature3': 'Testlar, uy vazifalari va davomat',
   'login.dashboardTitle': 'Boshqaruv paneli',
-  'login.dashboardSubtitle': 'CEO, Administrator, Branch Manager, Mentor va Metodist — tashkilotingizni bitta paneldan boshqaring.',
+  'login.dashboardSubtitle': 'Superadmin, administrator va o'qituvchi — markazni bitta paneldan boshqaring.',
   'login.demoAccessTitle': 'Demo kirish (backendsiz)',
 
   /* ─── App.jsx ─── */
