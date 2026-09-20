@@ -2,7 +2,8 @@
  * Faza 0 — Students_wba (Google Sheets) → Postgres.
  *
  *   npm run migrate:dry      faqat ko'rsatadi va solishtiradi, yozmaydi
- *   npm run migrate          bazaga yozadi
+ *   npm run migrate -- --tasdiq   bazaga yozadi (20.09 dan tasdiq shart:
+ *                                  sayt asosiy manba, Sheets — ko'zgu)
  *   npm run migrate -- --davomat    davomat jurnallarini ham ko'chiradi
  *
  * Jadval allaqachon normalizatsiya qilingan, shuning uchun bu skript
@@ -931,6 +932,20 @@ Yozishni to'xtatadi (${toxtatuvchilar.length}):`)
   if (DRY) {
     console.log('\nQuruq yurish tugadi. Yozish uchun --dry-run siz ishga tushiring.')
     return
+  }
+
+  /* ── QULF (20.09) ──
+     Sayt endi ASOSIY manba, Sheets esa ko'zgu (faqat ko'rish). Bu skript
+     teskari yo'nalishda yozadi: Sheets → baza. Bilmasdan yurgizilsa,
+     saytda kiritilgan yangi to'lov/davomat eski Sheets qiymati bilan
+     ustidan yozilishi mumkin. Shuning uchun ataylab tasdiq kerak. */
+  if (!process.argv.includes('--tasdiq')) {
+    throw new Error(
+      'Sayt endi asosiy manba, Sheets — ko‘zgu. Bu skript Sheets‘dan bazaga yozadi ' +
+        'va saytdagi yangi ma’lumotni ustidan yozishi mumkin.\n' +
+        'Ko‘rish uchun:        npm run migrate:dry\n' +
+        'Rostdan kerak bo‘lsa: npm run migrate -- --tasdiq',
+    )
   }
 
   if (s.farqlar.length > 0 || toxtatuvchilar.length > 0) {
