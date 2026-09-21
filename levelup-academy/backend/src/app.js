@@ -26,6 +26,7 @@ import adminRoutes from './modules/admin/admin.routes.js';
 import branchManagerRoutes from './modules/branch-manager/branch-manager.routes.js';
 import methodistRoutes from './modules/methodist/methodist.routes.js';
 import telegramRoutes from './modules/telegram/telegram.routes.js';
+import trialsRoutes from './modules/trials/trials.routes.js';
 import { emitMainDashboardChanged } from './sockets/io.js';
 
 /**
@@ -181,6 +182,7 @@ export function createApp() {
   app.use('/api/main', healthRoutes); // Main Admin: настоящая проверка БД/Redis/S3 (Karis 26.08.2026)
   app.use('/api/main/invoices', platformBillingRoutes); // Main Admin: счета и долги партнёров (Karis 26.08.2026)
   app.use('/api/super', superRoutes); // CEO: филиалы + админы своей организации
+  app.use('/api/trials', trialsRoutes); // Probniy darslar — admin + ceo (WBA)
   app.use('/api/finance', financeRoutes); // FINANCE MANAGER: доход/расход всей организации, без филиалов/админов
 app.use('/api/admin', adminRoutes); // K-ADMIN: филиал — дашборд, расходы, студенты, группы
 app.use('/api/branch-manager', branchManagerRoutes); // BRANCH MANAGER: дашборд/доход/расход/отчёты/карточка своего филиала
