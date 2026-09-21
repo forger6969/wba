@@ -8,7 +8,7 @@ function todayTashkent() {
   return new Date(Date.now() + 5 * 3600 * 1000).toISOString().slice(0, 10);
 }
 const notFutureDate = dateSchema.refine((d) => d <= todayTashkent(), {
-  message: 'Kelajakdagi sanaga davomat qo'yib bo'lmaydi',
+  message: "Kelajakdagi sanaga davomat qo'yib bo'lmaydi",
 });
 const attendanceStatusEnum = z.enum(['present', 'absent', 'late', 'excused']);
 
