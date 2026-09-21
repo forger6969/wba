@@ -59,6 +59,7 @@ const superNav = [
   { to: '/people',     label: 'Люди и клиенты', labelKey: 'nav.people', Icon: HiOutlineUserGroup },
   // WBA: egasi/superadmin o'z guruhini yuritadi (2-akkauntsiz). mentor_id=o'zi.
   { type: 'mentor-groups' },
+  { to: '/trials', label: 'Пробные уроки', labelKey: 'nav.trials', Icon: HiOutlineAcademicCap },
   // WBA: bitta filial — 'Filiallar' bo'limi olib tashlandi
   { to: '/admins',     label: 'Сотрудники', labelKey: 'nav.admins', Icon: HiOutlineUsers },
   // Финансы владельца центра — вся организация (доход/расход/зарплаты/отчёты)
@@ -104,6 +105,7 @@ const superNav = [
 const adminNav = [
   { to: '/',          label: 'Дашборд',     labelKey: 'nav.dashboard', Icon: HiOutlineSquares2X2, end: true },
   { to: '/students',  label: 'Студенты',    labelKey: 'nav.students', Icon: HiOutlineAcademicCap },
+  { to: '/trials',    label: 'Пробные уроки', labelKey: 'nav.trials', Icon: HiOutlineCalendarDays },
   { to: '/groups',    label: 'Группы',      labelKey: 'nav.groups', Icon: HiOutlineUsers },
   { to: '/mentors',   label: 'Менторы',     labelKey: 'nav.mentors', Icon: HiOutlineUserCircle },
   { to: '/chat',      label: 'Чат',         labelKey: 'nav.chat', Icon: HiOutlineChatBubbleLeftRight },

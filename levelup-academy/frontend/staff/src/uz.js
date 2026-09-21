@@ -1,6 +1,7 @@
 const uz = {
   // nav
   'nav.dashboard': 'Boshqaruv',
+  'nav.trials': 'Probniy darslar',
   'nav.income': 'Daromad',
   'nav.expenses': 'Xarajatlar',
   'nav.salaries': 'Maoshlar',

@@ -60,6 +60,7 @@ const MentorDashboard = lazy(() => import('./pages/mentor/Dashboard.jsx'));
 const MentorChat = lazy(() => import('./pages/mentor/Chat.jsx'));
 const ManagerChat = lazy(() => import('./pages/branch-manager/Chat.jsx'));
 const MentorGroups = lazy(() => import('./pages/mentor/Groups.jsx'));
+const Trials = lazy(() => import('./pages/trials/Trials.jsx'));
 const MentorGroupWorkspace = lazy(() => import('./pages/mentor/group/GroupWorkspace.jsx'));
 const MentorProfile = lazy(() => import('./pages/mentor/Profile.jsx'));
 const MentorStudents = lazy(() => import('./pages/mentor/Students.jsx'));
@@ -145,6 +146,7 @@ export default function App() {
             branch_manager получил тот же admin-компонент 07.08.2026 — скоуп
             по филиалу у обеих ролей уже одинаковый (authorize.js). */}
         <Route path="/groups/:id" element={<SW><RoleView views={{ ceo: MentorGroupWorkspace, admin: AdminGroupDetail, branch_manager: AdminGroupDetail, mentor: MentorGroupWorkspace }} /></SW>} />
+        <Route path="/trials" element={<SW><RoleView views={{ ceo: Trials, admin: Trials, branch_manager: Trials }} /></SW>} />
         <Route path="/reports" element={<SW><RoleView views={{ ceo: SuperReportsRedirect, admin: AdminReports, branch_manager: BranchManagerReports }} /></SW>} />
         {/* admin: AdminSettings убран — файл page/admin/Settings.jsx удалён (Abduloh),
             импорта не было (мёртвая ссылка), в adminNav такого пункта тоже нет. */}

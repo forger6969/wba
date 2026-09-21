@@ -1,6 +1,7 @@
 const ru = {
   // nav
   'nav.dashboard': 'Дашборд',
+  'nav.trials': 'Пробные уроки',
   'nav.income': 'Доходы',
   'nav.expenses': 'Расходы',
   'nav.salaries': 'Зарплаты',

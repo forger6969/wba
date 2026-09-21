@@ -2393,6 +2393,12 @@ export const api = {
   // -------- GENERIC METHOD (used by Chat.jsx) --------
   get: (path, config = {}) => request(path, { method: 'GET', token: config.token }).then((data) => ({ data })),
 
+  // -------- PROBNIY DARSLAR (trials) — admin + ceo --------
+  listTrials: (token, status) => request(`/trials${status ? `?status=${status}` : ''}`, { token }),
+  createTrial: (token, body) => request('/trials', { method: 'POST', token, body }),
+  updateTrial: (token, id, body) => request(`/trials/${id}`, { method: 'PATCH', token, body }),
+  deleteTrial: (token, id) => request(`/trials/${id}`, { method: 'DELETE', token }),
+
   // -------- PROFILE (любая роль) --------
   // Бэкенд: GET/PATCH /api/users/me. PATCH принимает только firstName,
   // lastName, email, avatarKey — смены пароля в кабинете у API нет,

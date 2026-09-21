@@ -1,6 +1,7 @@
 const en = {
   // nav
   'nav.dashboard': 'Dashboard',
+  'nav.trials': 'Trial lessons',
   'nav.income': 'Income',
   'nav.expenses': 'Expenses',
   'nav.salaries': 'Salaries',
