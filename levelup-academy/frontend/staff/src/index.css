@@ -59,7 +59,14 @@ body {
   --border: #dce5d4;
 
   /* Text */
-  --text: #ffffff;
+  /* Oq (#ffffff) edi — tungi tema olib tashlanganda qolib ketgan qoldiq.
+     Panel faqat oq fonda ishlaydi, shuning uchun har bir `var(--text)` oq
+     fonda oq matn berardi. Eng og'rig'i — modal ichidagi maydonlar:
+     `.modal .input-bordered, .modal .select-bordered { color: var(--text) }`
+     (quyida), ya'ni probniy qo'shish, to'lov kiritish kabi oynalarda odam
+     yozayotgan matnini ko'rmasdi. Endi tema matn rangi bilan bir xil quyuq
+     rang — `base-content: #16210f` (tailwind.config.js). */
+  --text: #16210f;
   --text-secondary: #5c6b53;
   --text-muted: #7d8c73;
 
@@ -525,7 +532,10 @@ html {
   --mt-surface: #f6faef;
   --mt-surface-warm: #F6FBEA;
   --mt-border: #e2ead6;
-  --mt-text: #ffffff;
+  /* Xuddi shu xato: bu rang metodist maydonlariga `background: #fff` ustiga
+     qo'yiladi (.mt-input, .mt-textarea, .mt-select — quyida), qolgan joyda
+     sarlavha va raqamlar rangi. Oq bo'lsa hech biri ko'rinmaydi. */
+  --mt-text: #16210f;
   --mt-text-muted: #5c6b53;
   --mt-success: #15803d;
   --mt-warning: #b45309;
