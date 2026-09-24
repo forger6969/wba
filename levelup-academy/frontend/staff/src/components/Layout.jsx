@@ -228,6 +228,7 @@ function MentorGroupsNav({ collapsed, onExpandSidebar }) {
   const { data } = useMentorGroups();
   const location = useLocation();
   const { t } = useTranslation();
+  const { user } = useAuth(); // rolga qarab ish stoli yoki admin kartasi
   const groups = data?.data || [];
 
   const insideGroup = location.pathname.startsWith('/groups');
@@ -282,11 +283,17 @@ function MentorGroupsNav({ collapsed, onExpandSidebar }) {
             </li>
           ) : (
             groups.map((g) => {
-              const active = location.pathname === `/groups/${g.id}`;
+              /* Ustoz uchun /groups/:id — bu uning ish stoli. Superadmin uchun
+                 esa o'sha manzilda endi admin kartasi turadi (istalgan guruh),
+                 shuning uchun "guruhlarim" uni ish stoliga — /ish ga olib
+                 boradi. Aks holda superadmin o'z guruhida testlar va koinlarni
+                 yo'qotardi. */
+              const to = user?.role === 'ceo' ? `/groups/${g.id}/ish` : `/groups/${g.id}`;
+              const active = location.pathname === to;
               return (
                 <li key={g.id}>
                   <NavLink
-                    to={`/groups/${g.id}`}
+                    to={to}
                     className="block rounded-lg px-3 py-2 text-[13px] transition-colors truncate"
                     style={{
                       color: active ? '#dc2626' : 'rgba(232, 239, 226, 0.5)',

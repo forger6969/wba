@@ -139,13 +139,25 @@ export default function App() {
 
         {/* Shared paths dispatched by role */}
         <Route path="/chat" element={<SW><RoleView views={{ mentor: MentorChat, admin: AdminChat, employee: ManagerChat }} /></SW>} />
-        <Route path="/groups" element={<SW><RoleView views={{ ceo: SuperGroups, admin: AdminGroups, branch_manager: AdminGroups, mentor: MentorGroups }} /></SW>} />
+        {/* WBA 24.09.2026: superadmin endi admin ekranlarini ko'radi.
+            Avval u SuperGroups/SuperStudents'ga tushardi — u yerda guruh ham,
+            o'quvchi ham qo'shib bo'lmasdi, chunki bu faqat o'qish uchun
+            ekranlar. Backend tomonda /api/admin unga ochildi. */}
+        <Route path="/groups" element={<SW><RoleView views={{ ceo: AdminGroups, admin: AdminGroups, branch_manager: AdminGroups, mentor: MentorGroups }} /></SW>} />
         {/* Карточка группы. У админа она была под RoleGuard(['admin']); теперь
             тот же путь обслуживает и ментора — RoleView так же не пускает
             чужие роли (уводит на «/»), поэтому доступ админа не расширился.
             branch_manager получил тот же admin-компонент 07.08.2026 — скоуп
             по филиалу у обеих ролей уже одинаковый (authorize.js). */}
-        <Route path="/groups/:id" element={<SW><RoleView views={{ ceo: MentorGroupWorkspace, admin: AdminGroupDetail, branch_manager: AdminGroupDetail, mentor: MentorGroupWorkspace }} /></SW>} />
+        {/* Guruh kartasi: superadmin endi ISTALGAN guruhni ochadi va tahrirlaydi
+            (davomat kalendari shu yerda). Ilgari u faqat o'zi ustoz bo'lgan
+            guruhni ko'rardi. */}
+        <Route path="/groups/:id" element={<SW><RoleView views={{ ceo: AdminGroupDetail, admin: AdminGroupDetail, branch_manager: AdminGroupDetail, mentor: MentorGroupWorkspace }} /></SW>} />
+        {/* O'z guruhini yuritish stoli — testlar, koinlar, statistika. Admin
+            kartasida bu bo'limlar yo'q, shuning uchun superadmin uchun ish stoli
+            alohida manzilda saqlandi: yon menyudagi "guruhlarim" shu yerga
+            olib boradi (components/Layout.jsx). */}
+        <Route path="/groups/:id/ish" element={<SW><RoleView views={{ ceo: MentorGroupWorkspace, mentor: MentorGroupWorkspace }} /></SW>} />
         <Route path="/trials" element={<SW><RoleView views={{ ceo: Trials, admin: Trials, branch_manager: Trials }} /></SW>} />
         <Route path="/reports" element={<SW><RoleView views={{ ceo: SuperReportsRedirect, admin: AdminReports, branch_manager: BranchManagerReports }} /></SW>} />
         {/* admin: AdminSettings убран — файл page/admin/Settings.jsx удалён (Abduloh),
@@ -155,7 +167,7 @@ export default function App() {
         <Route path="/attendance" element={<SW><RoleView views={{ ceo: SuperAttendance, mentor: () => <MentorLegacyRedirect tab="davomat" /> }} /></SW>} />
         <Route path="/tests" element={<SW><RoleView views={{ mentor: () => <MentorLegacyRedirect tab="testlar" /> }} /></SW>} />
         <Route path="/coins" element={<SW><RoleView views={{ mentor: () => <MentorLegacyRedirect tab="koinlar" /> }} /></SW>} />
-        <Route path="/students" element={<SW><RoleView views={{ admin: AdminStudents, branch_manager: AdminStudents, ceo: SuperStudents, mentor: MentorStudents }} /></SW>} />
+        <Route path="/students" element={<SW><RoleView views={{ admin: AdminStudents, branch_manager: AdminStudents, ceo: AdminStudents, mentor: MentorStudents }} /></SW>} />
         <Route element={<RoleGuard allow={['ceo', 'admin', 'branch_manager', 'finance_manager', 'mentor', 'methodist']} />}>
           <Route path="/people" element={<SW><PeopleDirectory /></SW>} />
         </Route>
