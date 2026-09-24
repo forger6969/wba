@@ -45,7 +45,10 @@ body {
   --border: #dce5d4;
 
   /* Text */
-  --text: #ffffff;
+  /* Staff paneldagi kabi oq edi — hozir hech qayerda ishlatilmayapti, lekin
+     ishlatilsa oq fonda oq matn berardi. Tema matn rangiga tenglashtirildi
+     (base-content: #16210f, tailwind.config.js). */
+  --text: #16210f;
   --text-secondary: #5c6b53;
   --text-muted: #7d8c73;
 
