@@ -46,3 +46,6 @@ playwright-report/
 !frontend/*/src/assets/**
 .vercel
 logs/
+
+# Bitta saytga yig'ilgan natija (frontend/vercel.json) — git'ga tushmaydi
+dist-unified/

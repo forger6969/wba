@@ -8,6 +8,11 @@ import { I18nProvider } from './i18n/index.jsx';
 import App from './App.jsx';
 import './index.css';
 
+// Kabinet bitta saytning ichida, `/kabinet/` ostida turadi (frontend/vercel.json).
+// BASE_URL build paytida beriladi (`vite build --base=/kabinet/`), alohida
+// ishga tushirilganda esa '/' bo'ladi — shuning uchun qiymat qotirilmaydi.
+const BASENAME = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -22,7 +27,7 @@ const queryClient = new QueryClient({
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <BrowserRouter basename={BASENAME} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <I18nProvider>
           <AuthProvider>
             <App />

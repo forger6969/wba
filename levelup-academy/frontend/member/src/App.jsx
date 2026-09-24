@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from './auth.jsx';
 import { ChildProvider } from './child-context.jsx';
@@ -29,6 +30,22 @@ import StudentShop from './student/pages/Shop.jsx';
 import StudentLeaderboard from './student/pages/Leaderboard.jsx';
 import StudentAnnouncements from './student/pages/Announcements.jsx';
 import StudentChat from './student/pages/Chat.jsx';
+
+/**
+ * Bitta saytda kirish formasi bitta va u ildizda (`/login`) turadi: kabinet
+ * `/kabinet/` ostiga yig'ilganda o'zining formasi ko'rsatilmaydi, odam ildizga
+ * qaytariladi. Kabinet alohida ishga tushirilganda (dev, BASE_URL = '/')
+ * hammasi avvalgidek — o'z formasi ishlaydi.
+ */
+const UNIFIED = (import.meta.env.BASE_URL || '/') !== '/';
+const ROOT_LOGIN = '/login';
+
+function LoginGate() {
+  useEffect(() => {
+    if (UNIFIED) window.location.replace(ROOT_LOGIN);
+  }, []);
+  return UNIFIED ? <Splash /> : <Login />;
+}
 
 function Protected({ children }) {
   const { token } = useAuth();
@@ -73,7 +90,7 @@ export default function App() {
   return (
       <ErrorBoundary>
         <Routes>
-          <Route path="/login" element={token ? <Navigate to="/" replace /> : <Login />} />
+          <Route path="/login" element={token ? <Navigate to="/" replace /> : <LoginGate />} />
           {/* Публичный — сам логинит по одноразовому токену, авторизация не нужна */}
           <Route path="/qr-login" element={<QrLogin />} />
 
