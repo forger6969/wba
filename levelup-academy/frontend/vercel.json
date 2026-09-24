@@ -1,0 +1,30 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm --prefix staff ci && npm --prefix member ci",
+  "buildCommand": "npm --prefix staff run build && VITE_BASE_PATH=kabinet npm --prefix member run build && rm -rf dist-unified && cp -r staff/dist dist-unified && cp -r member/dist dist-unified/kabinet",
+  "outputDirectory": "dist-unified",
+  "rewrites": [
+    { "source": "/kabinet/(.*)", "destination": "/kabinet/index.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/((?!login$|sitemap\\.xml$|robots\\.txt$).*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive, nosnippet, noimageindex"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        }
+      ]
+    }
+  ]
+}

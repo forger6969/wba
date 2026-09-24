@@ -10,6 +10,27 @@ const AuthCtx = createContext(null);
 // Здесь — проактивный refresh заранее.
 const PROACTIVE_REFRESH_MS = 45 * 60 * 1000; // 45 мин — с запасом до часового TTL
 
+/**
+ * Bitta saytda kirish formasi ildizda (`/login`) turadi va o'quvchi/ota-ona
+ * muvaffaqiyatli kirgach shu yerga o'tadi. Sessiyani cookie orqali kutib
+ * bo'lmaydi: API boshqa domenda, refresh-cookie esa SameSite=Lax — brauzer uni
+ * boshqa saytga yubormaydi. Shuning uchun token bir martalik sessionStorage
+ * orqali qo'lma-qo'l beriladi va o'qilishi bilan o'chiriladi.
+ */
+const HANDOFF_KEY = 'wba.kabinet.session';
+
+function takeHandoff() {
+  try {
+    const raw = sessionStorage.getItem(HANDOFF_KEY);
+    if (!raw) return null;
+    sessionStorage.removeItem(HANDOFF_KEY);
+    const d = JSON.parse(raw);
+    return d && d.accessToken && d.user ? d : null;
+  } catch {
+    return null; // shaxsiy rejim / saqlash yopiq — oddiy yo'l bilan davom etamiz
+  }
+}
+
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
@@ -20,8 +41,16 @@ export function AuthProvider({ children }) {
     tokenRef.current = token;
   }, [token]);
 
-  // При старте пробуем восстановить сессию по refresh-cookie
+  // При старте: сначала сессия, переданная формой входа в корне сайта,
+  // иначе — восстановление по refresh-cookie
   useEffect(() => {
+    const handed = takeHandoff();
+    if (handed) {
+      setToken(handed.accessToken);
+      setUser(handed.user);
+      setLoading(false);
+      return;
+    }
     api
       .refresh()
       .then((d) => {

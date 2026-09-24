@@ -12,7 +12,7 @@ import { fmt, useI18n } from '../../i18n/index.jsx';
 
 /* ── Деор-баннер с кубком. ═══ РАСИМ ЎРНИ / IMAGE SLOT ═══════════════════
    Ўз расмингни қўймоқчи бўлсанг: <TrophyArt/> ўрнига
-     <img src="/rating.png" alt="" className="absolute right-0 top-0 h-full w-auto object-contain" />
+     <img src={`${import.meta.env.BASE_URL}rating.png`} alt="" className="absolute right-0 top-0 h-full w-auto object-contain" />
    қўй. Расмни frontend/member/public/ папкасига ташла. ═══════════════════ */
 function TrophyArt() {
   return (
