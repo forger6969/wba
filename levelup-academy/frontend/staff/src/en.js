@@ -2713,7 +2713,7 @@ const en = {
   'login.title': 'Sign in',
   'login.rolesSubtitle': 'Super Admin · Admin · Teacher · Student · Parent',
   'login.emailLabel': 'Login',
-  'login.loginPlaceholder': 'name or login code (diana / 10001)',
+  'login.loginPlaceholder': 'Login',
   'login.passwordLabel': 'Password',
   'login.signIn': 'Sign in',
   'login.or': 'or',

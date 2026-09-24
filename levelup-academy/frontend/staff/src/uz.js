@@ -2713,7 +2713,7 @@ const uz = {
   'login.title': 'Panelga kirish',
   'login.rolesSubtitle': "Superadmin · Administrator · O'qituvchi · O'quvchi · Ota-ona",
   'login.emailLabel': 'Login',
-  'login.loginPlaceholder': 'ism yoki login-kod (diana / 10001)',
+  'login.loginPlaceholder': 'Login',
   'login.passwordLabel': 'Parol',
   'login.signIn': 'Kirish',
   'login.or': 'yoki',

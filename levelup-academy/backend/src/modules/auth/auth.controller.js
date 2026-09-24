@@ -16,10 +16,32 @@ const REFRESH_COOKIE_PATH = '/api/auth';
 // панелей разные домены, там cookie и так была бы изолирована.
 const cookieNameFor = (group) => `refresh_token_${group}`;
 
+/* sameSite: в проде обязательно 'none' (WBA, 24.09.2026).
+   Сайт и API живут на РАЗНЫХ доменах (wbalc.uz ↔ wba-nyuk.onrender.com), то
+   есть запрос к /api/auth/refresh — кросс-сайтовый. Браузер cookie с
+   'lax' в таком запросе НЕ отправляет, поэтому refresh отвечал 401 всегда:
+   сессия не переживала ни перезагрузку страницы, ни возврат на вкладку, ни
+   истечение часового access-токена. Выглядело как "сайт сам разлогинивает".
+
+   'none' требует secure: true — на http://localhost браузер такую cookie
+   отвергнет, поэтому в разработке остаётся 'lax' (там фронт и API
+   same-site через vite-прокси, и 'lax' работает). */
+const crossSite = () => env.NODE_ENV === 'production';
+
+/* Удалять cookie нужно теми же атрибутами, какими её ставили: браузер
+   считает cookie с другими sameSite/secure другой cookie и старую не трогает —
+   выход из системы переставал бы работать. */
+const clearCookieOptions = () => ({
+  httpOnly: true,
+  secure: crossSite(),
+  sameSite: crossSite() ? 'none' : 'lax',
+  path: REFRESH_COOKIE_PATH,
+});
+
 const refreshCookieOptions = () => ({
   httpOnly: true,
-  secure: env.NODE_ENV === 'production',
-  sameSite: 'lax',
+  secure: crossSite(),
+  sameSite: crossSite() ? 'none' : 'lax',
   path: REFRESH_COOKIE_PATH,
   maxAge: 30 * 24 * 60 * 60 * 1000, // 30 дней
 });
@@ -123,7 +145,7 @@ export const refresh = asyncHandler(async (req, res) => {
 
 export const logout = asyncHandler(async (req, res) => {
   await service.logout(readRefreshCookie(req));
-  res.clearCookie(REFRESH_COOKIE, { path: REFRESH_COOKIE_PATH });
+  res.clearCookie(REFRESH_COOKIE, clearCookieOptions());
   res.status(204).end();
 });
 
@@ -143,7 +165,7 @@ function makeRefresh(allowedRoles, group) {
 function makeLogout(group) {
   return asyncHandler(async (req, res) => {
     await service.logout(readCookie(req, cookieNameFor(group)));
-    res.clearCookie(cookieNameFor(group), { path: REFRESH_COOKIE_PATH });
+    res.clearCookie(cookieNameFor(group), clearCookieOptions());
     res.status(204).end();
   });
 }

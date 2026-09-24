@@ -48,6 +48,15 @@ export function AuthProvider({ children }) {
   // Проактивный refresh: таймер каждые 45 мин + сразу при возврате на вкладку
   // (ноутбук спал/вкладка была свёрнута — setInterval в фоне мог не тикать).
   useEffect(() => {
+    /* Неудачный refresh НЕ разлогинивает (WBA, 24.09.2026).
+       Раньше .catch() здесь сбрасывал токен, а обработчик висел на
+       visibilitychange — то есть любое возвращение на вкладку выбрасывало
+       из системы, если запрос не удался. А не удавался он постоянно: cookie
+       стояла sameSite=lax при API на другом домене (починено в
+       auth.controller.js), плюс бесплатный Render засыпает и первый запрос
+       идёт ~50 секунд. Просроченный access-токен и без того отлавливается
+       реактивно — на 401 от реального запроса (setOnTokenRefreshed выше).
+       Сеть моргнула — это не повод терять сессию. */
     const tryRefresh = () => {
       if (!tokenRef.current) return;
       api
@@ -57,14 +66,26 @@ export function AuthProvider({ children }) {
           setUser(d.user);
         })
         .catch(() => {
-          setToken(null);
-          setUser(null);
+          /* намеренно тихо: сессию оставляем как есть */
         });
     };
 
-    const id = setInterval(tryRefresh, PROACTIVE_REFRESH_MS);
+    /* Возврат на вкладку сам по себе не повод бить по серверу: человек
+       переключается между вкладками десятки раз в час. Обновляем, только если
+       с прошлого раза прошло ощутимо много времени. */
+    const VISIBILITY_THROTTLE_MS = 5 * 60 * 1000;
+    let lastRefreshAt = Date.now();
+
+    const id = setInterval(() => {
+      lastRefreshAt = Date.now();
+      tryRefresh();
+    }, PROACTIVE_REFRESH_MS);
+
     const onVisible = () => {
-      if (document.visibilityState === 'visible') tryRefresh();
+      if (document.visibilityState !== 'visible') return;
+      if (Date.now() - lastRefreshAt < VISIBILITY_THROTTLE_MS) return;
+      lastRefreshAt = Date.now();
+      tryRefresh();
     };
     document.addEventListener('visibilitychange', onVisible);
 

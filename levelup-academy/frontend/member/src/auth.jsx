@@ -77,6 +77,13 @@ export function AuthProvider({ children }) {
   // Проактивный refresh: таймер каждые 45 мин + сразу при возврате на вкладку
   // (телефон/ноутбук спал — setInterval в фоне мог не тикать).
   useEffect(() => {
+    /* Неудачный refresh НЕ разлогинивает (WBA, 24.09.2026).
+       Здесь это било сильнее, чем в панели сотрудников: ученик на телефоне
+       сворачивает браузер по десять раз, и каждый возврат прогонял refresh, а
+       любая осечка выбрасывала из кабинета. Осечка же была штатной — cookie
+       стояла sameSite=lax при API на другом домене (починено в
+       auth.controller.js), плюс бесплатный Render просыпается ~50 секунд.
+       Мёртвую сессию и так поймает 401 на реальном запросе. */
     const tryRefresh = () => {
       if (!tokenRef.current) return;
       api
@@ -86,14 +93,23 @@ export function AuthProvider({ children }) {
           setUser(d.user);
         })
         .catch(() => {
-          setToken(null);
-          setUser(null);
+          /* намеренно тихо: сессию оставляем как есть */
         });
     };
 
-    const id = setInterval(tryRefresh, PROACTIVE_REFRESH_MS);
+    const VISIBILITY_THROTTLE_MS = 5 * 60 * 1000;
+    let lastRefreshAt = Date.now();
+
+    const id = setInterval(() => {
+      lastRefreshAt = Date.now();
+      tryRefresh();
+    }, PROACTIVE_REFRESH_MS);
+
     const onVisible = () => {
-      if (document.visibilityState === 'visible') tryRefresh();
+      if (document.visibilityState !== 'visible') return;
+      if (Date.now() - lastRefreshAt < VISIBILITY_THROTTLE_MS) return;
+      lastRefreshAt = Date.now();
+      tryRefresh();
     };
     document.addEventListener('visibilitychange', onVisible);
 
