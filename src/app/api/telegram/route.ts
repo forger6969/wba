@@ -71,6 +71,7 @@ const KIM_NOMI: Record<TelegramKim, string> = {
   ota_ona: 'ota-ona',
   ustoz: 'ustoz',
   xodim: 'xodim',
+  lid: 'sinov darsiga yozilgan',
 }
 
 async function ulanishlar(chat: number): Promise<Ulanish[]> {

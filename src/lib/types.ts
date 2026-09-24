@@ -331,7 +331,7 @@ export type LeaderboardRow = {
 
 /* ---------- Telegram bot va e'lonlar (0021) ---------- */
 
-export type TelegramKim = 'oquvchi' | 'ota_ona' | 'ustoz' | 'xodim'
+export type TelegramKim = 'oquvchi' | 'ota_ona' | 'ustoz' | 'xodim' | 'lid'
 
 export type TelegramUlanish = {
   id: number
