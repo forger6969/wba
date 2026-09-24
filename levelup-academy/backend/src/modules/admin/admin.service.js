@@ -143,7 +143,7 @@ const MAX_CODE_TRIES = 5;
 /** Вставка code-юзера с ретраем логин-кода при коллизии; телефон-дубль → 409. */
 async function insertCodeUserWithCode(client, base) {
   for (let attempt = 0; attempt < MAX_CODE_TRIES; attempt += 1) {
-    const loginCode = genLoginCode(8);
+    const loginCode = genLoginCode(base.role);
     try {
       const row = await repo.insertCodeUser({ ...base, loginCode }, client);
       return row;
@@ -315,7 +315,7 @@ export async function updateStudent(branchId, id, body) {
   return withTransaction(async (client) => {
     let updated = exists;
     const userFields = {};
-    for (const k of ['firstName', 'lastName', 'phone']) {
+    for (const k of ['firstName', 'lastName', 'phone', 'loginCode']) {
       if (body[k] !== undefined) userFields[k] = body[k];
     }
     if (Object.keys(userFields).length) {
@@ -324,6 +324,10 @@ export async function updateStudent(branchId, id, body) {
       } catch (err) {
         if (err.code === '23505' && err.constraint === 'uq_users_phone') {
           throw new AppError(409, 'Phone already in use');
+        }
+        // код уже занят другим учеником или родителем
+        if (err.code === '23505' && err.constraint === 'uq_users_login_code') {
+          throw new AppError(409, 'Bu login band');
         }
         throw err;
       }
@@ -561,6 +565,10 @@ export async function updateMentor(branchId, id, body) {
   } catch (err) {
     if (err.code === '23505' && err.constraint === 'uq_users_phone') {
       throw new AppError(409, 'Phone already in use');
+    }
+    // логин занят другим работником — 409, а не 500 из обработчика ошибок
+    if (err.code === '23505' && String(err.constraint ?? '').includes('email')) {
+      throw new AppError(409, 'Bu login band');
     }
     throw err;
   }

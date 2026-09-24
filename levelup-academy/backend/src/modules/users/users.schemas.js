@@ -37,7 +37,11 @@ export const updateProfileSchema = z
   .object({
     firstName: z.string().min(1).max(80).optional(),
     lastName: z.string().min(1).max(80).optional(),
-    email: z.string().email().max(160).optional(),
+    /* email убран из самообслуживания 24.09.2026 (WBA).
+       У работника email — это его ЛОГИН (вход `diana` → diana@wba.uz), и смена
+       логина отдана администратору и суперадмину. Пока поле было здесь, любой
+       ментор менял себе логин сам, а администратор переставал знать, чем тот
+       входит. Менять логин работника: PATCH /api/admin/mentors/:id. */
     avatarKey: z.string().max(512).optional(),
     bio: z.string().max(1000).optional(),
     skills: z

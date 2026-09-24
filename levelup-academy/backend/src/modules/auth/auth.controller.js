@@ -166,3 +166,13 @@ export const resetPassword = asyncHandler(async (req, res) => {
   await service.resetPassword(req.body);
   res.json({ message: 'Password updated, please log in again' });
 });
+
+/** PATCH /api/auth/password — работник меняет свой пароль. */
+export const changePassword = asyncHandler(async (req, res) => {
+  await service.changeOwnPassword({
+    userId: req.user.id,
+    currentPassword: req.body.currentPassword,
+    newPassword: req.body.newPassword,
+  });
+  res.json({ success: true });
+});

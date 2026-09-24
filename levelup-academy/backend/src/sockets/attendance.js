@@ -89,7 +89,7 @@ export function registerAttendance(io, socket) {
     const parsed = listAttendanceQuerySchema.parse(query);
 
     const records = await attendanceService.getGroupAttendance({
-      mentorId: user.id,
+      actor: user,
       groupId,
       ...parsed,
     });
@@ -109,7 +109,7 @@ export function registerAttendance(io, socket) {
     const parsed = markAttendanceBodySchema.parse(body);
 
     const records = await attendanceService.markAttendance({
-      mentorId: user.id,
+      actor: user,
       groupId,
       lessonDate: parsed.lessonDate,
       records: parsed.records,

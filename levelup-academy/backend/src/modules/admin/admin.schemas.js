@@ -75,6 +75,10 @@ export const updateStudentSchema = z
     lastName: name(),
     phone,
     birthDate: z.coerce.date(),
+    /* Логин ученика — ровно 5 цифр (credentials.genLoginCode). Менять может
+       только admin/ceo: этот роутер им и ограничен. Занятый код ловится
+       уникальным индексом и возвращается как 409, а не как 500. */
+    loginCode: z.string().trim().regex(/^\d{5}$/, 'Login 5 ta raqamdan iborat bo\'lishi kerak'),
     ...profileFields,
   })
   .partial()
@@ -127,6 +131,11 @@ export const updateMentorSchema = z
     firstName: name(),
     lastName: name(),
     phone,
+    /* Логин работника. Это же поле — его email для входа: на форме вводят
+       `diana`, фронт дописывает @wba.uz. Смена доступна только отсюда, то есть
+       админу и суперадмину; из своего профиля (PATCH /api/users/me) поле
+       убрано намеренно — см. users.schemas.js. */
+    email: z.string().trim().toLowerCase().email('Invalid email').max(160),
   }).strict()
   .partial()
   .refine((o) => Object.keys(o).length > 0, { message: 'At least one field is required' });

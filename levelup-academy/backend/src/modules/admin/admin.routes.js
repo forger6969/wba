@@ -3,6 +3,7 @@ import { authenticate } from '../../middlewares/authenticate.js';
 import { authorize } from '../../middlewares/authorize.js';
 import { orgAccessGate } from '../../middlewares/orgAccessGate.js';
 import { requireOrgFeature } from '../../middlewares/requireOrgFeature.js';
+import { resolveBranchScope } from '../../middlewares/resolveBranchScope.js';
 import { validate } from '../../middlewares/validate.js';
 import {
   idParam,
@@ -50,7 +51,19 @@ const router = Router();
 // branch_manager получил те же права, что admin, в своём филиале (07.08.2026,
 // решение Karis) — req.scope у обеих ролей уже совпадает (authorize.js:32),
 // так что второй набор эндпоинтов не нужен, достаточно пустить сюда роль.
-router.use(authenticate, orgAccessGate, authorize('admin', 'branch_manager'));
+//
+// ceo пущен сюда 24.09.2026 (WBA): у суперадмина не было ни создания групп,
+// ни заведения учеников — весь этот роутер отвечал ему 403, и фронт показывал
+// урезанные read-only экраны super/*. Роль организационная, филиал свой.
+// В отличие от admin/branch_manager у ceo в токене нет branch_id, поэтому
+// сразу за authorize идёт resolveBranchScope — без него scope.branchId был бы
+// null и каждый запрос молча возвращал бы пустоту (см. middleware).
+router.use(
+  authenticate,
+  orgAccessGate,
+  authorize('admin', 'branch_manager', 'ceo'),
+  resolveBranchScope,
+);
 
 router.use('/payments', paymentsRoutes);
 router.use('/reports', reportsRoutes);

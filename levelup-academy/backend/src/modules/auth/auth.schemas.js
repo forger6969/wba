@@ -21,3 +21,11 @@ export const resetPasswordSchema = z.object({
 export const qrLoginSchema = z.object({
   token: z.string().trim().min(1, 'token is required'),
 });
+
+/* Смена своего пароля работником. Минимум 8 символов — тот же порог, что у
+   resetPasswordSchema выше; разойдись они, и сброс по почте позволял бы
+   поставить пароль, который смена запрещает. */
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required'),
+  newPassword: z.string().min(8, 'Password must be at least 8 characters'),
+});

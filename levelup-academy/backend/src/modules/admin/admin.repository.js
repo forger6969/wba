@@ -310,6 +310,7 @@ export function updateStudent(id, branchId, fields, client = pool) {
     ['firstName', 'first_name'],
     ['lastName', 'last_name'],
     ['phone', 'phone'],
+    ['loginCode', 'login_code'], // логин ученика, меняет только admin/ceo
   ]) {
     if (fields[key] !== undefined) {
       cols.push(`${col} = $${i++}`);
@@ -545,6 +546,7 @@ export function updateMentor(id, branchId, fields, client = pool) {
     ['firstName', 'first_name'],
     ['lastName', 'last_name'],
     ['phone', 'phone'],
+    ['email', 'email'], // логин работника, меняет только admin/ceo
   ]) {
     if (fields[key] !== undefined) {
       cols.push(`${col} = $${i++}`);

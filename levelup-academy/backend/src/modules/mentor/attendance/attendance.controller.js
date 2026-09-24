@@ -7,7 +7,7 @@ export const markAttendance = asyncHandler(async (req, res) => {
   const { lessonDate, records } = req.body;
 
   const rows = await attendanceService.markAttendance({
-    mentorId: req.user.id,
+    actor: req.user,
     groupId,
     lessonDate,
     records,
@@ -22,7 +22,7 @@ export const getGroupAttendance = asyncHandler(async (req, res) => {
   const { date, from, to } = req.query;
 
   const rows = await attendanceService.getGroupAttendance({
-    mentorId: req.user.id,
+    actor: req.user,
     groupId,
     date,
     from,

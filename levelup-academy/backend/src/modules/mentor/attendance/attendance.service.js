@@ -1,4 +1,4 @@
-import { requireMentorGroup } from '../shared/groupAccess.js';
+import { requireGroupAccess, canEditAnyLessonDate } from '../shared/groupAccess.js';
 import { emitTo } from '../../../sockets/io.js';
 import { attendanceRoom } from '../../../sockets/attendance.js';
 import { AppError } from '../../../utils/AppError.js';
@@ -39,14 +39,21 @@ function assertToday(lessonDate) {
   );
 }
 
-/** Проставить/обновить davomat группы на дату урока — только свой ментор. */
-export async function markAttendance({ mentorId, groupId, lessonDate, records }) {
-  assertToday(lessonDate);
-  const group = await requireMentorGroup(mentorId, groupId);
+/**
+ * Проставить/обновить davomat группы на дату урока.
+ *
+ * Ментор — только своя группа и только сегодняшний урок. Администратор и
+ * суперадмин — любая группа в своём скоупе и любая дата: журнал за прошлый
+ * месяц правит именно администратор, у ментора такого права по-прежнему нет
+ * (WBA, 24.09.2026).
+ */
+export async function markAttendance({ actor, groupId, lessonDate, records }) {
+  if (!canEditAnyLessonDate(actor?.role)) assertToday(lessonDate);
+  const group = await requireGroupAccess(actor, groupId);
   const saved = await repo.upsertMany({
     branchId: group.branch_id,
     groupId,
-    markedBy: mentorId,
+    markedBy: actor.id,
     lessonDate,
     records,
   });
@@ -56,7 +63,7 @@ export async function markAttendance({ mentorId, groupId, lessonDate, records })
   emitTo(attendanceRoom(groupId), 'attendance:updated', {
     groupId,
     lessonDate,
-    markedBy: mentorId,
+    markedBy: actor.id,
     records: saved,
   });
 
@@ -110,8 +117,8 @@ async function notifyParentGroup({ groupId, groupName, lessonDate }) {
 }
 
 /** Чтение davomat группы: точная дата либо диапазон дат. */
-export async function getGroupAttendance({ mentorId, groupId, date, from, to }) {
-  await requireMentorGroup(mentorId, groupId);
+export async function getGroupAttendance({ actor, groupId, date, from, to }) {
+  await requireGroupAccess(actor, groupId);
   if (date) return repo.findByGroupAndDate(groupId, date);
   return repo.findByGroupAndRange(groupId, from, to);
 }

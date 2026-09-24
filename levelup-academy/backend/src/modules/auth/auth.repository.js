@@ -69,6 +69,20 @@ export function findUserById(id, client = pool) {
     .then((r) => r.rows[0] ?? null);
 }
 
+/* Отдельный финдер вместо расширения findUserById: тот отдаётся в места, где
+   хеш пароля не нужен, и таскать его туда «на всякий случай» — лишний путь
+   утечки. Здесь хеш нужен ровно для проверки текущего пароля. */
+export function findUserAuthById(id, client = pool) {
+  return client
+    .query(
+      `SELECT id, role, password_hash
+         FROM users
+        WHERE id = $1 AND deleted_at IS NULL`,
+      [id],
+    )
+    .then((r) => r.rows[0] ?? null);
+}
+
 export function insertRefreshToken({ userId, tokenHash, expiresAt }, client = pool) {
   return client.query(
     `INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3)`,

@@ -3,6 +3,7 @@
  * infra. Services are called directly (no HTTP, no auth middleware — K-AUTH
  * is not built yet). Run with: node tests/mentor/run.js
  */
+import { randomUUID } from 'node:crypto';
 import { pool, withTransaction } from '../../src/config/db.js';
 import { redis, closeRedis } from '../../src/config/redis.js';
 import { notificationQueue } from '../../src/queues/notification.queue.js';
@@ -68,6 +69,9 @@ async function main() {
   console.log('Setting up isolated fixtures...');
   const ctx = await setupFixtures();
   const { branchId, mentorId, otherMentorId, adminId, studentIds, groupId } = ctx;
+  // davomat теперь решает по роли, а не по одному id (groupAccess.requireGroupAccess)
+  const mentorActor = { id: mentorId, role: 'mentor' };
+  const adminActor = { id: adminId, role: 'admin', branchId };
   const [s1, s2, s3] = studentIds;
 
   console.log(`  org=${ctx.organizationId} branch=${branchId} group=${groupId}`);
@@ -92,7 +96,7 @@ async function main() {
 
     await test('1. Bulk-mark mixed statuses -> rows exist with correct statuses', async () => {
       const rows = await attendanceService.markAttendance({
-        mentorId,
+        actor: mentorActor,
         groupId,
         lessonDate,
         records: [
@@ -115,7 +119,7 @@ async function main() {
 
     await test('2. Re-mark same group+date -> UPSERT updates in place', async () => {
       const rows = await attendanceService.markAttendance({
-        mentorId,
+        actor: mentorActor,
         groupId,
         lessonDate,
         records: [
@@ -145,7 +149,7 @@ async function main() {
     await test('3. A different mentor marking your group -> AppError 404 (no existence leak)', async () => {
       await expectAppError(
         () => attendanceService.markAttendance({
-          mentorId: otherMentorId,
+          actor: { id: otherMentorId, role: 'mentor' },
           groupId,
           lessonDate,
           records: [{ studentId: s1, status: 'present' }],
@@ -168,7 +172,7 @@ async function main() {
       for (const [when, date] of [['past', shift(-1)], ['future', shift(1)]]) {
         await expectAppError(
           () => attendanceService.markAttendance({
-            mentorId,
+            actor: mentorActor,
             groupId,
             lessonDate: date,
             records: [{ studentId: s1, status: 'present' }],
@@ -177,6 +181,44 @@ async function main() {
           `markAttendance in the ${when}`,
         );
       }
+    });
+
+    /* Права администратора на чужой журнал (WBA, 24.09.2026). Ментору оба
+       действия запрещены тестами 3 и 3b — здесь проверяем, что для admin оба
+       запрета сняты, и что сняты они именно ролью, а не дырой в проверке. */
+    await test('3c. Admin marks another mentor\'s group for a past date -> allowed', async () => {
+      const yesterday = (() => {
+        const d = new Date();
+        d.setDate(d.getDate() - 1);
+        return d.toLocaleDateString('en-CA', { timeZone: 'Asia/Tashkent' });
+      })();
+
+      const rows = await attendanceService.markAttendance({
+        actor: adminActor,
+        groupId,
+        lessonDate: yesterday,
+        records: [{ studentId: s1, status: 'excused', comment: 'Admin correction' }],
+      });
+      assert(rows.length === 1, `expected 1 row, got ${rows.length}`);
+
+      const { rows: dbRows } = await pool.query(
+        'SELECT status FROM attendance WHERE group_id = $1 AND lesson_date = $2 AND student_id = $3',
+        [groupId, yesterday, s1],
+      );
+      assert(dbRows[0]?.status === 'excused', `expected excused, got ${dbRows[0]?.status}`);
+    });
+
+    await test('3d. Admin from a different branch -> still 404', async () => {
+      await expectAppError(
+        () => attendanceService.markAttendance({
+          actor: { id: adminId, role: 'admin', branchId: randomUUID() },
+          groupId,
+          lessonDate,
+          records: [{ studentId: s1, status: 'present' }],
+        }),
+        404,
+        'markAttendance by admin of another branch',
+      );
     });
 
     await test('4. Invalid attendance status rejected by zod schema', async () => {

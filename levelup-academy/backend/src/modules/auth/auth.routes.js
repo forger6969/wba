@@ -2,7 +2,9 @@ import { Router } from 'express';
 import { createRateLimiter } from '../../middlewares/rateLimiter.js';
 import { validate } from '../../middlewares/validate.js';
 import * as ctrl from './auth.controller.js';
-import { loginSchema, forgotPasswordSchema, resetPasswordSchema, qrLoginSchema } from './auth.schemas.js';
+import { loginSchema, forgotPasswordSchema, resetPasswordSchema, qrLoginSchema, changePasswordSchema } from './auth.schemas.js';
+import { authenticate } from '../../middlewares/authenticate.js';
+import { authorize } from '../../middlewares/authorize.js';
 
 const router = Router();
 
@@ -100,9 +102,10 @@ router.post('/staff/login', validate({ body: loginSchema }), ctrl.loginStaff);
  *     tags: [Auth]
  *     summary: Login as member (student, parent) via login-code + password
  *     description: >
- *       `login` field carries the 8-char login code for student/parent accounts
- *       (not an email). Only role `student` or `parent` accepted. Sets the
- *       `refresh_token` httpOnly cookie on success.
+ *       `login` field carries the 5-digit login code for student/parent accounts
+ *       (not an email); students are issued 1xxxx, parents 2xxxx. Only role
+ *       `student` or `parent` accepted. Sets the `refresh_token` httpOnly
+ *       cookie on success.
  *     security: []
  *     requestBody:
  *       required: true
@@ -441,3 +444,29 @@ router.post('/forgot-password', passwordResetLimiter, validate({ body: forgotPas
 router.post('/reset-password', passwordResetLimiter, validate({ body: resetPasswordSchema }), ctrl.resetPassword);
 
 export default router;
+
+/**
+ * @openapi
+ * /api/auth/password:
+ *   patch:
+ *     tags: [Auth]
+ *     summary: Change your own password (staff only)
+ *     description: >
+ *       Xodimlar (main_admin / ceo / admin / branch_manager / finance_manager /
+ *       mentor / methodist) o'z parolini o'zgartiradi. O'quvchi va ota-onaga
+ *       yopiq: ularning parolini administrator beradi va qayta chiqaradi.
+ *       Muvaffaqiyatli almashtirishdan keyin barcha refresh-token'lar bekor
+ *       qilinadi — qolgan seanslar chiqib ketadi.
+ *     responses:
+ *       200: { description: Password changed }
+ *       400: { description: Current password is wrong }
+ *       403: { description: Role is not allowed to change password }
+ *       422: { $ref: '#/components/responses/ValidationError' }
+ */
+router.patch(
+  '/password',
+  authenticate,
+  authorize('main_admin', 'ceo', 'admin', 'branch_manager', 'finance_manager', 'mentor', 'methodist'),
+  validate({ body: changePasswordSchema }),
+  ctrl.changePassword,
+);

@@ -286,3 +286,48 @@ export async function resetPassword({ email, otp, newPassword }) {
   });
   await redis.del(key);
 }
+
+/* ── Смена своего пароля ────────────────────────────────────────────────────
+   До 24.09.2026 сменить пароль было нельзя никак: существовали только
+   перевыпуск админом и сброс по почте. Добавлено по требованию WBA, и
+   намеренно ТОЛЬКО для работников.
+
+   Почему ученикам и родителям закрыто: их «пароль» — 6 цифр, которые выдаёт и
+   при необходимости перевыпускает администратор, а логин-код диктуется
+   голосом. Разреши им смену — администратор перестанет знать, чем ребёнок
+   входит, и восстановление доступа превратится в разговор «я поменял и забыл».
+   Список ролей проверяется здесь, а не только в роутере: сервис — общая точка
+   для любого будущего транспорта. */
+const STAFF_ROLES = new Set([
+  'main_admin', 'ceo', 'admin', 'branch_manager', 'finance_manager', 'mentor', 'methodist',
+]);
+
+export function isStaffRole(role) {
+  return STAFF_ROLES.has(role);
+}
+
+export async function changeOwnPassword({ userId, currentPassword, newPassword }) {
+  const user = await repo.findUserAuthById(userId);
+  if (!user) throw new AppError(401, 'Authentication required');
+
+  if (!isStaffRole(user.role)) {
+    throw new AppError(403, 'Parolni faqat xodimlar o\'zgartira oladi');
+  }
+
+  // без password_hash аккаунт заводился под вход по коду — менять нечего
+  if (!user.password_hash || !(await argon2.verify(user.password_hash, currentPassword))) {
+    throw new AppError(400, 'Joriy parol noto\'g\'ri');
+  }
+
+  if (currentPassword === newPassword) {
+    throw new AppError(422, 'Yangi parol eskisidan farq qilishi kerak');
+  }
+
+  const passwordHash = await argon2.hash(newPassword, { type: argon2.argon2id });
+  await withTransaction(async (client) => {
+    await repo.updatePassword(user.id, passwordHash, client);
+    // Пароль сменили — старые refresh-токены обязаны умереть, иначе сессия,
+    // ради которой пароль и меняли, продолжила бы жить.
+    await repo.revokeAllUserTokens(user.id, client);
+  });
+}
