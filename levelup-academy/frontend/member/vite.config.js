@@ -10,6 +10,13 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
+    // Kabinet bitta saytning ichida `/kabinet/` ostida turadi (frontend/vercel.json).
+    // Yig'ish paytida VITE_BASE_PATH=kabinet beriladi; alohida ishga tushirilganda
+    // '/' qoladi. Qiymat ataylab boshida slashsiz: Windows/Git Bash '/kabinet/'
+    // ko'rinishidagi qiymatni disk yo'liga aylantirib yuboradi ("/Program Files/…").
+    base: (process.env.VITE_BASE_PATH || env.VITE_BASE_PATH)
+      ? `/${(process.env.VITE_BASE_PATH || env.VITE_BASE_PATH).replace(/^\/+|\/+$/g, '')}/`
+      : '/',
     plugins: [react()],
     server: {
       port: 5175,

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../auth.jsx';
 import { api, USING_MOCKS } from '../api.js';
+import { KABINET_PATH, handOffSession } from '../kabinet.js';
 import LanguageSwitcher from '../components/LanguageSwitcher.jsx';
 
 function GoogleIcon() {
@@ -122,9 +123,19 @@ function LoginForm({ onForgot }) {
     if (!email.trim() || !password) { setError(t('login.enterEmailPassword')); return; }
     setBusy(true);
     try {
+      const raw = email.trim();
+      // Sayt bitta, forma bitta. Kim kiritayotganini loginning o'zi aytadi:
+      // o'quvchi va ota-onaning logini — raqamli kod (10001), xodimniki — ism.
+      // Raqam bo'lsa, kabinet eshigidan kiritamiz va kabinetga o'tkazamiz.
+      if (/^\d+$/.test(raw)) {
+        const d = await api.loginMember(raw, password);
+        handOffSession(d);
+        window.location.assign(KABINET_PATH);
+        return; // sahifa almashadi — setBusy(false) shart emas, finally baribir ishlaydi
+      }
       // WBA: foydalanuvchi faqat ismini kiritsa ('diana', 'jamshid') — tizim
       // '@wba.uz' ni o'zi qo'shadi. '@' bo'lsa (email) — o'zgartirmaymiz.
-      const loginId = email.trim().includes('@') ? email.trim() : `${email.trim()}@wba.uz`;
+      const loginId = raw.includes('@') ? raw : `${raw}@wba.uz`;
       await login(loginId, password);
       navigate(from, { replace: true });
     } catch (err) {

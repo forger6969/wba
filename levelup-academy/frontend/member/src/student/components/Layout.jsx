@@ -327,8 +327,8 @@ export default function Layout() {
           {/* Полный логотип 448×80 на телефоне не влезает рядом с чипом оплаты
               и кнопками — до md показываем только квадратный знак, слово на
               планшете/десктопе. */}
-          <img src="/wba-logo-white.png" alt="World Bridge Academy" className="h-9 w-auto md:hidden" />
-          <img src="/wba-logo-white.png" alt="World Bridge Academy" className="h-9 w-auto hidden md:block" />
+          <img src={`${import.meta.env.BASE_URL}wba-logo-white.png`} alt="World Bridge Academy" className="h-9 w-auto md:hidden" />
+          <img src={`${import.meta.env.BASE_URL}wba-logo-white.png`} alt="World Bridge Academy" className="h-9 w-auto hidden md:block" />
         </div>
 
         <div className="flex-1" />

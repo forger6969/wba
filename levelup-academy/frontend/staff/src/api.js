@@ -2344,6 +2344,7 @@ if (path === '/branch-manager/reports') {
 // Пути, которым нельзя подсовывать авто-refresh (иначе цикл/логин ломается)
 const AUTH_PATHS = new Set([
   '/auth/staff/login', '/auth/staff/google', '/auth/staff/refresh', '/auth/staff/logout',
+  '/auth/member/login',
   '/auth/forgot-password', '/auth/reset-password',
 ]);
 
@@ -2468,6 +2469,12 @@ export const api = {
   // -------- AUTH (staff — admin/ceo/mentor/methodist) --------
   loginStaff: (login, password) =>
     request('/auth/staff/login', { method: 'POST', body: { login, password } }),
+  // Bitta saytda kirish formasi bitta: raqamli login-kod kiritilsa, xodim emas,
+  // o'quvchi/ota-ona kirishi ishlaydi. Backend bir xil `login()` funksiyasini
+  // chaqiradi, faqat ruxsat etilgan rollar boshqa — shuning uchun forma bitta
+  // bo'lsa ham, har kim o'z eshigidan kiradi.
+  loginMember: (login, password) =>
+    request('/auth/member/login', { method: 'POST', body: { login, password } }),
   refresh: () => refreshOnce(),
   logout: () => request('/auth/staff/logout', { method: 'POST' }),
   googleLogin: (idToken) => request('/auth/staff/google', { method: 'POST', body: { idToken } }),

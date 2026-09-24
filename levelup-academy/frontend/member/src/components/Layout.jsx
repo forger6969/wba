@@ -24,7 +24,7 @@ export default function Layout() {
   const sidebar = (
     <div className="parent-sidebar-inner">
       <div className="parent-brand">
-        <img src="/wba-logo-white.png" alt="World Bridge Academy" className="h-7 w-auto" />
+        <img src={`${import.meta.env.BASE_URL}wba-logo-white.png`} alt="World Bridge Academy" className="h-7 w-auto" />
       </div>
 
       <nav className="parent-nav">
@@ -74,7 +74,7 @@ export default function Layout() {
         <header className="parent-topbar">
           <div className="flex items-center gap-3 min-w-0">
             <button className="parent-menu-button lg:hidden" onClick={() => setMobileOpen(true)} aria-label={t.nav.openMenu}><Icon name="bars-3" className="w-5 h-5" /></button>
-            <img src="/wba-logo-white.png" alt="World Bridge Academy" className="h-6 w-auto lg:hidden" />
+            <img src={`${import.meta.env.BASE_URL}wba-logo-white.png`} alt="World Bridge Academy" className="h-6 w-auto lg:hidden" />
             <div className="parent-header-divider hidden lg:block" />
             {selectedChild && (
               <div className="parent-header-child">
