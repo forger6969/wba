@@ -1,4 +1,4 @@
-# LevelUp Academy — Staff panel.
+# World Bridge Academy — bitta sayt (xodimlar paneli + /kabinet).
 # Only the login page is public. Everything behind it is a private, auth-gated CRM.
 # Search engines may crawl /login (so staff can find where to sign in) and the JS/CSS
 # it needs to render — nothing else.
@@ -6,6 +6,7 @@
 User-agent: *
 Allow: /login
 Allow: /assets/
+Disallow: /kabinet/
 Disallow: /
 
 # AI / LLM crawlers — no login form to index for them, keep fully out.
@@ -48,4 +49,4 @@ Disallow: /
 User-agent: meta-externalagent
 Disallow: /
 
-Sitemap: https://staff.levelup-academy.uz/sitemap.xml
+Sitemap: https://wbalc.uz/sitemap.xml

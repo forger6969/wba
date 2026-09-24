@@ -14,7 +14,14 @@
       name="description"
       content="Вход в личный кабинет World Bridge Academy для учеников и родителей — по логин-коду и паролю."
     />
+    <!-- В отличие от панели сотрудников здесь индексировать нечего ВООБЩЕ:
+         кабинет живёт под /kabinet/, своей формы входа у него больше нет
+         (единый вход в корне сайта), а за ней — только личные данные учеников.
+         Поэтому статический noindex здесь уместен: он покрывает все роуты
+         кабинета и не зависит от заголовков. -->
+    <meta name="robots" content="noindex, nofollow, noarchive" />
     <link rel="icon" type="image/svg+xml" href="/logo-mark.svg" />
+    <meta name="theme-color" content="#dc2626" />
     <title>World Bridge Academy — o‘quvchi va ota-ona</title>
   </head>
   <body>
