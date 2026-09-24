@@ -5,6 +5,7 @@ import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Card, CardHeader, Badge, Empty } from '@/components/ui'
 import { Sarlavha, Ulanmagan } from '@/components/crm'
 import { Maydon, Xabar, kirishKlass } from '@/components/forma'
+import { Select } from '@/components/select'
 import { Yuborish } from '@/components/yuborish'
 import { woblrBer } from './actions'
 import { davrNomi, joriyDavr } from '@/lib/format'
@@ -104,7 +105,7 @@ export default async function Woblr({
 
       <form className="flex flex-wrap items-end gap-2.5">
         <Maydon nom="Reyting">
-          <select name="k" defaultValue={tanlov.k} className={kirishKlass}>
+          <Select name="k" defaultValue={tanlov.k}>
             <option value={markaz.k}>{markaz.nom}</option>
             {fanKorinish.length > 0 && (
               <optgroup label={oquvchimi ? 'Mening fanim' : 'Fan bo‘yicha'}>
@@ -120,14 +121,14 @@ export default async function Woblr({
                 ))}
               </optgroup>
             )}
-          </select>
+          </Select>
         </Maydon>
         <Maydon nom="Oy">
-          <select name="davr" defaultValue={davr ?? 'hammasi'} className={kirishKlass}>
+          <Select name="davr" defaultValue={davr ?? 'hammasi'}>
             <option value={joriyDavr()}>{davrNomi(joriyDavr())}</option>
             {davr && davr !== joriyDavr() && <option value={davr}>{davrNomi(davr)}</option>}
             <option value="hammasi">Hamma vaqt</option>
-          </select>
+          </Select>
         </Maydon>
         <button type="submit" className="min-h-11 rounded-[9px] border border-line px-5 text-[13.5px] text-ink-2 hover:text-ink">
           Ko‘rsatish
@@ -174,24 +175,24 @@ export default async function Woblr({
           <form action={woblrBer} className="grid gap-3 px-5 pb-5 sm:grid-cols-[2fr_1fr_1.2fr_1.5fr_auto] sm:items-end">
             <input type="hidden" name="guruh" value={guruh} />
             <Maydon nom="O‘quvchi">
-              <select name="student_id" required defaultValue="" className={kirishKlass}>
+              <Select name="student_id" required defaultValue="">
                 <option value="" disabled>Tanlang…</option>
                 {oquvchilar.map((o) => (
                   <option key={o.id} value={o.id}>{o.fish}</option>
                 ))}
-              </select>
+              </Select>
             </Maydon>
             <Maydon nom="Woblar" izoh="−10…+10">
               <input name="ball" type="number" min={-10} max={10} step={1} defaultValue={1} required className={kirishKlass} />
             </Maydon>
             <Maydon nom="Sabab">
-              <select name="sabab" defaultValue="faollik" className={kirishKlass}>
+              <Select name="sabab" defaultValue="faollik">
                 <option value="faollik">Faollik</option>
                 <option value="uy_vazifasi">Uy vazifasi</option>
                 <option value="yordam">Yordam berdi</option>
                 <option value="qoida">Qoida buzdi</option>
                 <option value="boshqa">Boshqa</option>
-              </select>
+              </Select>
             </Maydon>
             <Maydon nom="Izoh">
               <input name="izoh" placeholder="Ixtiyoriy" className={kirishKlass} />

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Sarlavha, Ulanmagan } from '@/components/crm'
 import { Maydon, Xabar, FormaBolim, kirishKlass } from '@/components/forma'
+import { Select } from '@/components/select'
 import { Yuborish } from '@/components/yuborish'
 import { IconArrowLeft } from '@/components/icons'
 import { bugunToshkent } from '@/lib/format'
@@ -57,11 +58,11 @@ export default async function OquvchiTahrir({
           <TelefonMaydonlari qiymat={o} />
           <div className="grid gap-3 sm:grid-cols-[1fr_2fr]">
             <Maydon nom="Holat" izoh="Ketgan — guruhlaridan alohida chiqariladi">
-              <select name="holat" defaultValue={o.holat} className={kirishKlass}>
+              <Select name="holat" defaultValue={o.holat}>
                 <option value="faol">Faol</option>
                 <option value="tanaffus">Tanaffus</option>
                 <option value="ketgan">Ketgan</option>
-              </select>
+              </Select>
             </Maydon>
             <Maydon nom="Izoh">
               <input name="izoh" defaultValue={o.izoh ?? ''} className={kirishKlass} />

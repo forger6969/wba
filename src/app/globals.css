@@ -181,3 +181,26 @@
 .tnum {
   font-variant-numeric: tabular-nums;
 }
+
+/* CRM sahifalar orasidagi o'tish — template.tsx har navigatsiyada
+   qayta yasaydi, shu animatsiya har safar ishga tushadi. */
+@keyframes sahifa-kirish {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sahifa-otish {
+  animation: sahifa-kirish 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sahifa-otish {
+    animation: none;
+  }
+}

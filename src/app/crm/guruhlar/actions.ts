@@ -25,9 +25,16 @@ type GuruhMaydonlari = {
  * Formani tekshiradi. Nom bo'sh qolsa Sheets'dagi formula bo'yicha
  * yasaladi: "Yo'nalish · O'qituvchi · Dars vaqti".
  */
+/** TimeField (`${name}_soat` + `${name}_daqiqa`) ni "SS:DD" ga birlashtiradi. */
+function vaqtOqi(fd: FormData, nom: string): string {
+  const soat = matn(fd.get(`${nom}_soat`))
+  const daqiqa = matn(fd.get(`${nom}_daqiqa`))
+  return soat && daqiqa ? `${soat}:${daqiqa}` : ''
+}
+
 async function oqi(fd: FormData): Promise<GuruhMaydonlari | string> {
-  const boshlanish = matn(fd.get('boshlanish'))
-  const tugash = matn(fd.get('tugash'))
+  const boshlanish = vaqtOqi(fd, 'boshlanish')
+  const tugash = vaqtOqi(fd, 'tugash')
   const kun = KUNLAR.find((k) => k === fd.get('kun_turi'))
   const narx = summaOqi(fd.get('oylik_narx'))
   const sigim = sonOqi(fd.get('sigim')) ?? 12

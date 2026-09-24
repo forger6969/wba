@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Sarlavha, Ulanmagan } from '@/components/crm'
 import { Maydon, Xabar, FormaBolim, kirishKlass } from '@/components/forma'
+import { Select } from '@/components/select'
 import { Yuborish } from '@/components/yuborish'
 import { IconArrowLeft } from '@/components/icons'
 import { bugunToshkent } from '@/lib/format'
@@ -48,12 +49,12 @@ export default async function YangiOquvchi({ searchParams }: { searchParams: Pro
         <FormaBolim nom="Guruh">
           <div className="grid gap-3 sm:grid-cols-[2fr_1fr]">
             <Maydon nom="Guruh" izoh="Keyin ham biriktirsa bo‘ladi">
-              <select name="group_id" defaultValue="" className={kirishKlass}>
+              <Select name="group_id" defaultValue="">
                 <option value="">Hozircha guruhsiz</option>
                 {(guruhlar ?? []).map((g) => (
                   <option key={g.id} value={g.id}>{g.nom}</option>
                 ))}
-              </select>
+              </Select>
             </Maydon>
             <Maydon nom="Boshlagan sana" izoh="O‘tgan oylar ham hisoblanadi">
               <input name="boshlandi" type="date" defaultValue={bugunToshkent()} className={kirishKlass} />

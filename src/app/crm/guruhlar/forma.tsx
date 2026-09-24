@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Maydon, FormaBolim, kirishKlass } from '@/components/forma'
+import { Select } from '@/components/select'
+import { TimeField } from '@/components/time-field'
 import { Yuborish } from '@/components/yuborish'
 import { KUN_NOMI } from '@/lib/format'
 import type { DayType } from '@/lib/types'
@@ -46,30 +48,30 @@ export async function GuruhFormasi({
       <FormaBolim nom="Yo‘nalish va ustoz">
         <div className="grid gap-3 sm:grid-cols-2">
           <Maydon nom="Yo‘nalish">
-            <select name="subject_id" defaultValue={qiymat.subject_id ?? ''} className={kirishKlass}>
+            <Select name="subject_id" defaultValue={qiymat.subject_id ?? ''}>
               <option value="">—</option>
               {(fanlar ?? []).map((f) => (
                 <option key={f.id} value={f.id}>{f.nom}</option>
               ))}
-            </select>
+            </Select>
           </Maydon>
           <Maydon nom="Bosqich" izoh="Ingliz tili va matematika uchun">
-            <select name="level_id" defaultValue={qiymat.level_id ?? ''} className={kirishKlass}>
+            <Select name="level_id" defaultValue={qiymat.level_id ?? ''}>
               <option value="">—</option>
               {(bosqichlar ?? []).map((b) => (
                 <option key={b.id} value={b.id}>
                   {fanNomi.get(b.subject_id)} · {b.nom}
                 </option>
               ))}
-            </select>
+            </Select>
           </Maydon>
           <Maydon nom="Ustoz">
-            <select name="teacher_id" defaultValue={qiymat.teacher_id ?? ''} className={kirishKlass}>
+            <Select name="teacher_id" defaultValue={qiymat.teacher_id ?? ''}>
               <option value="">[ANIQLANMAGAN]</option>
               {(ustozlar ?? []).map((u) => (
                 <option key={u.id} value={u.id}>{u.ism}</option>
               ))}
-            </select>
+            </Select>
           </Maydon>
           <Maydon nom="Guruh nomi" izoh="Bo‘sh qolsa: Yo‘nalish · Ustoz · Vaqt">
             <input name="nom" defaultValue={qiymat.nom ?? ''} placeholder="avtomatik" className={kirishKlass} />
@@ -80,17 +82,17 @@ export async function GuruhFormasi({
       <FormaBolim nom="Jadval va narx">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Maydon nom="Boshlanish">
-            <input type="time" name="boshlanish" required defaultValue={qiymat.boshlanish?.slice(0, 5) ?? ''} className={kirishKlass} />
+            <TimeField name="boshlanish" required defaultValue={qiymat.boshlanish?.slice(0, 5)} />
           </Maydon>
           <Maydon nom="Tugash">
-            <input type="time" name="tugash" required defaultValue={qiymat.tugash?.slice(0, 5) ?? ''} className={kirishKlass} />
+            <TimeField name="tugash" required defaultValue={qiymat.tugash?.slice(0, 5)} />
           </Maydon>
           <Maydon nom="Kunlar" className="col-span-2">
-            <select name="kun_turi" required defaultValue={qiymat.kun_turi ?? 'toq'} className={kirishKlass}>
+            <Select name="kun_turi" required defaultValue={qiymat.kun_turi ?? 'toq'}>
               {(Object.keys(KUN_NOMI) as DayType[]).map((k) => (
                 <option key={k} value={k}>{KUN_NOMI[k]}</option>
               ))}
-            </select>
+            </Select>
           </Maydon>
           <Maydon nom="Oylik narx" izoh={qiymat.id ? 'Yangi narx keyingi hisoblardan' : undefined} className="col-span-2">
             <input name="oylik_narx" required inputMode="decimal" defaultValue={qiymat.oylik_narx ?? standart ?? ''} className={kirishKlass} />
@@ -100,10 +102,10 @@ export async function GuruhFormasi({
           </Maydon>
           {qiymat.id && (
             <Maydon nom="Holat">
-              <select name="holat" defaultValue={qiymat.holat ?? 'faol'} className={kirishKlass}>
+              <Select name="holat" defaultValue={qiymat.holat ?? 'faol'}>
                 <option value="faol">Faol</option>
                 <option value="yopilgan">Yopilgan</option>
-              </select>
+              </Select>
             </Maydon>
           )}
         </div>

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Card, CardHeader, Stat, Badge, Empty, Button } from '@/components/ui'
 import { Maydon, Xabar, kirishKlass } from '@/components/forma'
+import { Select } from '@/components/select'
 import { Yuborish } from '@/components/yuborish'
 import { guruhgaBiriktir, guruhdanChiqar, chegirmaOzgartir } from '../actions'
 import { ChegirmaMaydonlari } from '../bolaklar'
@@ -305,14 +306,14 @@ export default async function OquvchiProfil({
                   <input type="hidden" name="student_id" value={oquvchi.id} />
                   <div className="grid gap-3 sm:grid-cols-[2fr_1fr]">
                     <Maydon nom="Guruh">
-                      <select name="group_id" required defaultValue="" className={kirishKlass}>
+                      <Select name="group_id" required defaultValue="">
                         <option value="" disabled>Tanlang…</option>
                         {((barchaGuruhlar ?? []) as { id: string; nom: string }[])
                           .filter((g) => !yList.some((y) => y.group_id === g.id && y.holat !== 'tugagan'))
                           .map((g) => (
                             <option key={g.id} value={g.id}>{g.nom}</option>
                           ))}
-                      </select>
+                      </Select>
                     </Maydon>
                     <Maydon nom="Boshlagan sana">
                       <input type="date" name="boshlandi" defaultValue={bugunToshkent()} className={kirishKlass} />

@@ -5,6 +5,7 @@ import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Card, Stat, Badge, Empty, Button } from '@/components/ui'
 import { Sarlavha, Ulanmagan, Sahifalash } from '@/components/crm'
 import { Xabar, kirishKlass } from '@/components/forma'
+import { Select } from '@/components/select'
 import { Yuborish } from '@/components/yuborish'
 import { pul, sana, davrNomi, joriyDavr } from '@/lib/format'
 import { tolovTasdiqla, tolovBekor } from './actions'
@@ -147,12 +148,12 @@ export default async function Tolovlar({ searchParams }: { searchParams: Promise
         </label>
         <label className="flex flex-col gap-1.5">
           <span className="lbl">Usul</span>
-          <select name="usul" defaultValue={usul ?? ''} className={kirishKlass}>
+          <Select name="usul" defaultValue={usul ?? ''}>
             <option value="">Hammasi</option>
             {Object.entries(USUL_NOMI).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
             ))}
-          </select>
+          </Select>
         </label>
         <button type="submit" className="min-h-11 rounded-[9px] border border-line px-5 text-[13.5px] text-ink-2 transition hover:border-ink-3 hover:text-ink">
           Ko‘rsatish

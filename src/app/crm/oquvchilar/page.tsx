@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Select } from '@/components/select'
 import { talabRol, staffmi } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi } from '@/lib/supabase/env'
@@ -175,7 +176,7 @@ export default async function Oquvchilar({
 
         <label className="flex flex-col gap-1.5">
           <span className="lbl">Guruh</span>
-          <select
+          <Select
             name="guruh"
             defaultValue={s.guruh ?? ''}
             className="min-h-11 rounded-[9px] border border-line bg-surface px-3 text-[13.5px] text-ink"
@@ -186,12 +187,12 @@ export default async function Oquvchilar({
                 {g.nom}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
 
         <label className="flex flex-col gap-1.5">
           <span className="lbl">Holat</span>
-          <select
+          <Select
             name="holat"
             defaultValue={holat ?? ''}
             className="min-h-11 rounded-[9px] border border-line bg-surface px-3 text-[13.5px] text-ink"
@@ -200,7 +201,7 @@ export default async function Oquvchilar({
             <option value="faol">Faol</option>
             <option value="tanaffus">Tanaffus</option>
             <option value="ketgan">Ketgan</option>
-          </select>
+          </Select>
         </label>
 
         {pulKoradi && (

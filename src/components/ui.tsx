@@ -46,7 +46,11 @@ export function Card({
   as?: 'div' | 'section' | 'article'
 }) {
   return (
-    <As className={`rounded-[12px] border border-line bg-surface ${className}`}>{children}</As>
+    <As
+      className={`rounded-[14px] border border-line bg-surface shadow-[0_1px_0_rgba(0,0,0,0.02),0_8px_24px_-16px_rgba(0,0,0,0.35)] ${className}`}
+    >
+      {children}
+    </As>
   )
 }
 
@@ -60,7 +64,7 @@ export function CardHeader({
   action?: React.ReactNode
 }) {
   return (
-    <div className="flex items-baseline justify-between gap-3 px-5 pt-4 pb-3">
+    <div className="flex items-baseline justify-between gap-3 border-b border-line-soft px-5 pt-4 pb-3.5">
       <h2 className="font-[family-name:var(--font-display)] text-[15px] font-bold">{title}</h2>
       {meta && <span className="lbl">{meta}</span>}
       {action}
@@ -97,8 +101,14 @@ export function Stat({
         ? 'border-accent-line'
         : 'border-line'
 
+  const teppaChiziq =
+    border === 'brand' ? 'bg-brand' : border === 'accent' ? 'bg-accent' : 'bg-transparent'
+
   return (
-    <div className={`flex flex-col gap-1.5 rounded-[12px] border bg-surface px-4 py-3.5 ${chiziq}`}>
+    <div
+      className={`relative flex flex-col gap-1.5 overflow-hidden rounded-[13px] border bg-surface px-4 py-3.5 shadow-[0_1px_0_rgba(0,0,0,0.02),0_8px_20px_-18px_rgba(0,0,0,0.4)] ${chiziq}`}
+    >
+      <span className={`absolute inset-x-0 top-0 h-[2.5px] ${teppaChiziq}`} />
       <span className="lbl">{label}</span>
       <span
         className={`tnum font-[family-name:var(--font-display)] text-[26px] leading-none font-extrabold tracking-[-0.02em] ${TON[ton]}`}
@@ -130,7 +140,7 @@ export function Badge({
 }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11.5px] font-semibold ${NISHON[ton]}`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11.5px] font-semibold ${NISHON[ton]}`}
     >
       {nuqta && <span className="block size-1.5 rounded-full bg-current" />}
       {children}
@@ -143,10 +153,11 @@ export function Badge({
 const TUGMA = {
   // Qizil fonda matn DOIM oq — yorug' temada text-ink qora bo'lib, qizilda o'qilmasdi.
   asosiy:
-    'bg-brand text-white shadow-sm shadow-brand/25 hover:brightness-110 active:brightness-95',
+    'bg-brand text-white shadow-[0_6px_16px_-6px_var(--color-brand)] hover:brightness-110 hover:-translate-y-px active:translate-y-0 active:brightness-95',
   ikkilamchi:
     'border border-line bg-surface text-ink-2 hover:text-ink hover:border-ink-3 hover:bg-surface-2',
-  ogohlantirish: 'bg-accent text-bg font-bold hover:brightness-110 active:brightness-95',
+  ogohlantirish:
+    'bg-accent text-bg font-bold shadow-[0_6px_16px_-6px_var(--color-accent)] hover:brightness-110 hover:-translate-y-px active:translate-y-0 active:brightness-95',
 } as const
 
 type TugmaProps = {
@@ -200,7 +211,7 @@ export function Button({
 
 export function Empty({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-[10px] border border-dashed border-line px-4 py-3.5 text-[12.5px] leading-relaxed text-ink-2">
+    <div className="rounded-[12px] border border-dashed border-line bg-surface-2/40 px-4 py-4 text-[12.5px] leading-relaxed text-ink-2">
       {children}
     </div>
   )
@@ -223,9 +234,9 @@ export function BarRow({
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] items-center gap-3 py-1">
       <span className="truncate text-[12.5px]">{label}</span>
-      <span className="h-3.5 overflow-hidden rounded-[4px] bg-surface-2">
+      <span className="h-3.5 overflow-hidden rounded-full bg-surface-2">
         <span
-          className="block h-3.5 rounded-[2px_4px_4px_2px] bg-brand"
+          className="block h-3.5 rounded-full bg-brand transition-[width] duration-500 ease-out"
           style={{ width: `${w}%` }}
         />
       </span>

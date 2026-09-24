@@ -5,6 +5,7 @@ import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Card, CardHeader, Badge, Empty } from '@/components/ui'
 import { Sarlavha, Ulanmagan } from '@/components/crm'
 import { Maydon, Xabar, kirishKlass } from '@/components/forma'
+import { Select } from '@/components/select'
 import { Yuborish } from '@/components/yuborish'
 import { IconPhone } from '@/components/icons'
 import { sana, telefon, bugunToshkent } from '@/lib/format'
@@ -103,12 +104,12 @@ export default async function Probniylar({
               <input name="telefon" type="tel" required placeholder="90 123 45 67" className={kirishKlass} />
             </Maydon>
             <Maydon nom="Guruh" izoh="Doimiy qilish uchun kerak">
-              <select name="group_id" defaultValue="" className={kirishKlass}>
+              <Select name="group_id" defaultValue="">
                 <option value="">Hali tanlanmagan</option>
                 {gList.map((g) => (
                   <option key={g.id} value={g.id}>{g.nom}</option>
                 ))}
-              </select>
+              </Select>
             </Maydon>
             <Maydon nom="Sinov darsi kuni">
               <input name="sinov_sana" type="date" defaultValue={bugun} className={kirishKlass} />
@@ -117,13 +118,13 @@ export default async function Probniylar({
               <input name="tugilgan_sana" type="date" max={bugun} className={kirishKlass} />
             </Maydon>
             <Maydon nom="Qayerdan bildi">
-              <select name="manba" defaultValue="boshqa" className={kirishKlass}>
+              <Select name="manba" defaultValue="boshqa">
                 <option value="tavsiya">Tanishlar tavsiyasi</option>
                 <option value="instagram">Instagram</option>
                 <option value="telegram">Telegram</option>
                 <option value="sayt">Sayt</option>
                 <option value="boshqa">Boshqa</option>
-              </select>
+              </Select>
             </Maydon>
             <Maydon nom="Izoh" className="sm:col-span-2">
               <input name="izoh" placeholder="Ixtiyoriy" className={kirishKlass} />
@@ -198,12 +199,12 @@ export default async function Probniylar({
                           <input type="hidden" name="id" value={p.id} />
                           <input type="hidden" name="qaytish" value={yol} />
                           <Maydon nom="Guruh">
-                            <select name="group_id" defaultValue={p.group_id ?? ''} className={kirishKlass}>
+                            <Select name="group_id" defaultValue={p.group_id ?? ''}>
                               <option value="">—</option>
                               {gList.map((g) => (
                                 <option key={g.id} value={g.id}>{g.nom}</option>
                               ))}
-                            </select>
+                            </Select>
                           </Maydon>
                           <Maydon nom="Sinov kuni">
                             <input type="date" name="sinov_sana" defaultValue={p.sinov_sana ?? ''} className={kirishKlass} />

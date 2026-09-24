@@ -5,6 +5,7 @@ import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Card, Empty } from '@/components/ui'
 import { Sarlavha, Ulanmagan } from '@/components/crm'
 import { Maydon, Xabar, FormaBolim, kirishKlass } from '@/components/forma'
+import { Select } from '@/components/select'
 import { Yuborish } from '@/components/yuborish'
 import { IconArrowLeft, IconSearch } from '@/components/icons'
 import { pul, joriyDavr, bugunToshkent, telefon } from '@/lib/format'
@@ -157,13 +158,13 @@ export default async function TolovQosh({ searchParams }: { searchParams: Promis
               <input name="summa" required inputMode="decimal" placeholder="650 000" className={kirishKlass} />
             </Maydon>
             <Maydon nom="Usul">
-              <select name="usul" required defaultValue="" className={kirishKlass}>
+              <Select name="usul" required defaultValue="">
                 <option value="" disabled>Tanlang…</option>
                 <option value="naqd">Naqd</option>
                 <option value="karta">Karta</option>
                 <option value="click">Click</option>
                 <option value="payme">Payme</option>
-              </select>
+              </Select>
             </Maydon>
             <Maydon nom="Qaysi oy uchun">
               <input type="month" name="davr" required defaultValue={joriyDavr()} className={kirishKlass} />

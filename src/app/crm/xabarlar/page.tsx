@@ -4,6 +4,7 @@ import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Card, CardHeader, Badge, Empty, Stat } from '@/components/ui'
 import { Sarlavha, Ulanmagan } from '@/components/crm'
 import { Maydon, Xabar, kirishKlass } from '@/components/forma'
+import { Select } from '@/components/select'
 import { Yuborish } from '@/components/yuborish'
 import { sana } from '@/lib/format'
 import { BOT_NOMI } from '@/lib/telegram'
@@ -86,14 +87,14 @@ export default async function Xabarlar({
           <form className="flex flex-col gap-3 px-5 pb-5">
             <div className="grid gap-3 sm:grid-cols-2">
               <Maydon nom="Turi">
-                <select name="turi" defaultValue={e.turi} className={kirishKlass}>
+                <Select name="turi" defaultValue={e.turi}>
                   {TURLAR.map((t) => (
                     <option key={t.qiymat} value={t.qiymat}>{t.nom}</option>
                   ))}
-                </select>
+                </Select>
               </Maydon>
               <Maydon nom="Qaysilariga">
-                <select name="f" defaultValue={e.f} className={kirishKlass}>
+                <Select name="f" defaultValue={e.f}>
                   <option value="hammasi">Hammasi</option>
                   <option value="qarzdor">Faqat qarzdorlar</option>
                   {fanlar.length > 0 && (
@@ -108,7 +109,7 @@ export default async function Xabarlar({
                       <option key={g.id} value={`guruh:${g.id}`}>{g.nom}</option>
                     ))}
                   </optgroup>
-                </select>
+                </Select>
               </Maydon>
             </div>
 

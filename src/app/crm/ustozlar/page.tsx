@@ -4,6 +4,7 @@ import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Card, CardHeader, Badge, Empty } from '@/components/ui'
 import { Sarlavha, Ulanmagan } from '@/components/crm'
 import { Maydon, Xabar, kirishKlass } from '@/components/forma'
+import { Select } from '@/components/select'
 import { Yuborish } from '@/components/yuborish'
 import { pul, telefon } from '@/lib/format'
 import { ustozQosh, ustozTahrir } from './actions'
@@ -110,10 +111,10 @@ export default async function Ustozlar({
                         <input name="telefon" type="tel" defaultValue={u.telefon ?? ''} className={kirishKlass} />
                       </Maydon>
                       <Maydon nom="Holat">
-                        <select name="holat" defaultValue={u.holat} className={kirishKlass}>
+                        <Select name="holat" defaultValue={u.holat}>
                           <option value="faol">Faol</option>
                           <option value="bloklangan">Ishdan ketgan</option>
-                        </select>
+                        </Select>
                       </Maydon>
                       <Yuborish kutish="…">Saqlash</Yuborish>
                     </form>

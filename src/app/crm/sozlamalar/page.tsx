@@ -4,6 +4,7 @@ import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import { Card, CardHeader, Badge, Empty } from '@/components/ui'
 import { Sarlavha, Ulanmagan } from '@/components/crm'
 import { Maydon, Xabar, kirishKlass } from '@/components/forma'
+import { Select } from '@/components/select'
 import { Yuborish } from '@/components/yuborish'
 import { sozlamaSaqla, xodimSaqla } from './actions'
 import type { Setting, Profile, UserRole } from '@/lib/types'
@@ -74,30 +75,30 @@ export default async function Sozlamalar({
                       </span>
                     </span>
                     <Maydon nom="Rol">
-                      <select name="rol" defaultValue={x.rol} disabled={ozim} className={kirishKlass}>
+                      <Select name="rol" defaultValue={x.rol} disabled={ozim}>
                         {(Object.keys(ROL_NOMI) as UserRole[]).map((r) => (
                           // Direktor rolini faqat direktor beradi (0011_direktor_himoya.sql)
                           <option key={r} value={r} disabled={r === 'direktor' && men.rol !== 'direktor'}>
                             {ROL_NOMI[r]}
                           </option>
                         ))}
-                      </select>
+                      </Select>
                     </Maydon>
                     <Maydon nom="Holat">
-                      <select name="holat" defaultValue={x.holat} disabled={ozim} className={kirishKlass}>
+                      <Select name="holat" defaultValue={x.holat} disabled={ozim}>
                         <option value="faol">Faol</option>
                         <option value="bloklangan">Bloklangan</option>
-                      </select>
+                      </Select>
                     </Maydon>
                     <Maydon nom="Ustoz sifatida" izoh="Ustoz panelini ko‘radi">
-                      <select name="teacher_id" defaultValue={bogliq?.id ?? ''} disabled={ozim} className={kirishKlass}>
+                      <Select name="teacher_id" defaultValue={bogliq?.id ?? ''} disabled={ozim}>
                         <option value="">Ustoz emas</option>
                         {uList
                           .filter((u) => !u.profile_id || u.profile_id === x.id)
                           .map((u) => (
                             <option key={u.id} value={u.id}>{u.ism} ({u.id})</option>
                           ))}
-                      </select>
+                      </Select>
                     </Maydon>
                     {!ozim && <Yuborish tur="ikkilamchi" kutish="…">Saqlash</Yuborish>}
                   </form>
