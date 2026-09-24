@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../auth.jsx';
-import { api, USING_MOCKS } from '../api.js';
+import { api } from '../api.js';
 import { KABINET_PATH, handOffSession } from '../kabinet.js';
 import LanguageSwitcher from '../components/LanguageSwitcher.jsx';
 
@@ -324,19 +324,13 @@ export default function Login() {
             {mode === 'login'
               ? <LoginForm onForgot={() => setMode('forgot')} />
               : <ForgotForm onBack={() => setMode('login')} />}
-            {/* Эти аккаунты — только в mock-режиме (localStorage, без бэкенда):
-                Finance Manager/Branch Manager backend-ролью ещё не стали
-                (см. комментарии в api.js). Раньше подсказка висела всегда,
-                включая локальную разработку с VITE_USE_MOCKS=false (реальный
-                бэкенд) — там этих аккаунтов в БД нет и никогда не будет,
-                попытка входа честно давала "Неверный email или пароль". */}
-            {mode === 'login' && USING_MOCKS && (
-              <div className="mt-4 rounded-xl border border-dashed border-base-300 bg-base-200/50 p-3 text-[11px] leading-relaxed text-base-content/50 animate-fade-in">
-                <p className="font-semibold uppercase tracking-wider text-base-content/40 mb-1">{t('login.demoAccessTitle')}</p>
-                <p><b>Finance Manager:</b> finance.manager@gmail.com · pass123</p>
-                <p><b>Branch Manager:</b> kozim.manager@gmail.com · ChangeMe123!</p>
-              </div>
-            )}
+            {/* Подсказка с демо-аккаунтами убрана 24.09.2026 (WBA).
+                Она показывалась под USING_MOCKS, но один раз уже утекла в
+                прод: сборку сделали без VITE_USE_MOCKS=false, и на публичной
+                странице входа настоящей школы висели логины с паролями
+                открытым текстом. Условие от такой ошибки не защищает — сами
+                строки всё равно уезжали в бандл. У WBA мок-режим не
+                используется, демо-вход не нужен. */}
           </div>
           <p className="text-center text-xs opacity-40 mt-6">© World Bridge Academy</p>
         </div>

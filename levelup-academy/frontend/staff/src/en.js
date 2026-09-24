@@ -2741,7 +2741,7 @@ const en = {
   'login.feature2': 'Finances, payments, and reports',
   'login.feature3': 'Tests, homework, and attendance',
   'login.dashboardTitle': 'Dashboard',
-  'login.dashboardSubtitle': 'Super Admin, Admin and Teacher — manage your center from one panel.',
+  'login.dashboardSubtitle': 'One sign-in for everyone: staff go to the admin panel, students and parents to their cabinet.',
   'login.demoAccessTitle': 'Demo access (no backend)',
 
   /* ─── App.jsx ─── */

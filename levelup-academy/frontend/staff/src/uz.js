@@ -2741,7 +2741,7 @@ const uz = {
   'login.feature2': 'Moliya, to\'lovlar va hisobotlar',
   'login.feature3': 'Testlar, uy vazifalari va davomat',
   'login.dashboardTitle': 'Boshqaruv paneli',
-  'login.dashboardSubtitle': "Superadmin, administrator va o'qituvchi — markazni bitta paneldan boshqaring.",
+  'login.dashboardSubtitle': "Bitta kirish — hammaga: xodimlar boshqaruv paneliga, o'quvchi va ota-ona shaxsiy kabinetga tushadi.",
   'login.demoAccessTitle': 'Demo kirish (backendsiz)',
 
   /* ─── App.jsx ─── */
