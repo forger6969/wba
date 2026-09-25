@@ -64,7 +64,14 @@ export default async function CrmLayout({ children }: { children: React.ReactNod
             <div key={bolim.nom} className="flex flex-col gap-0.5">
               <span className="lbl px-3 pb-1">{bolim.nom}</span>
               {bolim.bandlar.map((band) => (
-                <NavBand key={band.href} band={band} nishon={nishon(band)} />
+                <NavBand
+                  key={band.href}
+                  href={band.href}
+                  nom={band.nom}
+                  tayyor={band.tayyor}
+                  icon={<band.Icon size={17} />}
+                  nishon={nishon(band)}
+                />
               ))}
             </div>
           ))}
