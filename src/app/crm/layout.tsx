@@ -54,15 +54,15 @@ export default async function CrmLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-dvh">
-      <aside className="flex w-56 shrink-0 flex-col gap-6 border-r border-line bg-surface px-3.5 py-5 max-lg:hidden">
-        <Link href="/crm" className="px-2">
+      <aside className="sticky top-0 flex h-dvh w-[19.75rem] shrink-0 flex-col gap-7 border-r border-sidebar-line bg-sidebar-bg px-3.5 py-4 text-sidebar-ink max-lg:hidden">
+        <Link href="/crm" className="px-2 py-1 [&_img]:brightness-0 [&_img]:invert">
           <Logo />
         </Link>
 
         <nav className="flex flex-col gap-5">
           {bolimlar.map((bolim) => (
             <div key={bolim.nom} className="flex flex-col gap-0.5">
-              <span className="lbl px-3 pb-1">{bolim.nom}</span>
+              <span className="lbl px-3 pb-1 text-sidebar-ink-3">{bolim.nom}</span>
               {bolim.bandlar.map((band) => (
                 <NavBand
                   key={band.href}
@@ -78,13 +78,13 @@ export default async function CrmLayout({ children }: { children: React.ReactNod
         </nav>
 
         <div className="mt-auto flex flex-col gap-2">
-          <div className="flex items-center gap-2.5 rounded-[10px] border border-line bg-surface px-3 py-2.5">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand font-[family-name:var(--font-display)] text-xs font-bold">
+          <div className="flex items-center gap-2.5 rounded-[10px] bg-sidebar-surface px-3 py-2.5">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-sidebar-avatar-bg font-[family-name:var(--font-display)] text-xs font-bold text-sidebar-avatar-ink">
               {bosh(profil.ism)}
             </span>
             <span className="flex min-w-0 flex-col">
-              <span className="truncate text-[12.5px] font-semibold">{profil.ism}</span>
-              <span className="lbl text-[9px] text-brand">
+              <span className="truncate text-[12.5px] font-semibold text-white">{profil.ism}</span>
+              <span className="lbl text-[9px] text-sidebar-ink-2">
                 {kim.length ? kim.join(' · ') : ROL_NOMI[profil.rol]}
               </span>
             </span>
@@ -94,7 +94,7 @@ export default async function CrmLayout({ children }: { children: React.ReactNod
             <form action={chiqish} className="flex-1">
               <button
                 type="submit"
-                className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-[13px] text-ink-3 transition hover:bg-surface-2 hover:text-ink"
+                className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-[13px] text-sidebar-ink-2 transition hover:bg-sidebar-surface hover:text-white"
               >
                 <IconLogout size={17} />
                 Chiqish
@@ -138,7 +138,27 @@ export default async function CrmLayout({ children }: { children: React.ReactNod
         </Link>
       </nav>
 
-      <main className="min-w-0 flex-1 max-lg:pt-14 max-lg:pb-16">{children}</main>
+      <main className="min-w-0 flex-1 bg-bg max-lg:pt-14 max-lg:pb-16">
+        <header className="hidden h-[78px] items-center justify-end border-b border-line-soft bg-surface px-7 lg:flex">
+          <span className="mr-7 text-ink-2" aria-label="Bildirishnomalar" role="img">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M15 8a5 5 0 1 0-10 0c0 5-2 5-2 6h14c0-1-2-1-2-6" />
+              <path d="M8 17h4" />
+            </svg>
+          </span>
+          <div className="flex items-center gap-3 rounded-full bg-brand-soft py-1.5 pl-1.5 pr-4">
+            <span className="flex size-10 items-center justify-center rounded-full bg-sidebar-avatar-bg font-[family-name:var(--font-display)] text-sm font-bold text-sidebar-avatar-ink">
+              {bosh(profil.ism)}
+            </span>
+            <span className="flex min-w-0 flex-col leading-tight">
+              <span className="max-w-40 truncate text-[13px] font-bold text-ink">{profil.ism}</span>
+              <span className="text-[11px] text-ink-3">{kim.length ? kim[0] : ROL_NOMI[profil.rol]}</span>
+            </span>
+            <IconChevronDown size={15} className="ml-1 text-ink-3" />
+          </div>
+        </header>
+        {children}
+      </main>
     </div>
   )
 }

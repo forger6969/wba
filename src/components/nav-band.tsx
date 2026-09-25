@@ -53,7 +53,7 @@ export function NavBand({
       <span
         aria-disabled="true"
         title="Bu sahifa prototipda hali yo‘q"
-        className="flex min-h-11 cursor-not-allowed items-center gap-3 rounded-lg px-3 text-[13.5px] text-ink-4"
+        className="flex min-h-11 cursor-not-allowed items-center gap-3 rounded-xl px-3 text-[13.5px] text-sidebar-disabled"
       >
         {ichi}
       </span>
@@ -64,8 +64,10 @@ export function NavBand({
     <Link
       href={href}
       aria-current={faol ? 'page' : undefined}
-      className={`flex min-h-11 items-center gap-3 rounded-lg px-3 text-[13.5px] transition-colors ${
-        faol ? 'bg-brand text-white' : 'text-ink-2 hover:bg-surface-2 hover:text-ink'
+      className={`relative flex min-h-11 items-center gap-3 rounded-xl px-3 text-[13.5px] transition-colors ${
+        faol
+          ? 'bg-sidebar-active-bg text-sidebar-active-ink before:absolute before:inset-y-3 before:left-0 before:w-[3px] before:rounded-full before:bg-sidebar-active-accent'
+          : 'text-sidebar-ink-2 hover:bg-sidebar-surface hover:text-white'
       }`}
     >
       {ichi}

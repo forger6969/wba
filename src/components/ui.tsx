@@ -47,7 +47,7 @@ export function Card({
 }) {
   return (
     <As
-      className={`rounded-[14px] border border-line bg-surface shadow-[0_1px_0_rgba(0,0,0,0.02),0_8px_24px_-16px_rgba(0,0,0,0.35)] ${className}`}
+      className={`rounded-[14px] bg-surface shadow-[0_8px_24px_-18px_rgba(26,38,22,0.28)] ${className}`}
     >
       {children}
     </As>
@@ -64,7 +64,7 @@ export function CardHeader({
   action?: React.ReactNode
 }) {
   return (
-    <div className="flex items-baseline justify-between gap-3 border-b border-line-soft px-5 pt-4 pb-3.5">
+    <div className="flex items-baseline justify-between gap-3 border-b border-line-soft px-5 pt-5 pb-4">
       <h2 className="font-[family-name:var(--font-display)] text-[15px] font-bold">{title}</h2>
       {meta && <span className="lbl">{meta}</span>}
       {action}
@@ -94,21 +94,21 @@ export function Stat({
   ton?: keyof typeof TON
   border?: 'brand' | 'accent'
 }) {
-  const chiziq =
-    border === 'brand'
-      ? 'border-brand-line'
-      : border === 'accent'
-        ? 'border-accent-line'
-        : 'border-line'
-
-  const teppaChiziq =
-    border === 'brand' ? 'bg-brand' : border === 'accent' ? 'bg-accent' : 'bg-transparent'
+  const urgu = border === 'brand' ? 'text-brand' : border === 'accent' ? 'text-accent' : 'text-ink-3'
 
   return (
     <div
-      className={`relative flex flex-col gap-1.5 overflow-hidden rounded-[13px] border bg-surface px-4 py-3.5 shadow-[0_1px_0_rgba(0,0,0,0.02),0_8px_20px_-18px_rgba(0,0,0,0.4)] ${chiziq}`}
+      className="relative flex min-h-36 flex-col justify-end gap-1.5 overflow-hidden rounded-[13px] bg-surface px-5 py-4 shadow-[0_8px_24px_-18px_rgba(26,38,22,0.28)]"
     >
-      <span className={`absolute inset-x-0 top-0 h-[2.5px] ${teppaChiziq}`} />
+      <span className={`absolute left-5 top-4 flex size-9 items-center justify-center rounded-[10px] bg-brand-soft ${urgu}`} aria-hidden="true">
+        <span className="grid grid-cols-2 gap-0.5">
+          <span className="size-1.5 rounded-sm bg-current" />
+          <span className="size-1.5 rounded-sm bg-current opacity-70" />
+          <span className="size-1.5 rounded-sm bg-current opacity-70" />
+          <span className="size-1.5 rounded-sm bg-current" />
+        </span>
+      </span>
+      <span className="absolute right-5 top-5 text-lg leading-none text-ink-3" aria-hidden="true">›</span>
       <span className="lbl">{label}</span>
       <span
         className={`tnum font-[family-name:var(--font-display)] text-[26px] leading-none font-extrabold tracking-[-0.02em] ${TON[ton]}`}
@@ -126,7 +126,7 @@ const NISHON = {
   ok: 'bg-ok-soft text-ok',
   brand: 'bg-brand-soft text-brand',
   accent: 'bg-accent-soft text-accent',
-  jim: 'bg-surface-2 text-ink-3',
+  jim: 'bg-surface-2 text-ink-2',
 } as const
 
 export function Badge({
@@ -140,7 +140,7 @@ export function Badge({
 }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11.5px] font-semibold ${NISHON[ton]}`}
+      className={`inline-flex items-center gap-1.5 rounded-[5px] px-2.5 py-1 text-[11.5px] font-semibold ${NISHON[ton]}`}
     >
       {nuqta && <span className="block size-1.5 rounded-full bg-current" />}
       {children}
@@ -155,7 +155,7 @@ const TUGMA = {
   asosiy:
     'bg-brand text-white shadow-[0_6px_16px_-6px_var(--color-brand)] hover:brightness-110 hover:-translate-y-px active:translate-y-0 active:brightness-95',
   ikkilamchi:
-    'border border-line bg-surface text-ink-2 hover:text-ink hover:border-ink-3 hover:bg-surface-2',
+    'bg-surface text-ink-2 shadow-[inset_0_0_0_1px_var(--color-line)] hover:text-ink hover:bg-surface-2',
   ogohlantirish:
     'bg-accent text-bg font-bold shadow-[0_6px_16px_-6px_var(--color-accent)] hover:brightness-110 hover:-translate-y-px active:translate-y-0 active:brightness-95',
 } as const
@@ -211,7 +211,7 @@ export function Button({
 
 export function Empty({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-[12px] border border-dashed border-line bg-surface-2/40 px-4 py-4 text-[12.5px] leading-relaxed text-ink-2">
+    <div className="rounded-[12px] bg-surface-2 px-4 py-4 text-[12.5px] leading-relaxed text-ink-2">
       {children}
     </div>
   )
@@ -234,9 +234,9 @@ export function BarRow({
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] items-center gap-3 py-1">
       <span className="truncate text-[12.5px]">{label}</span>
-      <span className="h-3.5 overflow-hidden rounded-full bg-surface-2">
+      <span className="h-2.5 overflow-hidden rounded-full bg-surface-2">
         <span
-          className="block h-3.5 rounded-full bg-brand transition-[width] duration-500 ease-out"
+          className="block h-2.5 rounded-full bg-brand transition-[width] duration-500 ease-out"
           style={{ width: `${w}%` }}
         />
       </span>

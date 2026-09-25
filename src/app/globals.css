@@ -4,39 +4,55 @@
    World Bridge Academy — dizayn tizimi
    Palitra logotipdan: qizil #FF0000, ko'prik motivi
 
-   Mavzu (tema): qorong'i — asosiy (brend shunday). Yorug' —
-   tizim sozlamasi bo'yicha yoki qo'lda tanlanganda.
+   Mavzu (tema): yorug' — CRM uchun asosiy. Qorong'i — faqat
+   qo'lda tanlanganda.
    Ranglar `--color-*` tokenlarida: qiymatni almashtirsak, butun
    sayt almashadi (utility klasslar shularga bog'langan).
    ============================================================ */
 
 @theme {
-  /* Yuzalar — QORONG'I (asosiy) */
-  --color-bg: #0d0a09;
-  --color-surface: #171110;
-  --color-surface-2: #1f1614;
-  --color-line: #2c211e;
-  --color-line-soft: #1a1312;
+  /* Yuzalar — YORUG' (asosiy) */
+  --color-bg: #f7f6f1;
+  --color-surface: #ffffff;
+  --color-surface-2: #f4f6ef;
+  --color-line: #e7e9e0;
+  --color-line-soft: #eef0ea;
 
   /* Matn */
-  --color-ink: #f8f4f2;
-  --color-ink-2: #b9aca7;
-  --color-ink-3: #7d716d;
-  --color-ink-4: #6e625e;
+  --color-ink: #20271c;
+  --color-ink-2: #586151;
+  --color-ink-3: #8a9482;
+  --color-ink-4: #adb4a7;
 
-  /* Brend — qizil, lekin ko'zga yumshoq (sof #ff0000 emas) */
-  --color-brand: #ff4d4a;
-  --color-brand-soft: #351613;
-  --color-brand-line: #5a2b28;
-  --color-accent: #f2b33d;
-  --color-accent-soft: #33280f;
-  --color-accent-line: #5a4a22;
+  /* Brend va yengil urg'ular */
+  --color-brand: #dc2626;
+  --color-brand-soft: #fde8e7;
+  --color-brand-line: #f7c9c5;
+  --color-accent: #a87516;
+  --color-accent-soft: #fdf3db;
+  --color-accent-line: #eedbab;
 
   /* Holat */
-  --color-ok: #5fbf8b;
-  --color-ok-soft: #14301f;
-  --color-warn: #f2b33d;
-  --color-crit: #ff6a5a;
+  --color-ok: #188443;
+  --color-ok-soft: #dcf3e3;
+  --color-warn: #a87516;
+  --color-crit: #dc2626;
+
+  /* CRM sidebar — mavzudan qat'iy nazar doim to'q (referensga ko'ra),
+     shuning uchun quyidagi :root[data-theme] bloklarida qayta
+     yozilmaydi — doim shu qiymatlar. */
+  --color-sidebar-bg: #10180d;
+  --color-sidebar-line: #26321d;
+  --color-sidebar-surface: #1a2515;
+  --color-sidebar-ink: #e8ede3;
+  --color-sidebar-ink-2: #9ba893;
+  --color-sidebar-ink-3: #84917b;
+  --color-sidebar-disabled: #5f6b58;
+  --color-sidebar-active-bg: #3a2014;
+  --color-sidebar-active-ink: #ff3b35;
+  --color-sidebar-active-accent: #f1322d;
+  --color-sidebar-avatar-bg: #dff0ce;
+  --color-sidebar-avatar-ink: #42671e;
 
   /* Shriftlar */
   --font-display: var(--font-archivo), Arial, sans-serif;
@@ -47,83 +63,53 @@
   --radius-card: 12px;
 }
 
-/* ------------------------------------------------------------
-   YORUG' mavzu ranglari — bir joyda, ikki holatda ishlatiladi:
-   1) tizim yorug'ni so'raganda VA odam qorong'ini majburlamagan
-   2) odam yorug'ni tanlaganda ([data-theme="light"])
-   ------------------------------------------------------------ */
+/* Qo'lda yoqilgan yorug' mavzu asosiy tokenlarni ochiq saqlaydi. */
 @layer base {
-  @media (prefers-color-scheme: light) {
-    :root:not([data-theme="dark"]) {
-      color-scheme: light;
-      --color-bg: #fbf9f8;
-      --color-surface: #ffffff;
-      --color-surface-2: #f3efed;
-      --color-line: #e6ddd9;
-      --color-line-soft: #f0e9e6;
-      --color-ink: #1a1210;
-      --color-ink-2: #5c514d;
-      --color-ink-3: #8a7d78;
-      --color-ink-4: #a89b96;
-      --color-brand: #dc2626;
-      --color-brand-soft: #ffe9e6;
-      --color-brand-line: #f3c6c0;
-      --color-accent: #b9791a;
-      --color-accent-soft: #fdf3d9;
-      --color-accent-line: #ecd9a0;
-      --color-ok: #2f9e68;
-      --color-ok-soft: #dff2e6;
-      --color-warn: #b9791a;
-      --color-crit: #d92c1c;
-    }
-  }
-
   :root[data-theme="light"] {
     color-scheme: light;
-    --color-bg: #fbf9f8;
+    --color-bg: #f7f6f1;
     --color-surface: #ffffff;
-    --color-surface-2: #f3efed;
-    --color-line: #e6ddd9;
-    --color-line-soft: #f0e9e6;
-    --color-ink: #1a1210;
-    --color-ink-2: #5c514d;
-    --color-ink-3: #8a7d78;
-    --color-ink-4: #a89b96;
+    --color-surface-2: #f4f6ef;
+    --color-line: #e7e9e0;
+    --color-line-soft: #eef0ea;
+    --color-ink: #20271c;
+    --color-ink-2: #586151;
+    --color-ink-3: #8a9482;
+    --color-ink-4: #adb4a7;
     --color-brand: #dc2626;
-    --color-brand-soft: #ffe9e6;
-    --color-brand-line: #f3c6c0;
-    --color-accent: #b9791a;
-    --color-accent-soft: #fdf3d9;
-    --color-accent-line: #ecd9a0;
-    --color-ok: #2f9e68;
-    --color-ok-soft: #dff2e6;
-    --color-warn: #b9791a;
-    --color-crit: #d92c1c;
+    --color-brand-soft: #fde8e7;
+    --color-brand-line: #f7c9c5;
+    --color-accent: #a87516;
+    --color-accent-soft: #fdf3db;
+    --color-accent-line: #eedbab;
+    --color-ok: #188443;
+    --color-ok-soft: #dcf3e3;
+    --color-warn: #a87516;
+    --color-crit: #dc2626;
   }
 
-  /* Odam qorong'ini majburlaganda — tizim yorug' bo'lsa ham qorong'i.
-     Qiymatlar @theme dagi bilan bir xil (asosiy holatga qaytarish). */
+  /* Qo'lda tanlangan qorong'i mavzu. */
   :root[data-theme="dark"] {
     color-scheme: dark;
-    --color-bg: #0d0a09;
-    --color-surface: #171110;
-    --color-surface-2: #1f1614;
-    --color-line: #2c211e;
-    --color-line-soft: #1a1312;
-    --color-ink: #f8f4f2;
-    --color-ink-2: #b9aca7;
-    --color-ink-3: #7d716d;
-    --color-ink-4: #6e625e;
-    --color-brand: #ff4d4a;
-    --color-brand-soft: #351613;
-    --color-brand-line: #5a2b28;
-    --color-accent: #f2b33d;
-    --color-accent-soft: #33280f;
-    --color-accent-line: #5a4a22;
-    --color-ok: #5fbf8b;
-    --color-ok-soft: #14301f;
-    --color-warn: #f2b33d;
-    --color-crit: #ff6a5a;
+    --color-bg: #11150e;
+    --color-surface: #1a2116;
+    --color-surface-2: #242d1e;
+    --color-line: #34402c;
+    --color-line-soft: #283020;
+    --color-ink: #f5f7f0;
+    --color-ink-2: #c1c9b9;
+    --color-ink-3: #909b88;
+    --color-ink-4: #6d7765;
+    --color-brand: #ff514d;
+    --color-brand-soft: #3e1916;
+    --color-brand-line: #69312c;
+    --color-accent: #e8b448;
+    --color-accent-soft: #3b3012;
+    --color-accent-line: #665325;
+    --color-ok: #70c994;
+    --color-ok-soft: #173a24;
+    --color-warn: #e8b448;
+    --color-crit: #ff7064;
   }
 
   * {
@@ -131,7 +117,7 @@
   }
 
   html {
-    color-scheme: dark;
+    color-scheme: light;
     scroll-behavior: smooth;
   }
 
@@ -166,8 +152,8 @@
 
   .card {
     background: var(--color-surface);
-    border: 1px solid var(--color-line);
     border-radius: var(--radius-card);
+    box-shadow: 0 8px 24px -18px rgb(26 38 22 / 0.28);
   }
 
   .h-display {
