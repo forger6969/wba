@@ -7,6 +7,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { telefonNormal } from '@/lib/format'
 import { MARKAZ, YONALISHLAR } from '@/lib/markaz'
 import { xabar, html } from '@/lib/telegram'
+import { Yuborish } from '@/components/yuborish'
 
 // Bir IP soatiga shuncha arizadan ortiq yubora olmaydi (spam to'sish).
 const ARIZA_LIMIT = 5
@@ -199,8 +200,10 @@ export default async function ArizaSahifasi({
           <input
             name="telefon"
             type="tel"
+            inputMode="tel"
             required
             autoComplete="tel"
+            maxLength={20}
             placeholder="99 009 90 05"
             className="min-h-12 rounded-[9px] border border-line bg-bg px-3.5 font-[family-name:var(--font-mono)] text-[14.5px] placeholder:text-ink-4"
           />
@@ -243,12 +246,9 @@ export default async function ArizaSahifasi({
           className="absolute -left-[9999px] size-0"
         />
 
-        <button
-          type="submit"
-          className="mt-1 min-h-13 rounded-[10px] bg-brand text-white text-[15px] font-bold transition hover:brightness-110"
-        >
+        <Yuborish className="mt-1 min-h-13 w-full text-[15px]" kutish="Yuborilmoqda…">
           Yuborish
-        </button>
+        </Yuborish>
 
         <p className="text-center text-[12.5px] text-ink-3">
           Raqamingiz faqat shu ariza uchun ishlatiladi.

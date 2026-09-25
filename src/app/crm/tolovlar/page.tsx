@@ -9,6 +9,7 @@ import { Select } from '@/components/select'
 import { Yuborish } from '@/components/yuborish'
 import { pul, sana, davrNomi, joriyDavr } from '@/lib/format'
 import { tolovTasdiqla, tolovBekor } from './actions'
+import { AmalGuruhi } from '@/components/amal-guruhi'
 import type { PaymentMethod, DashboardStats } from '@/lib/types'
 
 export const metadata = { title: 'To‘lovlar' }
@@ -227,6 +228,7 @@ export default async function Tolovlar({ searchParams }: { searchParams: Promise
                 </div>
 
                 {!t.bekor && (direktor || bekorQila) && (
+                  <AmalGuruhi>
                   <div className="flex flex-wrap items-center gap-2">
                     {direktor && !t.tasdiqlangan && (
                       <form action={tolovTasdiqla}>
@@ -249,6 +251,7 @@ export default async function Tolovlar({ searchParams }: { searchParams: Promise
                       </details>
                     )}
                   </div>
+                  </AmalGuruhi>
                 )}
               </li>
             ))}

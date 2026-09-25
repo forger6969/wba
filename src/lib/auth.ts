@@ -1,22 +1,29 @@
 import { cache } from 'react'
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseSozlanganmi } from '@/lib/supabase/env'
 import type { Profile, UserRole } from '@/lib/types'
 
-/** Joriy foydalanuvchi profili. Bitta render ichida bir marta so'raladi. */
+/**
+ * Joriy foydalanuvchi profili. Bitta render ichida bir marta so'raladi.
+ *
+ * ID — middleware'dan (u allaqachon auth.getUser() bilan tasdiqlagan,
+ * `x-wba-user-id` header orqali uzatgan) — shu yerda QAYTA getUser()
+ * chaqirib, Supabase Auth'ga ikkinchi tarmoq so'rovi yubormaymiz.
+ * Header'ga faqat middleware yozadi, mijozdan kelgan qiymatga u yerda
+ * ishonilmaydi (supabase/middleware.ts).
+ */
 export const getProfile = cache(async (): Promise<Profile | null> => {
   // Kalitlar yo'q — kirish ham, profil ham bo'lmaydi (xato tashlamaymiz)
   if (!supabaseSozlanganmi()) return null
 
+  const h = await headers()
+  const userId = h.get('x-wba-user-id')
+  if (!userId) return null
+
   const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+  const { data } = await supabase.from('profiles').select('*').eq('id', userId).single()
 
   return data ?? null
 })

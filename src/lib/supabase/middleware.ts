@@ -9,8 +9,22 @@ import { supabaseSozlanganmi } from './env'
  */
 const CRM_PREFIX = '/crm'
 
+/**
+ * Server Component'lar (getProfile, auth.ts) shu header orqali
+ * tasdiqlangan foydalanuvchi ID'sini oladi — auth.getUser() ni QAYTA
+ * chaqirib, Supabase Auth'ga ikkinchi tarmoq so'rovi yubormaslik uchun
+ * (har sahifada, har navigatsiyada — sekinlikning katta qismi shu
+ * yerdan edi). Xavfsizlik: mijozdan kelgan asl qiymat pastda DARHOL
+ * o'chiriladi — faqat shu funksiya, getUser() haqiqatan tasdiqlagandan
+ * KEYIN, qayta yozadi.
+ */
+const FOYDALANUVCHI_SARLAVHA = 'x-wba-user-id'
+
 export async function updateSession(request: NextRequest) {
-  let response = NextResponse.next({ request })
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.delete(FOYDALANUVCHI_SARLAVHA)
+
+  let response = NextResponse.next({ request: { headers: requestHeaders } })
 
   /* Kalitlar hali qo'yilmagan — sessiyaga tegmaymiz. Aks holda
      bu yerdagi xato butun saytni yiqitadi. Sahifalarning o'zi
@@ -27,7 +41,7 @@ export async function updateSession(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          response = NextResponse.next({ request })
+          response = NextResponse.next({ request: { headers: requestHeaders } })
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options),
           )
@@ -60,5 +74,12 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  return response
+  if (user) requestHeaders.set(FOYDALANUVCHI_SARLAVHA, user.id)
+
+  // Cookie yangilanishlari (token refresh) yuqorida `response`ga
+  // to'planib qolgan bo'lishi mumkin — yangi headerli response'ga
+  // ko'chiramiz, aks holda sessiya cookie'lari yo'qolib qoladi.
+  const yakuniy = NextResponse.next({ request: { headers: requestHeaders } })
+  response.cookies.getAll().forEach((c) => yakuniy.cookies.set(c))
+  return yakuniy
 }

@@ -10,6 +10,7 @@ import { Yuborish } from '@/components/yuborish'
 import { IconPhone } from '@/components/icons'
 import { sana, telefon, bugunToshkent } from '@/lib/format'
 import { probniyHolat, probniyGuruh, probniyDoimiy } from '../probniylar/actions'
+import { AmalGuruhi } from '@/components/amal-guruhi'
 import type { LeadStatus } from '@/lib/types'
 
 export const metadata = { title: 'Lidlar' }
@@ -136,6 +137,7 @@ export default async function Lidlar({
                 </div>
 
                 {!l.student_id && (
+                  <AmalGuruhi>
                   <div className="flex flex-wrap items-center gap-2">
                     {l.group_id ? (
                       <details>
@@ -188,6 +190,7 @@ export default async function Lidlar({
                         </form>
                       ))}
                   </div>
+                  </AmalGuruhi>
                 )}
               </li>
             ))}
