@@ -90,20 +90,29 @@ async function yubor(formData: FormData) {
     redirect('/ariza?holat=nosozlik')
   }
 
-  // Xodimlar guruhiga darhol xabar — aks holda yangi ariza faqat
-  // kunlik hisobotda (ertasi kuni) ko'rinardi. Yozilmasa ham ariza
-  // bazada qoladi, shuning uchun bu try/catch alohida.
+  // Xodimlar guruhiga VA har bir direktor/qabulxonaga shaxsan darhol
+  // xabar — aks holda yangi ariza faqat kunlik hisobotda (ertasi kuni)
+  // ko'rinardi. Yozilmasa ham ariza bazada qoladi, shuning uchun bu
+  // qism try/catch'lar bilan alohida.
+  const yonalishNomi = YONALISHLAR.find((y) => y.id === natija.data.yonalish)?.nom
+  const matn =
+    `🆕 <b>Yangi ariza — bepul sinov darsi</b>\n\n` +
+    `Ism: ${html(natija.data.ism)}\n` +
+    `Telefon: ${html(tel)}\n` +
+    (yonalishNomi ? `Yo'nalish: ${html(yonalishNomi)}\n` : '') +
+    (natija.data.izoh ? `Izoh: ${html(natija.data.izoh)}\n` : '')
+
   const guruh = Number(process.env.TELEGRAM_GROUP_ID)
-  if (guruh) {
-    const yonalishNomi = YONALISHLAR.find((y) => y.id === natija.data.yonalish)?.nom
-    await xabar(
-      guruh,
-      `🆕 <b>Yangi ariza — bepul sinov darsi</b>\n\n` +
-        `Ism: ${html(natija.data.ism)}\n` +
-        `Telefon: ${html(tel)}\n` +
-        (yonalishNomi ? `Yo'nalish: ${html(yonalishNomi)}\n` : '') +
-        (natija.data.izoh ? `Izoh: ${html(natija.data.izoh)}\n` : ''),
-    ).catch(() => {})
+  if (guruh) await xabar(guruh, matn).catch(() => {})
+
+  const { data: xodimlar } = await supabase
+    .from('telegram_ulanish')
+    .select('chat_id, profiles!inner(rol)')
+    .eq('kim', 'xodim')
+    .eq('holat', 'faol')
+    .in('profiles.rol', ['direktor', 'qabulxona'])
+  for (const x of xodimlar ?? []) {
+    await xabar(x.chat_id, matn).catch(() => {})
   }
 
   redirect('/ariza?holat=yuborildi')

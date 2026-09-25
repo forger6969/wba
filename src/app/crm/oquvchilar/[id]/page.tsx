@@ -7,6 +7,7 @@ import { Card, CardHeader, Stat, Badge, Empty, Button } from '@/components/ui'
 import { Maydon, Xabar, kirishKlass } from '@/components/forma'
 import { Select } from '@/components/select'
 import { Yuborish } from '@/components/yuborish'
+import { AmalGuruhi } from '@/components/amal-guruhi'
 import { guruhgaBiriktir, guruhdanChiqar, chegirmaOzgartir } from '../actions'
 import { ChegirmaMaydonlari } from '../bolaklar'
 import { HisobForma } from '@/components/hisob'
@@ -267,6 +268,7 @@ export default async function OquvchiProfil({
                     )}
 
                     {pulKoradi && y.holat !== 'tugagan' && (
+                      <AmalGuruhi>
                       <details className="w-full">
                         <summary className="cursor-pointer text-[12px] text-ink-3 hover:text-ink">Chegirmani o‘zgartirish</summary>
                         <form action={chegirmaOzgartir} className="mt-2 flex flex-col gap-2">
@@ -279,9 +281,7 @@ export default async function OquvchiProfil({
                           <Yuborish kutish="…">Chegirmani saqlash</Yuborish>
                         </form>
                       </details>
-                    )}
 
-                    {pulKoradi && y.holat !== 'tugagan' && (
                       <details className="w-full">
                         <summary className="cursor-pointer text-[12px] text-ink-3 hover:text-ink">Guruhdan chiqarish</summary>
                         <form action={guruhdanChiqar} className="mt-2 flex flex-wrap items-end gap-2">
@@ -293,6 +293,7 @@ export default async function OquvchiProfil({
                           <Yuborish tur="xavfli" kutish="…">Chiqarish</Yuborish>
                         </form>
                       </details>
+                      </AmalGuruhi>
                     )}
                   </div>
                 )
