@@ -25,6 +25,14 @@ const nextConfig: NextConfig = {
           has: [{ type: 'host', value: 'app.wba.uz' }],
           destination: '/crm/:path*',
         },
+        // api.wbalc.uz/... → /api/...
+        // Aks holda bu domen ham bosh sahifani (landing) qaytaradi,
+        // chunki host o'zi yo'l tanlamaydi — Next uchun bu faqat yana bir alias.
+        {
+          source: '/:path*',
+          has: [{ type: 'host', value: 'api.wbalc.uz' }],
+          destination: '/api/:path*',
+        },
       ],
       afterFiles: [],
       fallback: [],
