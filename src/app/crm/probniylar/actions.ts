@@ -7,9 +7,12 @@ import { talabRol } from '@/lib/auth'
 import { matn, sanaOqi, telefonOqi, xabarliYol, xatoMatni } from '@/lib/kiritish'
 import type { LeadSource, LeadStatus } from '@/lib/types'
 
+/** Bu amallar Probniylar'dan ham, Lidlar'dan ham chaqiriladi — ikkalasi
+    ham `leads` jadvaliga yozadi, shuning uchun qayerdan kelgan bo'lsa
+    o'sha yerga qaytadi. */
 function qaytish(fd: FormData): string {
   const y = String(fd.get('qaytish') ?? '')
-  return y.startsWith('/crm/probniylar') ? y : '/crm/probniylar'
+  return y.startsWith('/crm/probniylar') || y.startsWith('/crm/lidlar') ? y : '/crm/probniylar'
 }
 
 const MANBALAR: LeadSource[] = ['sayt', 'telegram', 'instagram', 'tavsiya', 'boshqa']
@@ -38,6 +41,7 @@ export async function probniyQosh(fd: FormData) {
   if (error) redirect(xabarliYol(yol, { xato: xatoMatni(error) }))
 
   revalidatePath('/crm/probniylar')
+  revalidatePath('/crm/lidlar')
   redirect(xabarliYol(yol, { ok: `${ism} probniyga yozildi.` }))
 }
 
@@ -55,6 +59,7 @@ export async function probniyHolat(fd: FormData) {
   if (error) redirect(xabarliYol(yol, { xato: xatoMatni(error) }))
 
   revalidatePath('/crm/probniylar')
+  revalidatePath('/crm/lidlar')
   redirect(xabarliYol(yol, { ok: 'Holat o‘zgardi.' }))
 }
 
@@ -73,6 +78,7 @@ export async function probniyGuruh(fd: FormData) {
   if (error) redirect(xabarliYol(yol, { xato: xatoMatni(error) }))
 
   revalidatePath('/crm/probniylar')
+  revalidatePath('/crm/lidlar')
   redirect(xabarliYol(yol, { ok: 'Guruh va sinov kuni saqlandi.' }))
 }
 
