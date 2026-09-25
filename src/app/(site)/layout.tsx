@@ -33,6 +33,9 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
             >
               {MARKAZ.telefon}
             </a>
+            <Link href="/kirish" className="text-[14.5px] text-ink-2 hover:text-ink">
+              Kirish
+            </Link>
             <Link
               href="/ariza"
               className="inline-flex min-h-11 items-center rounded-[9px] bg-brand text-white px-5 text-[14px] font-bold transition hover:brightness-110"

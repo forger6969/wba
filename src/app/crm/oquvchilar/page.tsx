@@ -55,12 +55,9 @@ export default async function Oquvchilar({
 
   const supabase = await createClient()
 
-  /* Filtr ro'yxati uchun guruhlar. Ustozga RLS faqat o'zinikini beradi. */
-  const { data: guruhlar } = await supabase
-    .from('groups')
-    .select('id, nom')
-    .eq('holat', 'faol')
-    .order('nom')
+  /* Filtr ro'yxati uchun guruhlar. Ustozga RLS faqat o'zinikini beradi.
+     Asosiy so'rovdan mustaqil — parallel yuboriladi (pastda), ketma-ket emas. */
+  const guruhlarSorovi = supabase.from('groups').select('id, nom').eq('holat', 'faol').order('nom')
 
   /* ── Asosiy so'rov ──
      Qidiruv uch xil bo'ladi va uchalasi ham SERVER tomonda:
@@ -102,9 +99,10 @@ export default async function Oquvchilar({
     }
   }
 
-  const { data: oquvchilar, count } = await soorov
-    .order('fish')
-    .range(boshi, boshi + SAHIFA_SONI - 1)
+  const [{ data: guruhlar }, { data: oquvchilar, count }] = await Promise.all([
+    guruhlarSorovi,
+    soorov.order('fish').range(boshi, boshi + SAHIFA_SONI - 1),
+  ])
 
   type XomOquvchi = {
     id: string

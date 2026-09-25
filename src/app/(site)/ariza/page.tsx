@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { telefonNormal } from '@/lib/format'
 import { MARKAZ, YONALISHLAR } from '@/lib/markaz'
+import { xabar, html } from '@/lib/telegram'
 
 // Bir IP soatiga shuncha arizadan ortiq yubora olmaydi (spam to'sish).
 const ARIZA_LIMIT = 5
@@ -86,6 +87,22 @@ async function yubor(formData: FormData) {
   } catch {
     // Baza hali ulanmagan bo'lsa ariza yo'qolmasin — xatoni ochiq aytamiz
     redirect('/ariza?holat=nosozlik')
+  }
+
+  // Xodimlar guruhiga darhol xabar — aks holda yangi ariza faqat
+  // kunlik hisobotda (ertasi kuni) ko'rinardi. Yozilmasa ham ariza
+  // bazada qoladi, shuning uchun bu try/catch alohida.
+  const guruh = Number(process.env.TELEGRAM_GROUP_ID)
+  if (guruh) {
+    const yonalishNomi = YONALISHLAR.find((y) => y.id === natija.data.yonalish)?.nom
+    await xabar(
+      guruh,
+      `🆕 <b>Yangi ariza — bepul sinov darsi</b>\n\n` +
+        `Ism: ${html(natija.data.ism)}\n` +
+        `Telefon: ${html(tel)}\n` +
+        (yonalishNomi ? `Yo'nalish: ${html(yonalishNomi)}\n` : '') +
+        (natija.data.izoh ? `Izoh: ${html(natija.data.izoh)}\n` : ''),
+    ).catch(() => {})
   }
 
   redirect('/ariza?holat=yuborildi')
