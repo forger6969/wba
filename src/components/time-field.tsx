@@ -23,13 +23,13 @@ export function TimeField({
   return (
     <div className="grid grid-cols-2 gap-1.5">
       <Select name={`${name}_soat`} required={required} defaultValue={soat ?? ''}>
-        {!soat && <option value="" disabled>Soat</option>}
+        {!soat && <option value="" disabled>—</option>}
         {SOATLAR.map((s) => (
           <option key={s} value={s}>{s}</option>
         ))}
       </Select>
       <Select name={`${name}_daqiqa`} required={required} defaultValue={daqiqa ?? ''}>
-        {!daqiqa && <option value="" disabled>Daqiqa</option>}
+        {!daqiqa && <option value="" disabled>—</option>}
         {DAQIQALAR.map((d) => (
           <option key={d} value={d}>{d}</option>
         ))}
